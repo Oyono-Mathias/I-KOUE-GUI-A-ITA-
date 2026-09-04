@@ -1,0 +1,38 @@
+
+        /* VARIABLES SONT DÉJÀ DANS index.html. AJOUT DES CLASSES SPÉCIFIQUES */
+        .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 24px 0; }
+        .stat-item { background: var(--blanc-pur); border-radius: 10px; padding: 20px 16px; text-align: center; box-shadow: var(--shadow); border-top: 3px solid var(--orange-energie); }
+        .stat-item .number { font-size: 28px; font-weight: 700; color: var(--orange-energie); display: block; }
+        .stat-item .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        .activites-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 24px; }
+        .activite-card { background: var(--blanc-pur); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border-left: 5px solid var(--orange-energie); transition: transform 0.2s; }
+        .activite-card:active { transform: scale(0.98); }
+        .activite-card .icon { width: 64px; height: 64px; border-radius: 50%; background: #FFF3E0; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; }
+        .activite-card h3 { font-size: 18px; color: var(--bleu-rca); margin-bottom: 12px; }
+        .activite-card p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 12px; }
+        .activite-card ul { list-style: none; padding: 0; }
+        .activite-card ul li { padding: 6px 0 6px 24px; position: relative; font-size: 13px; line-height: 1.5; }
+        .activite-card ul li::before { content: '✓'; position: absolute; left: 0; top: 6px; width: 18px; height: 18px; background: var(--orange-energie); color: var(--blanc-pur); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+        .impact-box { background: linear-gradient(135deg, var(--orange-energie) 0%, #FF8F00 100%); border-radius: 16px; padding: 32px 24px; color: var(--blanc-pur); margin: 24px 0; position: relative; overflow: hidden; }
+        .impact-box::before { content: '📚'; position: absolute; top: -30px; right: -30px; font-size: 200px; opacity: 0.1; }
+        .impact-box h3 { font-size: 22px; color: var(--blanc-pur); margin-bottom: 12px; position: relative; z-index: 1; }
+        .impact-box p { font-size: 15px; line-height: 1.7; position: relative; z-index: 1; }
+        .temoignages-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 24px; }
+        .temoignage-card { background: var(--blanc-pur); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); border-top: 4px solid var(--orange-energie); }
+        .temoignage-card .quote { font-style: italic; font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 16px; position: relative; padding-left: 20px; }
+        .temoignage-card .quote::before { content: '"'; position: absolute; left: 0; top: -10px; font-size: 40px; color: var(--orange-energie); opacity: 0.3; font-family: Georgia, serif; }
+        .temoignage-card .author { display: flex; align-items: center; gap: 12px; }
+        .temoignage-card .author-avatar { width: 48px; height: 48px; border-radius: 50%; background: #FFF3E0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .temoignage-card .author-info h4 { font-size: 14px; color: var(--bleu-rca); margin-bottom: 2px; }
+        .temoignage-card .author-info p { font-size: 12px; color: #999; }
+        .domaines-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 24px; }
+        .domaine-link { background: var(--blanc-pur); border: 2px solid var(--bordure); border-radius: 10px; padding: 12px 8px; text-align: center; text-decoration: none; transition: all 0.2s; cursor:pointer; color: var(--texte-principal); }
+        .domaine-link:active { transform: scale(0.95); }
+        .domaine-link.active { background: var(--orange-energie); border-color: var(--orange-energie); color: var(--blanc-pur); }
+        .domaine-link .icon { font-size: 24px; margin-bottom: 4px; }
+        .domaine-link span { font-size: 11px; font-weight: 600; display: block; }
+        @media (min-width: 768px) {
+            .activites-grid { grid-template-columns: repeat(2, 1fr); }
+            .temoignages-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-row { grid-template-columns: repeat(4, 1fr); }
+        }

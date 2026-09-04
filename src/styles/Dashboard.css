@@ -1,0 +1,4 @@
+@media (min-width: 1024px) {
+  body { padding-bottom: 0 !important; }
+  .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+}

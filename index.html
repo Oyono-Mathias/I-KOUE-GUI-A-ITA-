@@ -1,0 +1,4375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Association I KOUE GUI A ITA - Promouvoir la solidarité, l'autonomisation et le développement durable en République Centrafricaine.">
+    <meta name="keywords" content="association RCA, solidarité Centrafrique, développement Bangui, autonomisation femmes, agriculture RCA">
+    <meta name="author" content="Association I KOUE GUI A ITA">
+    <meta name="theme-color" content="#0A3D62">
+    
+    <title>I KOUE GUI A ITA - Association de Solidarité en RCA</title>
+    
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="stylesheet" href="/src/index.css">
+    
+    <style>
+        :root {
+            --bleu-rca: #0A3D62;
+            --bleu-ciel: #3498DB;
+            --or-solaire: #D4A017;
+            --blanc-pur: #FFFFFF;
+            --vert-espoir: #2E7D32;
+            --rouge-solidarite: #C62828;
+            --violet-dignite: #6A1B9A;
+            --orange-energie: #E65100;
+            --texte-principal: #2C3E50;
+            --fond-alterne: #F5F7FA;
+            --bordure: #E0E0E0;
+            --shadow: 0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--texte-principal);
+            background: var(--blanc-pur);
+            padding-bottom: 70px;
+        }
+
+        /* HEADER */
+        .header {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--blanc-pur);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--bleu-rca);
+            font-size: 14px;
+            border: 2px solid var(--or-solaire);
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--blanc-pur);
+        }
+
+        .logo-text .devise {
+            font-size: 10px;
+            color: var(--or-solaire);
+            letter-spacing: 0.5px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lang-selector {
+            display: flex;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .lang-selector button {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: var(--blanc-pur);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .lang-selector button.active {
+            background: var(--or-solaire);
+            border-color: var(--or-solaire);
+            color: var(--bleu-rca);
+        }
+
+        .hamburger {
+            background: none;
+            border: none;
+            color: var(--blanc-pur);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger::after {
+            content: "☰";
+        }
+
+        /* MOBILE MENU */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 85%;
+            max-width: 320px;
+            height: 100vh;
+            background: var(--blanc-pur);
+            z-index: 2000;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            color: var(--blanc-pur);
+            font-size: 28px;
+            cursor: pointer;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .mobile-menu-nav {
+            padding: 16px 0;
+        }
+
+        .mobile-menu-nav a {
+            display: block;
+            padding: 16px 24px;
+            color: var(--texte-principal);
+            text-decoration: none;
+            font-size: 16px;
+            border-bottom: 1px solid var(--fond-alterne);
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mobile-menu-nav a:hover, .mobile-menu-nav a.active {
+            background: var(--fond-alterne);
+            color: var(--bleu-rca);
+            border-left: 4px solid var(--or-solaire);
+        }
+
+        .mobile-menu-nav .submenu {
+            padding-left: 20px;
+            background: var(--fond-alterne);
+        }
+
+        .mobile-menu-nav .submenu a {
+            font-size: 14px;
+            padding: 12px 24px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+            display: none;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* BADGE UTILITÉ PUBLIQUE */
+        .badge-legal {
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        /* PAGES */
+        .page {
+            display: none;
+            min-height: calc(100vh - 140px);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            color: var(--blanc-pur);
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '★';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 120px;
+            opacity: 0.1;
+            color: var(--or-solaire);
+        }
+
+        .hero h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .hero p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            min-height: 48px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+        }
+
+        .btn-primary:hover {
+            background: #e6b422;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--blanc-pur);
+            border: 2px solid var(--blanc-pur);
+        }
+
+        .btn-secondary:hover {
+            background: var(--blanc-pur);
+            color: var(--bleu-rca);
+        }
+
+        .btn-blue {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+        }
+
+        .btn-blue:hover {
+            background: #0d4a75;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--bleu-rca);
+            border: 2px solid var(--bleu-rca);
+        }
+
+        .btn-outline:hover {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+        }
+
+        /* STATS */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 24px 20px;
+            background: var(--blanc-pur);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px 12px;
+            background: var(--fond-alterne);
+            border-radius: 12px;
+            border-left: 4px solid var(--or-solaire);
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            display: block;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: var(--texte-principal);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* A PROPOS SPECIFIC */
+        .breadcrumb {
+            background: var(--fond-alterne);
+            padding: 12px 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .breadcrumb a {
+            color: var(--bleu-rca);
+            text-decoration: none;
+        }
+        .intro-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--or-solaire);
+            margin-bottom: 24px;
+        }
+        .intro-card p {
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--texte-principal);
+        }
+        .mission-box {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            color: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 28px 24px;
+            margin: 24px 0;
+            position: relative;
+        }
+        .mission-box::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 80px;
+            opacity: 0.2;
+            color: var(--or-solaire);
+            font-family: Georgia, serif;
+        }
+        .mission-box h3 {
+            font-size: 18px;
+            color: var(--or-solaire);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        .mission-box p {
+            font-size: 16px;
+            line-height: 1.7;
+            font-style: italic;
+        }
+        .objectives-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .objective-item {
+            background: var(--blanc-pur);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            border-left: 3px solid var(--or-solaire);
+        }
+        .objective-item .check {
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .objective-item p {
+            font-size: 15px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .values-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .value-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--or-solaire);
+        }
+        .value-card .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .value-card h3 {
+            font-size: 18px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        .value-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .legal-box {
+            background: var(--blanc-pur);
+            border: 2px solid var(--or-solaire);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        .legal-box h3 {
+            color: var(--bleu-rca);
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legal-box p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        .legal-box .law-ref {
+            background: var(--fond-alterne);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--bleu-rca);
+            font-weight: 600;
+            border-left: 3px solid var(--or-solaire);
+        }
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 24px 0;
+        }
+        .stat-item {
+            background: var(--blanc-pur);
+            border-radius: 10px;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-item .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            display: block;
+        }
+        .stat-item .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* SECTIONS */
+        .section {
+            padding: 32px 20px;
+        }
+
+        .section-alt {
+            background: var(--fond-alterne);
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 4px;
+            background: var(--or-solaire);
+            margin-top: 8px;
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .link-all {
+            color: var(--bleu-rca);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* DOMAINES CARDS */
+        .domaines-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .domaine-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--or-solaire);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .domaine-card:active {
+            transform: scale(0.98);
+        }
+
+        .domaine-card .icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .domaine-card h3 {
+            font-size: 17px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+
+        .domaine-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .domaine-card.education { border-left-color: var(--orange-energie); }
+        .domaine-card.education .icon { background: #FFF3E0; }
+        .domaine-card.sante { border-left-color: var(--rouge-solidarite); }
+        .domaine-card.sante .icon { background: #FFEBEE; }
+        .domaine-card.agriculture { border-left-color: var(--vert-espoir); }
+        .domaine-card.agriculture .icon { background: #E8F5E9; }
+        .domaine-card.juridique { border-left-color: var(--violet-dignite); }
+        .domaine-card.juridique .icon { background: #F3E5F5; }
+        .domaine-card.humanitaire { border-left-color: var(--rouge-solidarite); }
+        .domaine-card.humanitaire .icon { background: #FFEBEE; }
+        .domaine-card.jeunesse { border-left-color: var(--violet-dignite); }
+        .domaine-card.jeunesse .icon { background: #F3E5F5; }
+
+        /* CTA SECTION */
+        .cta-section {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            color: var(--blanc-pur);
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .cta-section p {
+            font-size: 15px;
+            opacity: 0.9;
+            margin-bottom: 24px;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            padding: 32px 20px 100px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .footer-col h4 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--or-solaire);
+            margin-bottom: 12px;
+        }
+
+        .footer-col p, .footer-col a {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            line-height: 1.8;
+            display: block;
+        }
+
+        .footer-col a:hover {
+            color: var(--or-solaire);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .footer-bottom .espace-membre-link {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            text-decoration: none;
+            margin-top: 8px;
+            display: inline-block;
+        }
+
+        .footer-bottom .espace-membre-link:hover {
+            color: var(--or-solaire);
+        }
+
+        /* BOTTOM NAV (MOBILE) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--blanc-pur);
+            border-top: 1px solid var(--bordure);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 900;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .bottom-nav a {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #999;
+            font-size: 10px;
+            padding: 4px 8px;
+            min-width: 60px;
+        }
+
+        .bottom-nav a .nav-icon {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .bottom-nav a.active {
+            color: var(--bleu-rca);
+        }
+
+        .bottom-nav a.active .nav-icon {
+            color: var(--or-solaire);
+        }
+
+        /* WHATSAPP FLOATING */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: #25D366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(37,211,102,0.4);
+            z-index: 800;
+            transition: transform 0.2s;
+        }
+
+        .whatsapp-float:active {
+            transform: scale(0.9);
+        }
+
+        /* PAGE CONTENT */
+        .page-header {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            padding: 32px 20px;
+        }
+
+        .page-header h2 {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .content-block {
+            padding: 24px 20px;
+        }
+
+        .content-block h3 {
+            font-size: 20px;
+            color: var(--bleu-rca);
+            margin-bottom: 12px;
+            margin-top: 24px;
+        }
+
+        .content-block h3:first-child {
+            margin-top: 0;
+        }
+
+        .content-block p {
+            margin-bottom: 16px;
+            line-height: 1.7;
+        }
+
+        .content-block ul {
+            margin: 16px 0;
+            padding-left: 20px;
+        }
+
+        .content-block ul li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        /* TEAM CARDS */
+        .team-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .team-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .team-card .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 3px solid var(--or-solaire);
+        }
+
+        .team-card h4 {
+            font-size: 16px;
+            color: var(--bleu-rca);
+            margin-bottom: 4px;
+        }
+
+        .team-card .role {
+            font-size: 13px;
+            color: var(--or-solaire);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .team-card p {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* QUOTE CARD */
+        .quote-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--or-solaire);
+        }
+
+        .quote-card p {
+            font-style: italic;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+
+        .quote-card .author {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--or-solaire);
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--texte-principal);
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--bordure);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 48px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--bleu-rca);
+            box-shadow: 0 0 0 3px rgba(10,61,98,0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* NEWS CARDS */
+        .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .news-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .news-card .news-image {
+            width: 100%;
+            height: 180px;
+            background: var(--fond-alterne);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            object-fit: cover;
+        }
+
+        .news-card .news-content {
+            padding: 16px;
+        }
+
+        .news-card .news-date {
+            font-size: 12px;
+            color: var(--or-solaire);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .news-card h4 {
+            font-size: 16px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+
+        .news-card p {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* DOCUMENTS LIST */
+        .doc-list {
+            list-style: none;
+        }
+
+        .doc-list li {
+            background: var(--blanc-pur);
+            border: 1px solid var(--bordure);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .doc-list li .doc-info h4 {
+            font-size: 15px;
+            color: var(--bleu-rca);
+            margin-bottom: 4px;
+        }
+
+        .doc-list li .doc-info span {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .doc-list li .btn-download {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* MOBILE MONEY */
+        .mobile-money-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .mobile-money-card {
+            background: var(--blanc-pur);
+            border: 2px solid var(--bordure);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .mobile-money-card .provider {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+
+        .mobile-money-card .number {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--or-solaire);
+            margin-bottom: 8px;
+        }
+
+        .mobile-money-card .name {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* LOGIN FORM */
+        .login-container {
+            max-width: 400px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 32px 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .login-card h3 {
+            text-align: center;
+            color: var(--bleu-rca);
+            margin-bottom: 24px;
+        }
+
+        /* GOUVERNANCE SPECIFIC */
+        /* Président Fondateur */
+        .president-card {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: var(--blanc-pur);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .president-card::before {
+            content: '★';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            font-size: 180px;
+            opacity: 0.08;
+            color: var(--or-solaire);
+        }
+        .president-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .president-avatar {
+            width: 90px;
+            height: 90px;
+            min-width: 90px;
+            border-radius: 50%;
+            background: var(--blanc-pur);
+            border: 4px solid var(--or-solaire);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+        .president-info h3 {
+            font-size: 22px;
+            color: var(--blanc-pur);
+            margin-bottom: 4px;
+        }
+        .president-info .role {
+            color: var(--or-solaire);
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .president-quote {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid var(--or-solaire);
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .president-quote::before {
+            content: '"';
+            font-size: 60px;
+            color: var(--or-solaire);
+            opacity: 0.5;
+            line-height: 0;
+            position: relative;
+            top: 20px;
+            font-family: Georgia, serif;
+        }
+        .president-quote p {
+            font-style: italic;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        /* Bureau Exécutif */
+        .bureau-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .bureau-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--or-solaire);
+            transition: transform 0.2s;
+        }
+        .bureau-card:active {
+            transform: scale(0.98);
+        }
+        .bureau-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .bureau-card .icon {
+            width: 56px;
+            height: 56px;
+            min-width: 56px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid var(--or-solaire);
+        }
+        .bureau-card h3 {
+            font-size: 18px;
+            color: var(--bleu-rca);
+            margin-bottom: 4px;
+        }
+        .bureau-card .mandat {
+            font-size: 12px;
+            color: var(--or-solaire);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .bureau-card .attributions {
+            list-style: none;
+            padding: 0;
+        }
+        .bureau-card .attributions li {
+            padding: 8px 0 8px 24px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.5;
+            border-bottom: 1px solid var(--fond-alterne);
+        }
+        .bureau-card .attributions li:last-child {
+            border-bottom: none;
+        }
+        .bureau-card .attributions li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 18px;
+            height: 18px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Organes */
+        .organes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .organe-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--bleu-rca);
+        }
+        .organe-card .organe-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .organe-card .organe-icon {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            border-radius: 10px;
+            background: var(--fond-alterne);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .organe-card h3 {
+            font-size: 17px;
+            color: var(--bleu-rca);
+        }
+        .organe-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .organe-card .missions {
+            background: var(--fond-alterne);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .organe-card .missions strong {
+            color: var(--bleu-rca);
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .organe-card .missions ul {
+            list-style: none;
+            padding: 0;
+        }
+        .organe-card .missions ul li {
+            padding: 4px 0 4px 18px;
+            position: relative;
+        }
+        .organe-card .missions ul li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--or-solaire);
+            font-weight: bold;
+        }
+
+        /* AG Section */
+        .ag-box {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+        }
+        .ag-box h4 {
+            color: var(--bleu-rca);
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ag-box p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .ag-box ul {
+            list-style: none;
+            padding: 0;
+        }
+        .ag-box ul li {
+            padding: 8px 0 8px 24px;
+            position: relative;
+            font-size: 14px;
+            border-bottom: 1px solid var(--fond-alterne);
+        }
+        .ag-box ul li:last-child {
+            border-bottom: none;
+        }
+        .ag-box ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 18px;
+            height: 18px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Principes */
+        .principes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        .principe-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-bottom: 4px solid var(--or-solaire);
+        }
+        .principe-card .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .principe-card h3 {
+            font-size: 17px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        .principe-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* RESPONSIVE */
+        @media (min-width: 768px) {
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .domaines-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .mobile-money-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .footer-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .hero h2 {
+                font-size: 36px;
+            }
+            .objectives-grid { grid-template-columns: repeat(2, 1fr); }
+            .values-grid { grid-template-columns: repeat(3, 1fr); }
+            .stats-row { grid-template-columns: repeat(4, 1fr); }
+            .bureau-grid { grid-template-columns: repeat(2, 1fr); }
+            .organes-grid { grid-template-columns: repeat(2, 1fr); }
+            .principes-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .domaines-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            body {
+                padding-bottom: 0;
+            }
+            .bottom-nav {
+                display: none;
+            }
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page.active {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* SKIP LINK */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            padding: 8px;
+            z-index: 3000;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+        /* PAGE DOMAINES SPECIFIC */
+        #page-domaines .domaines-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 24px;
+        }
+        #page-domaines .domaine-card {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border-left: none; /* Override base */
+            border-top: 5px solid var(--or-solaire);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: default; /* Not a clickable card entirely */
+            padding: 0; /* Override base */
+        }
+        #page-domaines .domaine-card:active {
+            transform: scale(0.98);
+        }
+        #page-domaines .domaine-card .card-header {
+            padding: 24px 24px 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        #page-domaines .domaine-card .icon {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 0;
+            background: transparent;
+        }
+        #page-domaines .domaine-card h3 {
+            font-size: 20px;
+            color: var(--bleu-rca);
+            margin-bottom: 4px;
+        }
+        #page-domaines .domaine-card .article-ref {
+            font-size: 12px;
+            color: var(--or-solaire);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #page-domaines .domaine-card .card-body {
+            padding: 0 24px 24px;
+        }
+        #page-domaines .domaine-card .description {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--fond-alterne);
+        }
+        #page-domaines .domaine-card .activities-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        #page-domaines .domaine-card .activities {
+            list-style: none;
+            padding: 0;
+        }
+        #page-domaines .domaine-card .activities li {
+            padding: 8px 0 8px 28px;
+            position: relative;
+            font-size: 14px;
+            line-height: 1.5;
+            border-bottom: 1px solid var(--fond-alterne);
+        }
+        #page-domaines .domaine-card .activities li:last-child {
+            border-bottom: none;
+        }
+        #page-domaines .domaine-card .activities li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 20px;
+            height: 20px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        #page-domaines .domaine-card .card-footer {
+            padding: 16px 24px;
+            background: var(--fond-alterne);
+        }
+        #page-domaines .domaine-card .btn-detail {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Couleurs spécifiques par domaine */
+        #page-domaines .domaine-education { border-top-color: var(--orange-energie); }
+        #page-domaines .domaine-education .icon { background: #FFF3E0; color: var(--orange-energie); }
+        #page-domaines .domaine-education .activities li::before { background: var(--orange-energie); }
+
+        #page-domaines .domaine-sante { border-top-color: var(--rouge-solidarite); }
+        #page-domaines .domaine-sante .icon { background: #FFEBEE; color: var(--rouge-solidarite); }
+        #page-domaines .domaine-sante .activities li::before { background: var(--rouge-solidarite); }
+
+        #page-domaines .domaine-agriculture { border-top-color: var(--vert-espoir); }
+        #page-domaines .domaine-agriculture .icon { background: #E8F5E9; color: var(--vert-espoir); }
+        #page-domaines .domaine-agriculture .activities li::before { background: var(--vert-espoir); }
+
+        #page-domaines .domaine-juridique { border-top-color: var(--violet-dignite); }
+        #page-domaines .domaine-juridique .icon { background: #F3E5F5; color: var(--violet-dignite); }
+        #page-domaines .domaine-juridique .activities li::before { background: var(--violet-dignite); }
+
+        #page-domaines .domaine-humanitaire { border-top-color: var(--rouge-solidarite); }
+        #page-domaines .domaine-humanitaire .icon { background: #FFEBEE; color: var(--rouge-solidarite); }
+        #page-domaines .domaine-humanitaire .activities li::before { background: var(--rouge-solidarite); }
+
+        #page-domaines .domaine-jeunesse { border-top-color: var(--violet-dignite); }
+        #page-domaines .domaine-jeunesse .icon { background: #F3E5F5; color: var(--violet-dignite); }
+        #page-domaines .domaine-jeunesse .activities li::before { background: var(--violet-dignite); }
+
+        /* Impact Section */
+        #page-domaines .impact-box {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: var(--blanc-pur);
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        #page-domaines .impact-box::before {
+            content: '★';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 200px;
+            opacity: 0.08;
+            color: var(--or-solaire);
+        }
+        #page-domaines .impact-box h3 {
+            font-size: 22px;
+            color: var(--or-solaire);
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        #page-domaines .impact-box p {
+            font-size: 16px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+            color: var(--blanc-pur);
+        }
+
+        /* Approche */
+        #page-domaines .approche-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        #page-domaines .approche-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--or-solaire);
+        }
+        #page-domaines .approche-card .icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        #page-domaines .approche-card h3 {
+            font-size: 17px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        #page-domaines .approche-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* PAGE ACTUALITES SPECIFIC */
+        #page-actualites .filters {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 16px;
+            margin-bottom: 24px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        #page-actualites .filters::-webkit-scrollbar {
+            display: none;
+        }
+        #page-actualites .filter-btn {
+            padding: 10px 18px;
+            border: 2px solid var(--bordure);
+            background: var(--blanc-pur);
+            color: var(--texte-principal);
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            min-height: 44px;
+            transition: all 0.2s;
+        }
+        #page-actualites .filter-btn.active {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            border-color: var(--bleu-rca);
+        }
+        #page-actualites .filter-btn:active {
+            transform: scale(0.97);
+        }
+
+        #page-actualites .news-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        #page-actualites .news-card {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--or-solaire);
+            transition: transform 0.2s;
+        }
+        #page-actualites .news-card:active {
+            transform: scale(0.98);
+        }
+        #page-actualites .news-card .news-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            position: relative;
+        }
+        #page-actualites .news-card .news-image .category-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        #page-actualites .news-card .news-content {
+            padding: 20px;
+        }
+        #page-actualites .news-card .news-date {
+            font-size: 12px;
+            color: var(--or-solaire);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        #page-actualites .news-card h3 {
+            font-size: 18px;
+            color: var(--bleu-rca);
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        #page-actualites .news-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        #page-actualites .news-card .read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--bleu-rca);
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            min-height: 44px;
+        }
+        #page-actualites .news-card .read-more:hover {
+            color: var(--or-solaire);
+        }
+
+        #page-actualites .news-featured {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 32px;
+            border: 2px solid var(--or-solaire);
+        }
+        #page-actualites .news-featured .news-image {
+            width: 100%;
+            height: 240px;
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            position: relative;
+        }
+        #page-actualites .news-featured .news-image .category-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        #page-actualites .news-featured .news-image .featured-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--rouge-solidarite);
+            color: var(--blanc-pur);
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        #page-actualites .news-featured .news-content {
+            padding: 24px;
+        }
+        #page-actualites .news-featured .news-date {
+            font-size: 13px;
+            color: var(--or-solaire);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        #page-actualites .news-featured h3 {
+            font-size: 22px;
+            color: var(--bleu-rca);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        #page-actualites .news-featured p {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        #page-actualites .newsletter-box {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: var(--blanc-pur);
+            margin: 32px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        #page-actualites .newsletter-box::before {
+            content: '★';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 200px;
+            opacity: 0.08;
+            color: var(--or-solaire);
+        }
+        #page-actualites .newsletter-box h3 {
+            font-size: 22px;
+            color: var(--or-solaire);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        #page-actualites .newsletter-box p {
+            font-size: 15px;
+            margin-bottom: 20px;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        #page-actualites .newsletter-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        #page-actualites .newsletter-form input {
+            padding: 14px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            min-height: 48px;
+            font-family: inherit;
+        }
+        #page-actualites .newsletter-form input:focus {
+            outline: 2px solid var(--or-solaire);
+        }
+        #page-actualites .newsletter-form button {
+            padding: 14px 28px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            min-height: 48px;
+            transition: transform 0.2s;
+        }
+        #page-actualites .newsletter-form button:active {
+            transform: scale(0.97);
+        }
+
+        #page-actualites .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #page-soutenir .tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 16px;
+            margin-bottom: 24px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        #page-soutenir .tabs::-webkit-scrollbar { display: none; }
+        #page-soutenir .tab-btn {
+            padding: 12px 20px;
+            border: 2px solid var(--bordure);
+            background: var(--blanc-pur);
+            color: var(--texte-principal);
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            min-height: 44px;
+            transition: all 0.2s;
+        }
+        #page-soutenir .tab-btn.active {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            border-color: var(--bleu-rca);
+        }
+        #page-soutenir .tab-btn:active { transform: scale(0.97); }
+
+        #page-soutenir .tab-content { display: none; }
+        #page-soutenir .tab-content.active { display: block; animation: fadeInSoutenir 0.3s ease; }
+        @keyframes fadeInSoutenir {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #page-soutenir .mobile-money-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        #page-soutenir .mobile-money-card {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--or-solaire);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        #page-soutenir .mobile-money-card:active { transform: scale(0.98); }
+        #page-soutenir .mobile-money-card .provider-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        #page-soutenir .mobile-money-card.orange .provider-logo { background: #FF7900; color: white; }
+        #page-soutenir .mobile-money-card.moov .provider-logo { background: #0066B3; color: white; }
+        #page-soutenir .mobile-money-card.airtel .provider-logo { background: #ED1C24; color: white; }
+        #page-soutenir .mobile-money-card .provider {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        #page-soutenir .mobile-money-card .number {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--or-solaire);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        #page-soutenir .mobile-money-card .name {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        #page-soutenir .mobile-money-card .instructions {
+            background: var(--fond-alterne);
+            padding: 16px;
+            border-radius: 10px;
+            text-align: left;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        #page-soutenir .mobile-money-card .instructions strong {
+            color: var(--bleu-rca);
+            display: block;
+            margin-bottom: 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        #page-soutenir .mobile-money-card .instructions ol {
+            padding-left: 20px;
+            margin: 0;
+        }
+        #page-soutenir .mobile-money-card .instructions li {
+            margin-bottom: 4px;
+        }
+
+        #page-soutenir .categories-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        #page-soutenir .category-card {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--or-solaire);
+            transition: transform 0.2s;
+        }
+        #page-soutenir .category-card:active { transform: scale(0.98); }
+        #page-soutenir .category-card.fondateur { border-left-color: var(--bleu-rca); }
+        #page-soutenir .category-card.actif { border-left-color: var(--vert-espoir); }
+        #page-soutenir .category-card.bienfaiteur { border-left-color: var(--or-solaire); }
+        #page-soutenir .category-card.honneur { border-left-color: var(--violet-dignite); }
+        #page-soutenir .category-card .icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--fond-alterne);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        #page-soutenir .category-card h3 {
+            font-size: 18px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        #page-soutenir .category-card p {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        #page-soutenir .category-card ul {
+            list-style: none;
+            padding: 0;
+        }
+        #page-soutenir .category-card ul li {
+            padding: 6px 0 6px 24px;
+            position: relative;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        #page-soutenir .category-card ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 18px;
+            height: 18px;
+            background: var(--or-solaire);
+            color: var(--bleu-rca);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        #page-soutenir .form-container {
+            background: var(--blanc-pur);
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: var(--shadow);
+            margin: 24px 0;
+        }
+        #page-soutenir .form-container h3 {
+            font-size: 20px;
+            color: var(--bleu-rca);
+            margin-bottom: 8px;
+        }
+        #page-soutenir .form-container > p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        #page-soutenir .form-group {
+            margin-bottom: 18px;
+        }
+        #page-soutenir .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--texte-principal);
+            margin-bottom: 6px;
+        }
+        #page-soutenir .form-group label .required {
+            color: var(--rouge-solidarite);
+        }
+        #page-soutenir .form-group input,
+        #page-soutenir .form-group select,
+        #page-soutenir .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--bordure);
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            min-height: 48px;
+            transition: border-color 0.2s;
+        }
+        #page-soutenir .form-group input:focus,
+        #page-soutenir .form-group select:focus,
+        #page-soutenir .form-group textarea:focus {
+            outline: none;
+            border-color: var(--bleu-rca);
+        }
+        #page-soutenir .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        #page-soutenir .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            background: var(--fond-alterne);
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+        #page-soutenir .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            margin-top: 2px;
+            accent-color: var(--bleu-rca);
+        }
+        #page-soutenir .checkbox-group label {
+            font-size: 14px;
+            color: var(--texte-principal);
+            margin: 0;
+            font-weight: normal;
+            line-height: 1.5;
+        }
+
+        #page-soutenir .benevole-domains {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0;
+        }
+        #page-soutenir .domaine-check {
+            background: var(--fond-alterne);
+            border: 2px solid var(--bordure);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        #page-soutenir .domaine-check input { display: none; }
+        #page-soutenir .domaine-check.selected {
+            background: var(--bleu-rca);
+            color: var(--blanc-pur);
+            border-color: var(--bleu-rca);
+        }
+
+        #page-soutenir .partenaire-types {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        #page-soutenir .partenaire-card {
+            background: var(--blanc-pur);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--or-solaire);
+        }
+        #page-soutenir .partenaire-card .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        #page-soutenir .partenaire-card h4 {
+            font-size: 15px;
+            color: var(--bleu-rca);
+            margin-bottom: 6px;
+        }
+        #page-soutenir .partenaire-card p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        #page-soutenir .transparence-box {
+            background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+            border-radius: 16px;
+            padding: 32px 24px;
+            color: var(--blanc-pur);
+            margin: 24px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        #page-soutenir .transparence-box::before {
+            content: '★';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            font-size: 200px;
+            opacity: 0.08;
+            color: var(--or-solaire);
+        }
+        #page-soutenir .transparence-box h3 {
+            font-size: 22px;
+            color: var(--or-solaire);
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        #page-soutenir .transparence-box p {
+            font-size: 15px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+        #page-soutenir .repartition-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        #page-soutenir .repartition-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #page-soutenir .repartition-item .label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        #page-soutenir .repartition-item .percent {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--or-solaire);
+        }
+
+        @media (min-width: 768px) {
+            #page-domaines .domaines-grid { grid-template-columns: repeat(2, 1fr); }
+            #page-domaines .approche-grid { grid-template-columns: repeat(3, 1fr); }
+            #page-actualites .news-grid { grid-template-columns: repeat(2, 1fr); }
+            #page-actualites .newsletter-form { flex-direction: row; }
+            #page-actualites .newsletter-form input { flex: 1; }
+            #page-soutenir .mobile-money-grid { grid-template-columns: repeat(3, 1fr); }
+            #page-soutenir .categories-grid { grid-template-columns: repeat(2, 1fr); }
+            #page-soutenir .partenaire-types { grid-template-columns: repeat(4, 1fr); }
+            #page-soutenir .repartition-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo-container">
+                <div class="logo">IK</div>
+                <div class="logo-text">
+                    <h1>I KOUE GUI A ITA</h1>
+                    <div class="devise">ENSEMBLE · VOLONTÉ · ENGAGEMENT</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="lang-selector">
+                    <button class="active">FR</button>
+                    <button>SG</button>
+                </div>
+                <button class="hamburger" onclick="window.toggleMenu()" aria-label="Menu"></button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE MENU -->
+    <div class="overlay" id="overlay" onclick="window.toggleMenu()"></div>
+    <nav class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo-container">
+                <div class="logo">IK</div>
+                <div class="logo-text">
+                    <h1>I KOUE GUI A ITA</h1>
+                </div>
+            </div>
+            <button class="mobile-menu-close" onclick="window.toggleMenu()">✕</button>
+        </div>
+        <div class="mobile-menu-nav">
+            <a href="#" onclick="window.showPage('accueil'); window.toggleMenu();" class="active">🏠 Accueil</a>
+            <a href="#" onclick="window.showPage('a-propos'); window.toggleMenu();">️ À Propos</a>
+            <a href="#" onclick="window.showPage('gouvernance'); window.toggleMenu();">👥 Gouvernance</a>
+            <a href="#" onclick="window.showPage('domaines'); window.toggleMenu();">🌍 Domaines d'Intervention</a>
+            <div class="submenu">
+                <a href="#" onclick="window.showPage('education'); window.toggleMenu();">📚 Éducation</a>
+                <a href="#" onclick="window.showPage('sante'); window.toggleMenu();">🏥 Santé</a>
+                <a href="#" onclick="window.showPage('agriculture'); window.toggleMenu();">🌱 Agriculture</a>
+                <a href="#" onclick="window.showPage('juridique'); window.toggleMenu();">️ Juridique</a>
+                <a href="#" onclick="window.showPage('humanitaire'); window.toggleMenu();">🤝 Humanitaire</a>
+                <a href="#" onclick="window.showPage('jeunesse'); window.toggleMenu();">🎯 Jeunesse</a>
+            </div>
+            <a href="#" onclick="window.showPage('actualites'); window.toggleMenu();">📰 Actualités</a>
+            <a href="#" onclick="window.showPage('transparence'); window.toggleMenu();">📊 Transparence</a>
+            <a href="#" onclick="window.showPage('soutenir'); window.toggleMenu();">💛 Faire un Don</a>
+            <a href="#" onclick="window.showPage('contact'); window.toggleMenu();">📞 Contact</a>
+            <div style="margin-top: 24px; border-top: 1px solid var(--fond-alterne); padding-top: 8px;">
+                <a href="#" onclick="event.preventDefault(); window.location.href='/login'; window.toggleMenu();" style="color: #666; font-size: 14px;">🔒 Espace Membre</a>
+                <a href="#" onclick="window.showPage('mentions-legales'); window.toggleMenu();" style="color: #666; font-size: 14px;">⚖️ Mentions Légales</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main id="main-content">
+        
+        <!-- PAGE ACCUEIL -->
+        <div class="page active" id="page-accueil">
+            <section class="hero">
+                <span class="badge-legal">Reconnue d'Utilité Publique (Loi 61/233)</span>
+                <h2>Agir pour la Solidarité et le Développement en RCA</h2>
+                <p>Promouvoir l'autonomisation des femmes, l'agriculture durable et l'accès à l'éducation pour les populations vulnérables de la République Centrafricaine.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary" onclick="window.showPage('soutenir')">💛 FAIRE UN DON</a>
+                    <a href="#" class="btn btn-secondary" onclick="window.showPage('domaines')">🌍 NOS DOMAINES</a>
+                </div>
+            </section>
+
+            <section class="stats">
+                <div class="stat-card">
+                    <span class="number"></span>
+                    <span class="label">Bénéficiaires</span>
+                </div>
+                <div class="stat-card">
+                    <span class="number"></span>
+                    <span class="label">Domaines d'action</span>
+                </div>
+                <div class="stat-card">
+                    <span class="number"></span>
+                    <span class="label">Arrondissement</span>
+                </div>
+                <div class="stat-card">
+                    <span class="number"></span>
+                    <span class="label">Transparence</span>
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title">Nos Domaines d'Intervention</h2>
+                        <p class="section-subtitle">Un impact concret sur le terrain à Bangui et en provinces</p>
+                    </div>
+                    <a href="#" class="link-all" onclick="window.showPage('domaines')">Voir tout →</a>
+                </div>
+                <div class="domaines-grid">
+                    <div class="domaine-card education" onclick="window.showPage('education')">
+                        <div class="icon">📚</div>
+                        <h3>Éducation</h3>
+                        <p>Alphabétisation et kits scolaires pour tous</p>
+                    </div>
+                    <div class="domaine-card sante" onclick="window.showPage('sante')">
+                        <div class="icon">🏥</div>
+                        <h3>Santé</h3>
+                        <p>Sensibilisation et campagnes de soins mobiles</p>
+                    </div>
+                    <div class="domaine-card agriculture" onclick="window.showPage('agriculture')">
+                        <div class="icon">🌱</div>
+                        <h3>Agriculture</h3>
+                        <p>Sécurité alimentaire et appui rural technique</p>
+                    </div>
+                    <div class="domaine-card juridique" onclick="window.showPage('juridique')">
+                        <div class="icon">⚖️</div>
+                        <h3>Droits Humains</h3>
+                        <p>Médiation sociale et lutte contre les VBG</p>
+                    </div>
+                    <div class="domaine-card humanitaire" onclick="window.showPage('humanitaire')">
+                        <div class="icon">🤝</div>
+                        <h3>Humanitaire</h3>
+                        <p>Secours d'urgence et aide aux déplacés</p>
+                    </div>
+                    <div class="domaine-card jeunesse" onclick="window.showPage('jeunesse')">
+                        <div class="icon">🎯</div>
+                        <h3>Jeunesse</h3>
+                        <p>Entreprenariat et formation aux métiers</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cta-section">
+                <h2>Rejoignez notre mouvement</h2>
+                <p>Ensemble, construisons une Centrafrique solidaire et durable</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary" onclick="window.showPage('soutenir')">💛 FAIRE UN DON</a>
+                    <a href="https://wa.me/23675030857" class="btn btn-secondary" target="_blank">📞 NOUS CONTACTER</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE À PROPOS -->
+        <div class="page" id="page-a-propos">
+            <div class="page-header">
+                <span class="badge-legal">Loi N° 61/233 du 27 Mai 1961</span>
+                <h2>À Propos de Nous</h2>
+                <p>Découvrez l'histoire, la mission et les valeurs de l'Association I KOUE GUI A ITA, au service des populations vulnérables de la République Centrafricaine.</p>
+            </div>
+
+            <div class="breadcrumb">
+                <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>À Propos</strong>
+            </div>
+
+            <section class="section">
+                <div class="intro-card">
+                    <p><strong>L'Association I KOUE GUI A ITA</strong> est une association apolitique, non confessionnelle et sans but lucratif, reconnue d'utilité publique conformément à la <strong>Loi N° 61/233 du 27 Mai 1961</strong> régissant les associations en République Centrafricaine.</p>
+                    <p style="margin-bottom: 0;">Fondée avec la conviction profonde que chaque Centrafricain mérite une vie digne et des opportunités égales, notre association œuvre sans relâche pour promouvoir la solidarité, l'autonomisation des femmes et des jeunes, et le développement durable au profit des populations vulnérables.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number" id="stat-domaines"></span>
+                        <span class="label">Domaines d'action</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number" id="stat-membres">4</span>
+                        <span class="label">Catégories de membres</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">∞</span>
+                        <span class="label">Durée illimitée</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number" id="stat-engagement">100%</span>
+                        <span class="label">Engagement social</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section section-alt">
+                <h2 class="section-title">Notre Mission</h2>
+                <p class="section-subtitle">Conformément à l'Article 5 de nos Statuts</p>
+
+                <div class="mission-box">
+                    <h3>📜 Notre But</h3>
+                    <p>Promouvoir la solidarité, l'autonomisation de la femme, des filles, le droit de l'enfant, l'environnement, l'agriculture, l'élevage, l'entraide sociale et le développement durable, la communication (Média) au profit des populations vulnérables en République Centrafricaine.</p>
+                </div>
+
+                <div class="content-block" style="padding: 0;">
+                    <p>Notre mission s'articule autour de trois piliers fondamentaux :</p>
+                    <p><strong>🤝 La Solidarité :</strong> Créer des liens forts entre les communautés pour faire face ensemble aux défis du quotidien.</p>
+                    <p><strong>💪 L'Autonomisation :</strong> Donner aux femmes, aux jeunes et aux populations vulnérables les moyens de prendre en main leur destin.</p>
+                    <p><strong>🌱 Le Développement Durable :</strong> Agir aujourd'hui pour construire un avenir meilleur pour les générations futures.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Nos Objectifs</h2>
+                <p class="section-subtitle">Conformément à l'Article 6 de nos Statuts</p>
+
+                <div class="objectives-grid">
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Lutter contre la pauvreté et l'exclusion sociale</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Améliorer les conditions de vie des populations démunies</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Promouvoir l'éducation pour tous</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Faciliter l'accès aux soins de santé</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Défendre les droits humains et promouvoir l'assistance juridique</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Soutenir l'autonomisation des femmes et des jeunes</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Promouvoir la paix, la cohésion sociale et le vivre-ensemble</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Encourager les initiatives agricoles et le développement rural</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p>Assister les victimes de catastrophes et les personnes vulnérables</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section section-alt">
+                <h2 class="section-title">Nos Valeurs Fondamentales</h2>
+                <p class="section-subtitle">Les principes qui guident chacune de nos actions</p>
+
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="icon">🤝</div>
+                        <h3>Solidarité</h3>
+                        <p>L'entraide et le soutien mutuel au cœur de toutes nos actions pour les populations vulnérables.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="icon">👁️</div>
+                        <h3>Transparence</h3>
+                        <p>Une gestion claire, responsable et redevable de nos ressources et de nos activités.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="icon">💪</div>
+                        <h3>Engagement</h3>
+                        <p>Une détermination sans faille pour le bien-être des populations et le développement de la RCA.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="icon">⚖️</div>
+                        <h3>Équité</h3>
+                        <p>50% hommes, 50% femmes dans l'exécution des tâches, conformément à notre Règlement Intérieur.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="icon">🕊️</div>
+                        <h3>Paix</h3>
+                        <p>Promotion de la cohésion sociale, du vivre-ensemble et de la réconciliation communautaire.</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="icon">🌍</div>
+                        <h3>Durabilité</h3>
+                        <p>Agir aujourd'hui pour construire un avenir meilleur pour les générations futures.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Notre Nature</h2>
+                <p class="section-subtitle">Conformément à l'Article 4 de nos Statuts</p>
+
+                <div class="objectives-grid">
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Sociale</strong> — Au service des populations et du bien-être commun</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Apolitique</strong> — Indépendante de tout parti ou mouvement politique</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Non confessionnelle</strong> — Ouverte à tous, sans distinction religieuse</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Sans but lucratif</strong> — Tous nos moyens sont réinvestis dans nos missions</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section section-alt">
+                <h2 class="section-title">Cadre Légal</h2>
+                <p class="section-subtitle">Notre reconnaissance officielle</p>
+
+                <div class="legal-box">
+                    <h3>🏛️ Reconnaissance Officielle</h3>
+                    <p>Notre association est officiellement reconnue d'utilité publique et régie par le cadre légal suivant :</p>
+                    <div class="law-ref">
+                        Loi N° 61/233 du 27 Mai 1961 régissant les associations en République Centrafricaine
+                    </div>
+                    <p style="margin-top: 16px; margin-bottom: 0;">Cette reconnaissance témoigne de notre sérieux, de notre conformité légale et de notre engagement pour l'intérêt général en République Centrafricaine. Notre siège social est établi à <strong>Galabadja II, 8ème Arrondissement de Bangui</strong>, et peut être transféré en tout autre lieu du territoire national par décision du Bureau exécutif, sous réserve de ratification par l'Assemblée générale (Article 2 des Statuts).</p>
+                </div>
+
+                <div class="legal-box" style="margin-top: 16px; border-color: var(--bleu-rca);">
+                    <h3>📋 Nos Statuts et Règlement Intérieur</h3>
+                    <p>Nos documents fondateurs définissent précisément notre organisation, notre fonctionnement et nos règles de discipline :</p>
+                    <p style="margin-bottom: 0;"><strong>• Statuts :</strong> 19 articles couvrant notre constitution, nos buts, notre organisation et notre gestion financière.</p>
+                    <p style="margin-bottom: 0;"><strong>• Règlement Intérieur :</strong> 18 articles précisant les modalités d'adhésion, les droits des membres, le fonctionnement de l'Assemblée Générale et du Bureau.</p>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2 class="section-title">Notre Devise</h2>
+                <p class="section-subtitle">Le credo qui nous unit</p>
+
+                <div class="mission-box" style="text-align: center; padding: 40px 24px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">⭐</div>
+                    <h3 style="font-size: 28px; color: var(--or-solaire); margin-bottom: 16px;">ENSEMBLE – VOLONTÉ – ENGAGEMENT</h3>
+                    <p style="font-size: 16px;">Trois mots qui résument notre philosophie d'action et notre engagement quotidien pour la République Centrafricaine.</p>
+                </div>
+            </section>
+
+            <section class="cta-section">
+                <h2>Rejoignez notre mouvement</h2>
+                <p>Ensemble, construisons une Centrafrique solidaire et durable</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary" onclick="window.showPage('soutenir')">💛 FAIRE UN DON</a>
+                    <a href="#" class="btn btn-secondary" onclick="window.showPage('contact')">📞 NOUS CONTACTER</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE GOUVERNANCE -->
+        <div class="page" id="page-gouvernance">
+            <div class="page-header">
+                <span class="badge-legal">Articles 11, 13 & 14 des Statuts</span>
+                <h2>Gouvernance et Équipe</h2>
+                <p>Une organisation transparente, démocratique et redevable, au service des populations vulnérables de la République Centrafricaine.</p>
+            </div>
+
+            <div class="breadcrumb">
+                <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>Gouvernance</strong>
+            </div>
+
+            <!-- PRÉSIDENT FONDATEUR -->
+            <section class="section">
+                <div class="president-card">
+                    <div class="president-header">
+                        <div class="president-avatar">👤</div>
+                        <div class="president-info">
+                            <h3>Mr Sosthène Mickaïlove ZONAITA</h3>
+                            <div class="role">Président Fondateur</div>
+                        </div>
+                    </div>
+                    <div class="president-quote">
+                        <p>Notre force réside dans notre unité et notre engagement pour le bien-être de nos frères et sœurs centrafricains. Ensemble, construisons une Centrafrique solidaire, juste et prospère.</p>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number">5 ans</span>
+                        <span class="label">Mandat du Bureau</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Postes au Bureau</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">50/50</span>
+                        <span class="label">Égalité H/F</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">1/mois</span>
+                        <span class="label">Réunion Bureau</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BUREAU EXÉCUTIF -->
+            <section class="section section-alt">
+                <h2 class="section-title">Le Bureau Exécutif</h2>
+                <p class="section-subtitle">Conformément à l'Article 13 des Statuts</p>
+
+                <div class="content-block" style="padding: 0;">
+                    <p>Le Bureau exécutif est l'organe de direction et de coordination des activités de l'Association I KOUE GUI A ITA. Ses membres sont élus par l'Assemblée Générale pour un <strong>mandat de 5 ans renouvelable</strong>.</p>
+                    <p>Sous la supervision du Président Fondateur, le Bureau coordonne l'ensemble du fonctionnement de l'Association et veille à l'application des textes et des décisions de l'AG (Article 15 du Règlement Intérieur).</p>
+                </div>
+
+                <div class="bureau-grid">
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">👤</div>
+                            <div>
+                                <h3>Le Président</h3>
+                                <div class="mandat">Direction & Représentation</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Représente légalement l'Association auprès de toute instance</li>
+                            <li>Supervise l'ensemble des activités</li>
+                            <li>Convoque, organise et préside les réunions du Bureau</li>
+                            <li>Veille à l'application des textes et décisions de l'AG</li>
+                            <li>Traite les éventuels conflits internes</li>
+                            <li>Signe et ordonne les dépenses de fonctionnement</li>
+                        </ul>
+                    </div>
+
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">👥</div>
+                            <div>
+                                <h3>Le Vice-Président</h3>
+                                <div class="mandat">Adjoint au Président</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Assiste le Président dans ses fonctions</li>
+                            <li>Le remplace en cas d'absence ou d'empêchement</li>
+                            <li>Participe à la coordination des activités</li>
+                            <li>Supplée tout membre du Bureau temporairement absent</li>
+                        </ul>
+                    </div>
+
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">📋</div>
+                            <div>
+                                <h3>Le Secrétaire Général</h3>
+                                <div class="mandat">Administration & Archives</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Tient à jour toute la documentation de l'Association</li>
+                            <li>Établit les convocations pour les réunions</li>
+                            <li>Rédige les procès-verbaux et comptes rendus</li>
+                            <li>Conserve les archives de l'Association</li>
+                            <li>Assiste le Trésorier pour l'établissement des comptes</li>
+                            <li>Supplée le Président en cas d'absence</li>
+                        </ul>
+                    </div>
+
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">💰</div>
+                            <div>
+                                <h3>Le Trésorier Général</h3>
+                                <div class="mandat">Gestion Financière</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Perçoit toutes les recettes (cotisations, dons, subventions)</li>
+                            <li>Enregistre les quote-parts des partenaires et bienfaiteurs</li>
+                            <li>Assure la tenue des fonds et la gestion du compte bancaire</li>
+                            <li>Cosigne les sorties de fonds avec le Président</li>
+                            <li>Présente les rapports financiers à l'AG</li>
+                            <li>Participe aux opérations de contrôle financier</li>
+                        </ul>
+                    </div>
+
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">📢</div>
+                            <div>
+                                <h3>Le Chargé de Communication</h3>
+                                <div class="mandat">Visibilité & Relations Publiques</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Assure toutes les activités de communication</li>
+                            <li>Intensifie la communication sur toutes les plateformes</li>
+                            <li>Organise et participe aux conférences de presse</li>
+                            <li>Crée les supports de communication (flyers, banderoles, tee-shirts)</li>
+                            <li>Gère la page Facebook et les réseaux sociaux</li>
+                        </ul>
+                    </div>
+
+                    <div class="bureau-card">
+                        <div class="card-header">
+                            <div class="icon">💡</div>
+                            <div>
+                                <h3>Les Conseillers</h3>
+                                <div class="mandat">Expertise & Conseil</div>
+                            </div>
+                        </div>
+                        <ul class="attributions">
+                            <li>Apportent leur expertise dans leurs domaines respectifs</li>
+                            <li>Conseillent le Bureau dans ses décisions stratégiques</li>
+                            <li>Participent aux commissions techniques spécialisées</li>
+                            <li>Assurent le lien avec les partenaires institutionnels</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ORGANES DE L'ASSOCIATION -->
+            <section class="section">
+                <h2 class="section-title">Les Organes de l'Association</h2>
+                <p class="section-subtitle">Conformément à l'Article 11 des Statuts</p>
+
+                <div class="content-block" style="padding: 0;">
+                    <p>L'Association I KOUE GUI A ITA est structurée autour de quatre organes complémentaires qui assurent son bon fonctionnement démocratique et sa redevabilité.</p>
+                </div>
+
+                <div class="organes-grid">
+                    <div class="organe-card">
+                        <div class="organe-header">
+                            <div class="organe-icon">🏛️</div>
+                            <h3>L'Assemblée Générale</h3>
+                        </div>
+                        <p>L'organe suprême de l'Association, composée de tous les membres à jour de leurs obligations.</p>
+                        <div class="missions">
+                            <strong>Missions principales :</strong>
+                            <ul>
+                                <li>Définir les orientations de l'Association</li>
+                                <li>Élire les membres du Bureau exécutif</li>
+                                <li>Adopter les rapports d'activités et financiers</li>
+                                <li>Approuver le budget annuel</li>
+                                <li>Modifier les statuts (majorité 2/3)</li>
+                                <li>Décider de la dissolution</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="organe-card">
+                        <div class="organe-header">
+                            <div class="organe-icon">👥</div>
+                            <h3>Le Bureau Exécutif</h3>
+                        </div>
+                        <p>Organe de direction et de coordination des activités, élu pour un mandat de 5 ans renouvelable.</p>
+                        <div class="missions">
+                            <strong>Fonctionnement :</strong>
+                            <ul>
+                                <li>Se réunit au moins une fois par mois</li>
+                                <li>Majorité des membres obligatoire pour délibérer</li>
+                                <li>Convoqué et dirigé par le Président</li>
+                                <li>Statue sur l'état des activités</li>
+                                <li>Exécute le programme annuel</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="organe-card">
+                        <div class="organe-header">
+                            <div class="organe-icon">🔍</div>
+                            <h3>Le Commissariat aux Comptes</h3>
+                        </div>
+                        <p>Organe indépendant de contrôle financier, garant de la transparence et de la bonne gestion des ressources.</p>
+                        <div class="missions">
+                            <strong>Rôle :</strong>
+                            <ul>
+                                <li>Vérifie la régularité des comptes</li>
+                                <li>Contrôle l'utilisation des fonds</li>
+                                <li>Valide les rapports financiers</li>
+                                <li>Rassure les bailleurs et partenaires</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="organe-card">
+                        <div class="organe-header">
+                            <div class="organe-icon">⚙️</div>
+                            <h3>Les Commissions Techniques</h3>
+                        </div>
+                        <p>Groupes de travail spécialisés par domaine d'intervention, composés de membres et de bénévoles experts.</p>
+                        <div class="missions">
+                            <strong>Domaines couverts :</strong>
+                            <ul>
+                                <li>Commission Éducation</li>
+                                <li>Commission Santé</li>
+                                <li>Commission Agriculture</li>
+                                <li>Commission Juridique</li>
+                                <li>Commission Humanitaire</li>
+                                <li>Commission Jeunesse</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ASSEMBLÉE GÉNÉRALE -->
+            <section class="section section-alt">
+                <h2 class="section-title">L'Assemblée Générale</h2>
+                <p class="section-subtitle">Conformément aux Articles 12 des Statuts et 6 à 10 du Règlement Intérieur</p>
+
+                <div class="ag-box">
+                    <h4>📅 Assemblée Générale Ordinaire</h4>
+                    <p>L'AG ordinaire se réunit <strong>une fois par semestre</strong>, sur convocation du Président avec l'approbation du Président Fondateur. La convocation est faite <strong>7 jours avant</strong> la date fixée, par écrit, par mail et par tout autre moyen approprié.</p>
+                    <p><strong>Ordre du jour obligatoire :</strong></p>
+                    <ul>
+                        <li>Rapport d'activité du Bureau</li>
+                        <li>Rapport financier du Trésorier</li>
+                        <li>Situation des activités et qualité des œuvres</li>
+                        <li>Projets d'extension et de renouvellement</li>
+                        <li>Propositions écrites des membres (7 jours avant)</li>
+                    </ul>
+                    <p style="margin-bottom: 0;"><strong>Droit de vote :</strong> Acquis à tous les membres. Les décisions sont prises à la <strong>majorité simple</strong> des membres présents. En cas d'égalité, le Président tranche avec l'approbation du Président Fondateur.</p>
+                </div>
+
+                <div class="ag-box" style="margin-top: 16px;">
+                    <h4>⚡ Assemblée Générale Extraordinaire</h4>
+                    <p>L'AG extraordinaire se réunit sur convocation du <strong>Président Fondateur</strong>, du <strong>Président</strong> ou à la demande du <strong>quart (1/4) au moins des membres</strong>. Elle doit se tenir dans un délai d'un mois maximum suivant la demande.</p>
+                    <p style="margin-bottom: 0;"><strong>Quorum :</strong> L'AG extraordinaire est constituée et délibère valablement si elle est composée des <strong>2/3 au moins des membres</strong>. Si le quorum n'est pas atteint, une seconde convocation est faite avec le même ordre du jour, et la nouvelle assemblée statue à la majorité simple.</p>
+                </div>
+            </section>
+
+            <!-- PRINCIPES DE GOUVERNANCE -->
+            <section class="section">
+                <h2 class="section-title">Nos Principes de Gouvernance</h2>
+                <p class="section-subtitle">Les règles qui garantissent notre intégrité et notre efficacité</p>
+
+                <div class="principes-grid">
+                    <div class="principe-card">
+                        <div class="icon">⚖️</div>
+                        <h3>Égalité Hommes-Femmes</h3>
+                        <p>Conformément à l'Article 11 du Règlement Intérieur, les personnes désignées pour exécuter les tâches sont composées de <strong>50% hommes et 50% femmes</strong>.</p>
+                    </div>
+
+                    <div class="principe-card">
+                        <div class="icon">🎯</div>
+                        <h3>Délégation & Redevabilité</h3>
+                        <p>Un délégué est désigné à la tête de chaque groupe. Les délégués ont un <strong>devoir de compte rendu</strong> aux membres et à l'Assemblée Générale (Art. 11 & 12 RI).</p>
+                    </div>
+
+                    <div class="principe-card">
+                        <div class="icon">🤝</div>
+                        <h3>Esprit d'Équipe</h3>
+                        <p>Les délégués veillent à ce que <strong>l'esprit d'équipe soit notre deuxième nature</strong> pendant les activités, dans le respect du code de bonne conduite (Art. 12 RI).</p>
+                    </div>
+
+                    <div class="principe-card">
+                        <div class="icon">🔍</div>
+                        <h3>Transparence Financière</h3>
+                        <p>Toute dépense doit être <strong>autorisée par le Président et le Trésorier</strong>. Les fonds sont déposés dans un compte bancaire au nom de l'Association (Art. 16 Statuts).</p>
+                    </div>
+
+                    <div class="principe-card">
+                        <div class="icon">🛡️</div>
+                        <h3>Discipline & Sanctions</h3>
+                        <p>Le Bureau propose l'exclusion ou la réintégration des membres, et l'AG statue sous l'<strong>approbation du Président Fondateur</strong> (Art. 17 RI).</p>
+                    </div>
+
+                    <div class="principe-card">
+                        <div class="icon">📜</div>
+                        <h3>Supervision du Fondateur</h3>
+                        <p>Le Président Fondateur approuve les décisions majeures : renouvellement du Bureau, convocations AG, exclusions et modifications du Règlement Intérieur.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RESSOURCES -->
+            <section class="section section-alt">
+                <h2 class="section-title">Ressources et Gestion</h2>
+                <p class="section-subtitle">Conformément à l'Article 15 des Statuts et 16 du Règlement Intérieur</p>
+
+                <div class="content-block" style="padding: 0;">
+                    <p>Les ressources de l'Association I KOUE GUI A ITA proviennent de sources diversifiées et légales :</p>
+                </div>
+
+                <div class="objectives-grid" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 20px;">
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Droits d'adhésion et cotisations</strong> des membres</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Dons et legs</strong> de particuliers et organisations</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Subventions</strong> des ministères, mairies et organismes nationaux/internationaux</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Partenariats</strong> avec les partenaires culturels et bienfaiteurs</p>
+                    </div>
+                    <div class="objective-item">
+                        <div class="check">✓</div>
+                        <p><strong>Revenus des activités</strong> autorisées par la loi</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section">
+                <h2>Une gouvernance transparente à votre service</h2>
+                <p>Consultez nos rapports d'activités et financiers pour découvrir l'impact concret de nos actions</p>
+                <div class="hero-buttons">
+                    <a href="#" onclick="window.showPage('transparence')" class="btn btn-primary">📊 Voir les Rapports</a>
+                    <a href="#" onclick="window.showPage('contact')" class="btn btn-secondary">📞 Nous Contacter</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE DOMAINES -->
+        <div class="page" id="page-domaines">
+            <div class="page-header">
+                <span class="badge-legal">Article 7 des Statuts</span>
+                <h2>Nos Domaines d'Intervention</h2>
+                <p>Six pôles d'action complémentaires pour une réponse globale aux défis humanitaires et de développement en République Centrafricaine.</p>
+            </div>
+
+            <div class="breadcrumb">
+                <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>Domaines d'Intervention</strong>
+            </div>
+
+            <!-- INTRODUCTION -->
+            <section class="section">
+                <div class="content-block" style="padding: 0;">
+                    <p>L'Association I KOUE GUI A ITA intervient dans <strong>six domaines stratégiques</strong> définis par l'Article 7 de nos Statuts. Cette approche multidimensionnelle nous permet d'agir de manière holistique sur les causes profondes de la pauvreté et de l'exclusion sociale en République Centrafricaine.</p>
+                    <p>Chaque domaine est porté par une <strong>commission technique spécialisée</strong>, composée de membres et de bénévoles experts, qui conçoit et met en œuvre des programmes adaptés aux besoins réels des populations vulnérables de Bangui et des provinces.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Domaines d'action</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Commissions techniques</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Approche intégrée</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">∞</span>
+                        <span class="label">Impact durable</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LES 6 DOMAINES -->
+            <section class="section section-alt">
+                <h2 class="section-title">Nos 6 Pôles d'Action</h2>
+                <p class="section-subtitle">Une approche multidimensionnelle au service des populations vulnérables</p>
+
+                <div class="domaines-grid">
+
+                    <!-- 1. ÉDUCATION -->
+                    <div class="domaine-card domaine-education">
+                        <div class="card-header">
+                            <div class="icon">📚</div>
+                            <div>
+                                <h3>Éducation</h3>
+                                <div class="article-ref">Article 7.1 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">L'éducation est la clé du développement durable. Nous œuvrons pour garantir l'accès à l'éducation et à la formation pour tous les Centrafricains, en particulier les enfants et les jeunes défavorisés.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Alphabétisation</strong> — Programmes pour adultes et jeunes déscolarisés</li>
+                                <li><strong>Soutien scolaire</strong> — Accompagnement personnalisé des élèves</li>
+                                <li><strong>Construction/réhabilitation d'infrastructures scolaires</strong></li>
+                                <li><strong>Distribution de kits scolaires</strong> aux enfants vulnérables</li>
+                                <li><strong>Formation professionnelle</strong> pour l'autonomisation des jeunes</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('education')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                    <!-- 2. SANTÉ -->
+                    <div class="domaine-card domaine-sante">
+                        <div class="card-header">
+                            <div class="icon">🏥</div>
+                            <div>
+                                <h3>Santé</h3>
+                                <div class="article-ref">Article 7.2 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">La santé est un droit fondamental. Nous menons des actions de sensibilisation, de prévention et d'assistance médicale pour améliorer les conditions de santé des populations vulnérables.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Sensibilisation sanitaire</strong> — Hygiène, nutrition, prévention</li>
+                                <li><strong>Campagnes médicales</strong> — Consultations gratuites</li>
+                                <li><strong>Assistance aux personnes malades</strong> et à leurs familles</li>
+                                <li><strong>Promotion de l'hygiène</strong> et de la santé communautaire</li>
+                                <li><strong>Lutte contre les maladies</strong> (paludisme, VIH/SIDA, etc.)</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('sante')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. AGRICULTURE -->
+                    <div class="domaine-card domaine-agriculture">
+                        <div class="card-header">
+                            <div class="icon">🌱</div>
+                            <div>
+                                <h3>Agriculture et Développement Rural</h3>
+                                <div class="article-ref">Article 7.3 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">L'agriculture est le pilier de notre économie. Nous accompagnons les agriculteurs pour améliorer la productivité, assurer la sécurité alimentaire et protéger l'environnement.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Appui aux activités agricoles</strong> — Techniques modernes et durables</li>
+                                <li><strong>Formation des agriculteurs</strong> — Ateliers pratiques</li>
+                                <li><strong>Promotion de l'élevage</strong> et de l'agroalimentaire</li>
+                                <li><strong>Sécurité alimentaire</strong> — Maraîchage et stockage</li>
+                                <li><strong>Protection de l'environnement</strong> — Gestion durable des ressources</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('agriculture')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                    <!-- 4. JURIDIQUE -->
+                    <div class="domaine-card domaine-juridique">
+                        <div class="card-header">
+                            <div class="icon">⚖️</div>
+                            <div>
+                                <h3>Assistance Juridique et Droits Humains</h3>
+                                <div class="article-ref">Article 7.4 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Chaque individu mérite d'être informé de ses droits et d'avoir accès à la justice. Nous offrons un accompagnement juridique et menons des actions de sensibilisation aux droits humains.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Accompagnement juridique</strong> des personnes vulnérables</li>
+                                <li><strong>Sensibilisation aux droits humains</strong> — Ateliers d'éducation</li>
+                                <li><strong>Médiation sociale</strong> — Résolution pacifique des conflits</li>
+                                <li><strong>Lutte contre les VBG</strong> — Soutien aux victimes</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('juridique')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                    <!-- 5. HUMANITAIRE -->
+                    <div class="domaine-card domaine-humanitaire">
+                        <div class="card-header">
+                            <div class="icon">🤝</div>
+                            <div>
+                                <h3>Action Humanitaire et Solidarité</h3>
+                                <div class="article-ref">Article 7.5 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Face aux urgences humanitaires et à la vulnérabilité, nous apportons une aide immédiate et un soutien durable aux populations affectées par les crises.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Assistance aux orphelins, veuves, veufs et déplacés</strong></li>
+                                <li><strong>Aide alimentaire et vestimentaire</strong> aux plus démunis</li>
+                                <li><strong>Soutien aux personnes handicapées</strong> — Intégration sociale</li>
+                                <li><strong>Secours d'urgence</strong> en cas de catastrophes</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('humanitaire')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                    <!-- 6. JEUNESSE -->
+                    <div class="domaine-card domaine-jeunesse">
+                        <div class="card-header">
+                            <div class="icon">🎯</div>
+                            <div>
+                                <h3>Jeunesse et Autonomisation</h3>
+                                <div class="article-ref">Article 7.6 des Statuts</div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="description">Les jeunes sont l'avenir de notre pays. Nous les accompagnons dans leur développement personnel et professionnel pour qu'ils deviennent des acteurs du changement.</p>
+                            <div class="activities-title">Nos activités :</div>
+                            <ul class="activities">
+                                <li><strong>Encadrement des jeunes</strong> — Mentorat et leadership</li>
+                                <li><strong>Promotion de l'entrepreneuriat</strong> — Création d'entreprise</li>
+                                <li><strong>Activités culturelles et sportives</strong></li>
+                                <li><strong>Formation aux métiers</strong> — Couture, mécanique, informatique</li>
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" onclick="window.showPage('jeunesse')" class="btn-detail">En savoir plus →</a>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- APPROCHE -->
+            <section class="section">
+                <h2 class="section-title">Notre Approche</h2>
+                <p class="section-subtitle">Les principes qui guident notre action dans chaque domaine</p>
+
+                <div class="approche-grid">
+                    <div class="approche-card">
+                        <div class="icon">🎯</div>
+                        <h3>Approche Intégrée</h3>
+                        <p>Nos 6 domaines sont interconnectés. Une action dans l'éducation renforce l'agriculture, qui soutient la santé, qui favorise l'autonomisation.</p>
+                    </div>
+                    <div class="approche-card">
+                        <div class="icon">👥</div>
+                        <h3>Participation Communautaire</h3>
+                        <p>Les bénéficiaires sont acteurs de leur développement. Nous construisons avec eux, pas pour eux, en respectant leurs savoirs et leurs choix.</p>
+                    </div>
+                    <div class="approche-card">
+                        <div class="icon">📊</div>
+                        <h3>Redevabilité</h3>
+                        <p>Chaque action est mesurée, évaluée et rapportée. Nos rapports d'activités et financiers sont publics et accessibles à tous.</p>
+                    </div>
+                    <div class="approche-card">
+                        <div class="icon">🤝</div>
+                        <h3>Partenariats</h3>
+                        <p>Nous travaillons avec les ministères, mairies, ONG internationales et partenaires locaux pour amplifier notre impact.</p>
+                    </div>
+                    <div class="approche-card">
+                        <div class="icon">⚖️</div>
+                        <h3>Équité de Genre</h3>
+                        <p>Conformément à notre Règlement Intérieur (Art. 11), nous garantissons 50% hommes / 50% femmes dans l'exécution de toutes nos tâches.</p>
+                    </div>
+                    <div class="approche-card">
+                        <div class="icon">🌍</div>
+                        <h3>Durabilité</h3>
+                        <p>Nos actions sont conçues pour avoir un impact durable, en renforçant les capacités locales et en respectant l'environnement.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- IMPACT -->
+            <section class="section section-alt">
+                <h2 class="section-title">Notre Impact</h2>
+                <p class="section-subtitle">Des résultats concrets sur le terrain</p>
+
+                <div class="impact-box">
+                    <h3>🌟 Une vision holistique du développement</h3>
+                    <p>En intervenant simultanément dans l'éducation, la santé, l'agriculture, le juridique, l'humanitaire et la jeunesse, nous créons un <strong>cercle vertueux de développement</strong>. Un enfant éduqué devient un jeune entrepreneur, qui soutient sa famille, qui contribue à la sécurité alimentaire de sa communauté, qui participe à la paix sociale.</p>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Bénéficiaires directs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Arr. de Bangui</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Commissions actives</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Transparence</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section">
+                <h2>Soutenez nos actions dans tous les domaines</h2>
+                <p>Votre contribution permet de financer nos programmes dans les 6 pôles d'intervention</p>
+                <div class="hero-buttons">
+                    <a href="#" onclick="window.showPage('soutenir')" class="btn btn-primary">💛 FAIRE UN DON</a>
+                    <a href="#" onclick="window.showPage('contact')" class="btn btn-secondary">📞 NOUS CONTACTER</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE ÉDUCATION -->
+                <div class="page" id="page-education">
+    <div id="react-education-root"></div>
+</div>
+
+        <!-- PAGE SANTÉ -->
+        <div class="page" id="page-sante">
+            <div class="page-header" style="background: var(--rouge-solidarite);">
+                <h2>🏥 Santé</h2>
+            </div>
+        </div>
+
+        <!-- PAGE AGRICULTURE -->
+        <div class="page" id="page-agriculture">
+            <div class="page-header" style="background: var(--vert-espoir);">
+                <h2>🌱 Agriculture</h2>
+            </div>
+        </div>
+
+        <!-- PAGE JURIDIQUE -->
+        <div class="page" id="page-juridique">
+            <div class="page-header" style="background: var(--violet-dignite);">
+                <h2>⚖️ Assistance Juridique</h2>
+            </div>
+        </div>
+
+        <!-- PAGE HUMANITAIRE -->
+        <div class="page" id="page-humanitaire">
+            <div class="page-header" style="background: var(--rouge-solidarite);">
+                <h2>🤝 Action Humanitaire</h2>
+            </div>
+        </div>
+
+        <!-- PAGE JEUNESSE -->
+        <div class="page" id="page-jeunesse">
+            <div class="page-header" style="background: var(--violet-dignite);">
+                <h2>🎯 Jeunesse</h2>
+            </div>
+        </div>
+
+        <!-- PAGE ACTUALITÉS -->
+        <div class="page" id="page-actualites">
+            <div class="page-header">
+                <span class="badge-legal">Article 6 du Règlement Intérieur</span>
+                <h2>Actualités et Médias</h2>
+                <p>Suivez nos actions sur le terrain, nos campagnes, nos événements et les rapports de nos Assemblées Générales en République Centrafricaine.</p>
+            </div>
+
+            <div class="breadcrumb">
+                <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>Actualités</strong>
+            </div>
+
+            <!-- STATS -->
+            <section class="section">
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number">24</span>
+                        <span class="label">Articles publiés</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Catégories</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Bénéficiaires</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">2025</span>
+                        <span class="label">Année active</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FILTRES + NEWS -->
+            <section class="section section-alt">
+                <h2 class="section-title">Fil d'Actualités</h2>
+                <p class="section-subtitle">Filtrez par catégorie pour trouver l'information qui vous intéresse</p>
+
+                <div class="filters" id="filters">
+                    <button class="filter-btn active" data-category="all">📋 Toutes</button>
+                    <button class="filter-btn" data-category="sante">🏥 Santé</button>
+                    <button class="filter-btn" data-category="education">📚 Éducation</button>
+                    <button class="filter-btn" data-category="agriculture">🌱 Agriculture</button>
+                    <button class="filter-btn" data-category="humanitaire">🤝 Humanitaire</button>
+                    <button class="filter-btn" data-category="evenement">🏛️ Événements</button>
+                    <button class="filter-btn" data-category="jeunesse">🎯 Jeunesse</button>
+                </div>
+
+                <!-- NEWS FEATURED -->
+                <article class="news-featured" data-category="evenement">
+                    <div class="news-image">
+                        <span class="category-badge">🏛️ Événement</span>
+                        <span class="featured-badge">⭐ À la une</span>
+                        🏛️
+                    </div>
+                    <div class="news-content">
+                        <div class="news-date">📅 15 Septembre 2026</div>
+                        <h3>Assemblée Générale Ordinaire - Rapport d'activités 2025</h3>
+                        <p>L'Assemblée Générale de l'Association I KOUE GUI A ITA s'est tenue avec succès à Galabadja II. Le Président Sosthène Mickaïlove ZONAITA a présenté le bilan des actions menées dans les 6 domaines d'intervention. Les rapports d'activités et financiers ont été adoptés à l'unanimité par les membres présents.</p>
+                        <a href="#" class="read-more">Lire la suite →</a>
+                    </div>
+                </article>
+
+                <!-- NEWS GRID -->
+                <div class="news-grid" id="newsGrid">
+
+                    <article class="news-card" data-category="sante">
+                        <div class="news-image">
+                            <span class="category-badge">🏥 Santé</span>
+                            🏥
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 28 Août 2026</div>
+                            <h3>Campagne médicale à Galabadja II : 500 personnes soignées</h3>
+                            <p>Notre équipe médicale a organisé une campagne de consultations gratuites au profit des populations vulnérables du 8ème arrondissement de Bangui. Plus de 500 personnes ont bénéficié de soins, de distributions de médicaments et de sensibilisation à l'hygiène.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="education">
+                        <div class="news-image">
+                            <span class="category-badge">📚 Éducation</span>
+                            📚
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 10 Août 2026</div>
+                            <h3>Distribution de 200 kits scolaires pour la rentrée 2026</h3>
+                            <p>À l'occasion de la rentrée scolaire, l'Association I KOUE GUI A ITA a distribué 200 kits scolaires complets aux enfants vulnérables de Bangui. Chaque kit contient des cahiers, stylos, livres et un cartable pour accompagner les élèves dans leur scolarité.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="agriculture">
+                        <div class="news-image">
+                            <span class="category-badge">🌱 Agriculture</span>
+                            🌱
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 25 Juillet 2026</div>
+                            <h3>Formation de 50 agriculteurs aux techniques modernes</h3>
+                            <p>Dans le cadre de notre programme de sécurité alimentaire, 50 agriculteurs de la région de Bangui ont été formés aux techniques agricoles durables, à la gestion de l'eau et à la transformation agroalimentaire. Un pas de plus vers l'autonomisation rurale.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="humanitaire">
+                        <div class="news-image">
+                            <span class="category-badge">🤝 Humanitaire</span>
+                            🤝
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 12 Juillet 2026</div>
+                            <h3>Distribution de vivres aux familles déplacées</h3>
+                            <p>En réponse à la crise humanitaire, notre équipe a distribué des kits alimentaires et vestimentaires à 150 familles déplacées dans le 8ème arrondissement. Cette action s'inscrit dans notre mission de solidarité et d'assistance aux populations vulnérables.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="jeunesse">
+                        <div class="news-image">
+                            <span class="category-badge">🎯 Jeunesse</span>
+                            🎯
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 5 Juillet 2026</div>
+                            <h3>Atelier d'entrepreneuriat pour 30 jeunes de Bangui</h3>
+                            <p>L'Association a organisé un atelier de formation à l'entrepreneuriat destiné aux jeunes du 8ème arrondissement. Au programme : création d'entreprise, gestion financière, marketing digital et accès au microcrédit. 30 jeunes certifiés à l'issue de la formation.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="sante">
+                        <div class="news-image">
+                            <span class="category-badge">🏥 Santé</span>
+                            🏥
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 20 Juin 2026</div>
+                            <h3>Campagne de sensibilisation contre le paludisme</h3>
+                            <p>En partenariat avec les structures sanitaires locales, nous avons mené une campagne de sensibilisation contre le paludisme dans 5 quartiers de Bangui. Distribution de moustiquaires imprégnées et informations sur les gestes de prévention.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="education">
+                        <div class="news-image">
+                            <span class="category-badge">📚 Éducation</span>
+                            🎓
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 8 Juin 2026</div>
+                            <h3>Lancement du programme d'alphabétisation pour adultes</h3>
+                            <p>Nouveau programme d'alphabétisation destiné aux adultes et aux jeunes déscolarisés. 40 participants inscrits pour la première session qui se déroulera sur 6 mois à Galabadja II. Un pas vers l'autonomisation par l'éducation.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="evenement">
+                        <div class="news-image">
+                            <span class="category-badge">🏛️ Événement</span>
+                            🤝
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 25 Mai 2026</div>
+                            <h3>Partenariat signé avec une ONG internationale</h3>
+                            <p>L'Association I KOUE GUI A ITA a signé un accord de partenariat avec une ONG internationale pour renforcer ses actions dans les domaines de la santé et de l'éducation. Ce partenariat permettra de financer 3 nouveaux projets en 2026-2027.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                    <article class="news-card" data-category="humanitaire">
+                        <div class="news-image">
+                            <span class="category-badge">🤝 Humanitaire</span>
+                            🎁
+                        </div>
+                        <div class="news-content">
+                            <div class="news-date">📅 10 Mai 2026</div>
+                            <h3>Soutien aux orphelins et veuves de guerre</h3>
+                            <p>Dans le cadre de notre mission de solidarité, nous avons apporté un soutien matériel et psychosocial à 50 orphelins et 30 veuves de guerre. Distribution de kits alimentaires, vêtements et accompagnement pour la réinsertion sociale.</p>
+                            <a href="#" class="read-more">Lire la suite →</a>
+                        </div>
+                    </article>
+
+                </div>
+
+                <div class="no-results" id="noResults" style="display: none;">
+                    <p>📭 Aucun article trouvé dans cette catégorie.</p>
+                </div>
+            </section>
+
+            <!-- NEWSLETTER -->
+            <section class="section">
+                <div class="newsletter-box">
+                    <h3>📬 Restez informés de nos actions</h3>
+                    <p>Inscrivez-vous à notre newsletter pour recevoir nos actualités, rapports d'activités et invitations aux événements directement dans votre boîte mail.</p>
+                    <form class="newsletter-form" onsubmit="handleNewsletter(event)">
+                        <input type="email" placeholder="Votre adresse email" required>
+                        <button type="submit">S'inscrire</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section">
+                <h2>Vous souhaitez contribuer à nos actions ?</h2>
+                <p>Votre soutien nous permet de multiplier nos interventions sur le terrain</p>
+                <div class="hero-buttons">
+                    <a href="#" onclick="window.showPage('soutenir')" class="btn btn-primary">💛 FAIRE UN DON</a>
+                    <a href="#" onclick="window.showPage('contact')" class="btn btn-secondary">📞 NOUS CONTACTER</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE TRANSPARENCE -->
+        <div class="page" id="page-transparence">
+            <div class="page-header">
+                <h2>Transparence et Rapports</h2>
+                <p>Une gestion claire et responsable de nos ressources</p>
+            </div>
+        </div>
+
+        <!-- PAGE SOUTENIR -->
+        <div class="page" id="page-soutenir">
+            <div class="page-header">
+                <span class="badge-legal">Articles 8, 9 & 15 des Statuts</span>
+                <h2>Soutenez Nos Actions</h2>
+                <p>Chaque contribution, qu'elle soit financière, humaine ou matérielle, nous permet d'agir concrètement pour les populations vulnérables de la République Centrafricaine.</p>
+            </div>
+
+            <div class="breadcrumb">
+                <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>Faire un Don / Adhérer</strong>
+            </div>
+
+            <!-- STATS -->
+            <section class="section">
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="number"></span>
+                        <span class="label">Transparence</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">4</span>
+                        <span class="label">Catégories de membres</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">3</span>
+                        <span class="label">Mobile Money</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="number">24/7</span>
+                        <span class="label">Dons acceptés</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TABS -->
+            <section class="section section-alt">
+                <h2 class="section-title">Comment Nous Soutenir ?</h2>
+                <p class="section-subtitle">Choisissez la forme d'engagement qui vous convient</p>
+
+                <div class="tabs" id="soutenir-tabs">
+                    <button class="tab-btn active" data-tab="don">💛 Faire un Don</button>
+                    <button class="tab-btn" data-tab="membre">👤 Devenir Membre</button>
+                    <button class="tab-btn" data-tab="benevole"> Bénévole</button>
+                    <button class="tab-btn" data-tab="partenaire"> Partenaire</button>
+                </div>
+
+                <!-- TAB 1 : DON -->
+                <div class="tab-content active" id="tab-don">
+                    <div class="content-block" style="padding: 0;">
+                        <p>Votre soutien financier nous permet de continuer nos actions en faveur des populations vulnérables. <strong>Chaque don, même modeste, fait la différence.</strong> Les ressources de l'Association proviennent notamment des dons et legs (Article 15 des Statuts).</p>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--bleu-rca); margin: 24px 0 16px;"> Donner par Mobile Money</h3>
+                    <p style="font-size: 15px; color: #666; margin-bottom: 20px;">Effectuez votre don directement depuis votre téléphone mobile. C'est rapide, sécurisé et disponible 24h/24.</p>
+
+                    <div class="mobile-money-grid">
+                        <div class="mobile-money-card orange">
+                            <div class="provider-logo">OM</div>
+                            <div class="provider">Orange Money</div>
+                            <div class="number">+236 75 03 08 57</div>
+                            <div class="name">Association I KOUE GUI A ITA</div>
+                            <div class="instructions">
+                                <strong>Comment faire :</strong>
+                                <ol>
+                                    <li>Composez <strong>#150#</strong></li>
+                                    <li>Choisissez "Transfert d'argent"</li>
+                                    <li>Entrez le numéro ci-dessus</li>
+                                    <li>Entrez le montant de votre don</li>
+                                    <li>Confirmez avec votre code secret</li>
+                                    <li>Envoyez la capture sur WhatsApp</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="mobile-money-card moov">
+                            <div class="provider-logo">MM</div>
+                            <div class="provider">Moov Money</div>
+                            <div class="number">+236 72 06 12 02</div>
+                            <div class="name">Association I KOUE GUI A ITA</div>
+                            <div class="instructions">
+                                <strong>Comment faire :</strong>
+                                <ol>
+                                    <li>Ouvrez l'application Moov Money</li>
+                                    <li>Sélectionnez "Envoyer de l'argent"</li>
+                                    <li>Entrez le numéro ci-dessus</li>
+                                    <li>Entrez le montant de votre don</li>
+                                    <li>Confirmez la transaction</li>
+                                    <li>Envoyez la capture sur WhatsApp</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="mobile-money-card airtel">
+                            <div class="provider-logo">AM</div>
+                            <div class="provider">Airtel Money</div>
+                            <div class="number">+236 75 03 08 57</div>
+                            <div class="name">Association I KOUE GUI A ITA</div>
+                            <div class="instructions">
+                                <strong>Comment faire :</strong>
+                                <ol>
+                                    <li>Composez <strong>*122#</strong></li>
+                                    <li>Choisissez "Transfert"</li>
+                                    <li>Entrez le numéro ci-dessus</li>
+                                    <li>Entrez le montant de votre don</li>
+                                    <li>Confirmez avec votre code PIN</li>
+                                    <li>Envoyez la capture sur WhatsApp</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 24px 0;">
+                        <a href="https://wa.me/23675030857?text=Bonjour,%20j'ai%20effectu%C3%A9%20un%20don%20pour%20l'Association%20I%20KOUE%20GUI%20A%20ITA.%20Voici%20la%20capture%20d'%C3%A9cran%20de%20la%20transaction." class="btn btn-whatsapp" target="_blank">📱 J'ai effectué mon don - Envoyer la preuve</a>
+                    </div>
+
+                    <div class="transparence-box">
+                        <h3> Transparence de Vos Dons</h3>
+                        <p>Nous nous engageons à utiliser 100% de vos dons pour nos actions sur le terrain. Voici la répartition indicative de nos ressources :</p>
+                        <div class="repartition-grid">
+                            <div class="repartition-item">
+                                <span class="label">Programmes et projets directs</span>
+                                <span class="percent">70%</span>
+                            </div>
+                            <div class="repartition-item">
+                                <span class="label">Frais de fonctionnement</span>
+                                <span class="percent">20%</span>
+                            </div>
+                            <div class="repartition-item">
+                                <span class="label">Développement et formation</span>
+                                <span class="percent">10%</span>
+                            </div>
+                        </div>
+                        <p style="margin-top: 16px; margin-bottom: 0; font-size: 13px; opacity: 0.9;">Tous nos rapports financiers sont disponibles dans la section Transparence.</p>
+                    </div>
+                </div>
+
+                <!-- TAB 2 : MEMBRE -->
+                <div class="tab-content" id="tab-membre">
+                    <div class="content-block" style="padding: 0;">
+                        <p>Conformément à l'<strong>Article 9 des Statuts</strong>, peut adhérer à l'Association I KOUE GUI A ITA toute personne physique ou morale qui accepte les présents statuts, partage les objectifs de l'Association, remplit une fiche d'adhésion et s'acquitte des frais d'adhésion et cotisations.</p>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--bleu-rca); margin: 24px 0 16px;">📋 Les 4 Catégories de Membres (Article 8)</h3>
+
+                    <div class="categories-grid">
+                        <div class="category-card fondateur">
+                            <div class="icon"></div>
+                            <h3>Membre Fondateur</h3>
+                            <p>Personne ayant participé à la création de l'Association et signé les statuts constitutifs.</p>
+                            <ul>
+                                <li>Droit de vote permanent</li>
+                                <li>Participation à toutes les décisions</li>
+                                <li>Reconnaissance historique</li>
+                            </ul>
+                        </div>
+
+                        <div class="category-card actif">
+                            <div class="icon">💪</div>
+                            <h3>Membre Actif</h3>
+                            <p>Personne participant régulièrement aux activités et s'acquittant de ses cotisations.</p>
+                            <ul>
+                                <li>Droit de vote aux AG</li>
+                                <li>Éligibilité au Bureau</li>
+                                <li>Participation aux projets</li>
+                                <li>Carte de membre officielle</li>
+                            </ul>
+                        </div>
+
+                        <div class="category-card bienfaiteur">
+                            <div class="icon">💛</div>
+                            <h3>Membre Bienfaiteur</h3>
+                            <p>Personne soutenant financièrement ou matériellement l'Association sans obligation de participation active.</p>
+                            <ul>
+                                <li>Reconnaissance publique</li>
+                                <li>Rapports d'activités réguliers</li>
+                                <li>Invitation aux événements</li>
+                                <li>Carte de membre bienfaiteur</li>
+                            </ul>
+                        </div>
+
+                        <div class="category-card honneur">
+                            <div class="icon">🏆</div>
+                            <h3>Membre d'Honneur</h3>
+                            <p>Personnalité distinguée pour son engagement exceptionnel en faveur des objectifs de l'Association.</p>
+                            <ul>
+                                <li>Titre honorifique</li>
+                                <li>Consultation sur les orientations</li>
+                                <li>Reconnaissance officielle</li>
+                                <li>Exonération de cotisation</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="form-container">
+                        <h3>📝 Formulaire d'Adhésion</h3>
+                        <p>Remplissez ce formulaire pour devenir membre. Votre demande sera examinée par le Bureau Exécutif sous 48h.</p>
+
+                        <form onsubmit="handleAdhesion(event)">
+                            <div class="form-group">
+                                <label>Type de membre <span class="required">*</span></label>
+                                <select required>
+                                    <option value="">-- Choisissez --</option>
+                                    <option>Membre Actif</option>
+                                    <option>Membre Bienfaiteur</option>
+                                    <option>Membre d'Honneur</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nom complet <span class="required">*</span></label>
+                                <input type="text" required placeholder="Votre nom de famille">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Prénoms <span class="required">*</span></label>
+                                <input type="text" required placeholder="Vos prénoms">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Date de naissance</label>
+                                <input type="date">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Lieu de naissance</label>
+                                <input type="text" placeholder="Ville, Pays">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nationalité <span class="required">*</span></label>
+                                <input type="text" required placeholder="Ex: Centrafricaine">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Profession</label>
+                                <input type="text" placeholder="Votre profession">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Adresse <span class="required">*</span></label>
+                                <input type="text" required placeholder="Quartier, Rue">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ville <span class="required">*</span></label>
+                                <input type="text" required placeholder="Ville de résidence">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Téléphone <span class="required">*</span></label>
+                                <input type="tel" required placeholder="+236 ...">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" placeholder="votre@email.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Pièce d'identité (CNI ou Passeport) <span class="required">*</span></label>
+                                <input type="text" required placeholder="Numéro de la pièce">
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="statuts" required>
+                                <label for="statuts">J'accepte les statuts de l'Association I KOUE GUI A ITA <span class="required">*</span></label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="reglement" required>
+                                <label for="reglement">Je m'engage à respecter le Règlement Intérieur <span class="required">*</span></label>
+                            </div>
+
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="cotisation" required>
+                                <label for="cotisation">J'accepte de payer les frais d'adhésion et cotisations <span class="required">*</span></label>
+                            </div>
+
+                            <button type="submit" class="btn btn-blue">📤 Soumettre ma demande d'adhésion</button>
+                        </form>
+
+                        <div style="margin-top: 20px; padding: 16px; background: var(--fond-alterne); border-radius: 10px; font-size: 14px;">
+                            <strong>ℹ️ Après soumission :</strong> Votre demande sera examinée par le Bureau Exécutif. Vous recevrez une confirmation sous 48h avec les instructions pour retirer votre carte de membre (Article 3 du Règlement Intérieur).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3 : BENEVOLE -->
+                <div class="tab-content" id="tab-benevole">
+                    <div class="content-block" style="padding: 0;">
+                        <p>Vous avez du temps et des compétences à partager ? <strong>Rejoignez nos équipes de bénévoles</strong> et participez activement à nos actions sur le terrain. Le bénévolat est au cœur de notre mission de solidarité.</p>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--bleu-rca); margin: 24px 0 16px;">🎯 Domaines de Bénévolat</h3>
+                    <p style="font-size: 15px; color: #666; margin-bottom: 16px;">Sélectionnez un ou plusieurs domaines qui vous intéressent :</p>
+
+                    <div class="benevole-domains" id="benevoleDomains">
+                        <label class="domaine-check">
+                            <input type="checkbox" value="education"> 📚 Éducation
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="sante"> 🏥 Santé
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="agriculture">  Agriculture
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="communication"> 📢 Communication
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="logistique"> 📦 Logistique
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="juridique"> ⚖️ Juridique
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="humanitaire"> 🤝 Humanitaire
+                        </label>
+                        <label class="domaine-check">
+                            <input type="checkbox" value="jeunesse"> 🎯 Jeunesse
+                        </label>
+                    </div>
+
+                    <div class="form-container">
+                        <h3>📝 Formulaire Bénévole</h3>
+                        <p>Dites-nous en plus sur vous et vos motivations.</p>
+
+                        <form onsubmit="handleBenevole(event)">
+                            <div class="form-group">
+                                <label>Nom complet <span class="required">*</span></label>
+                                <input type="text" required placeholder="Votre nom complet">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Téléphone <span class="required">*</span></label>
+                                <input type="tel" required placeholder="+236 ...">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" placeholder="votre@email.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Compétences</label>
+                                <textarea placeholder="Décrivez vos compétences (ex: enseignement, soins médicaux, communication, etc.)"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Disponibilité <span class="required">*</span></label>
+                                <select required>
+                                    <option value="">-- Choisissez --</option>
+                                    <option>Week-end uniquement</option>
+                                    <option>En semaine</option>
+                                    <option>Flexible</option>
+                                    <option>Missions ponctuelles</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Pourquoi voulez-vous être bénévole ? <span class="required">*</span></label>
+                                <textarea required placeholder="Partagez vos motivations..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-blue"> Rejoindre l'équipe</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- TAB 4 : PARTENAIRE -->
+                <div class="tab-content" id="tab-partenaire">
+                    <div class="content-block" style="padding: 0;">
+                        <p>Vous êtes une <strong>organisation, une entreprise ou une institution</strong> ? Établissons un partenariat pour amplifier notre impact en République Centrafricaine. Conformément à l'Article 15 des Statuts, les partenariats constituent une source essentielle de nos ressources.</p>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--bleu-rca); margin: 24px 0 16px;">🤝 Types de Partenariats</h3>
+
+                    <div class="partenaire-types">
+                        <div class="partenaire-card">
+                            <div class="icon">💰</div>
+                            <h4>Financier</h4>
+                            <p>Soutien budgétaire pour nos programmes</p>
+                        </div>
+                        <div class="partenaire-card">
+                            <div class="icon">⚙️</div>
+                            <h4>Technique</h4>
+                            <p>Expertise et accompagnement</p>
+                        </div>
+                        <div class="partenaire-card">
+                            <div class="icon">🎁</div>
+                            <h4>En nature</h4>
+                            <p>Dons de matériel et équipements</p>
+                        </div>
+                        <div class="partenaire-card">
+                            <div class="icon">️</div>
+                            <h4>Institutionnel</h4>
+                            <p>Collaboration stratégique</p>
+                        </div>
+                    </div>
+
+                    <h3 style="font-size: 20px; color: var(--bleu-rca); margin: 24px 0 16px;">📝 Formulaire de Partenariat</h3>
+
+                    <div class="form-container">
+                        <form onsubmit="handlePartenaire(event)">
+                            <div class="form-group">
+                                <label>Nom de l'organisation <span class="required">*</span></label>
+                                <input type="text" required placeholder="Nom de votre organisation">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Type d'organisation <span class="required">*</span></label>
+                                <select required>
+                                    <option value="">-- Choisissez --</option>
+                                    <option>ONG internationale</option>
+                                    <option>ONG locale</option>
+                                    <option>Entreprise privée</option>
+                                    <option>Institution publique</option>
+                                    <option>Ambassade / Coopération</option>
+                                    <option>Autre</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Personne de contact <span class="required">*</span></label>
+                                <input type="text" required placeholder="Nom complet">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Fonction</label>
+                                <input type="text" placeholder="Votre fonction">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" required placeholder="contact@organisation.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Téléphone <span class="required">*</span></label>
+                                <input type="tel" required placeholder="+236 ...">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Type de partenariat souhaité <span class="required">*</span></label>
+                                <select required>
+                                    <option value="">-- Choisissez --</option>
+                                    <option>Partenariat financier</option>
+                                    <option>Partenariat technique</option>
+                                    <option>Partenariat en nature</option>
+                                    <option>Partenariat institutionnel</option>
+                                    <option>Autre</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description du partenariat proposé <span class="required">*</span></label>
+                                <textarea required placeholder="Décrivez votre proposition de partenariat..."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-blue">📨 Envoyer la proposition</button>
+                        </form>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 24px;">
+                        <p style="font-size: 15px; color: #666; margin-bottom: 16px;">Ou contactez-nous directement :</p>
+                        <a href="https://wa.me/23675030857?text=Bonjour,%20nous%20souhaitons%20établir%20un%20partenariat%20avec%20l'Association%20I%20KOUE%20GUI%20A%20ITA." class="btn btn-whatsapp" target="_blank" style="max-width: 400px; margin: 0 auto;">💬 Discuter sur WhatsApp</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CTA -->
+            <section class="cta-section">
+                <h2>Ensemble, construisons une Centrafrique solidaire</h2>
+                <p>Votre engagement, quelle que soit sa forme, contribue à changer des vies</p>
+                <div class="hero-buttons">
+                    <a href="#" onclick="window.showPage('contact')" class="btn btn-primary">📞 NOUS CONTACTER</a>
+                    <a href="#" onclick="window.showPage('transparence')" class="btn btn-secondary">📊 NOS RAPPORTS</a>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE CONTACT -->
+                <div class="page" id="page-contact">
+    <div class="page-header">
+        <span class="badge-legal">Siège Social - Galabadja II</span>
+        <h2>Contactez-nous</h2>
+        <p>Nous sommes à votre écoute pour toute question, proposition de partenariat ou demande d'information sur nos actions en République Centrafricaine.</p>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="#" onclick="window.showPage('accueil')">Accueil</a> / <strong>Contact</strong>
+    </div>
+
+    <!-- COORDONNEES -->
+    <section class="section">
+        <h2 class="section-title">Nos Coordonnées</h2>
+        <p class="section-subtitle">Tous les moyens de nous joindre</p>
+
+        <div class="coord-grid">
+            <div class="coord-card">
+                <div class="icon blue">📍</div>
+                <div>
+                    <h3>Siège Social</h3>
+                    <p>Galabadja II<br>8ème Arrondissement<br>Bangui, République Centrafricaine</p>
+                </div>
+            </div>
+
+            <div class="coord-card">
+                <div class="icon green">📞</div>
+                <div>
+                    <h3>Téléphones</h3>
+                    <p>
+                        <a href="tel:+23675030857">+236 75 03 08 57</a><br>
+                        <a href="tel:+23672061202">+236 72 06 12 02</a> (WhatsApp)
+                    </p>
+                </div>
+            </div>
+
+            <div class="coord-card">
+                <div class="icon orange">✉️</div>
+                <div>
+                    <h3>Email</h3>
+                    <p><a href="mailto:associationikoueguiaita@gmail.com">associationikoueguiaita@gmail.com</a></p>
+                </div>
+            </div>
+
+            <div class="coord-card">
+                <div class="icon red">👍</div>
+                <div>
+                    <h3>Facebook</h3>
+                    <p><a href="#" target="_blank">Association I KOUE GUI A ITA</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HORAIRES -->
+    <section class="section section-alt">
+        <div class="horaires-box">
+            <h3>🕐 Horaires d'Ouverture</h3>
+            <ul class="horaires-list">
+                <li>
+                    <span class="day">Lundi - Vendredi</span>
+                    <span class="time">8h00 - 17h00</span>
+                </li>
+                <li>
+                    <span class="day">Samedi</span>
+                    <span class="time">9h00 - 13h00</span>
+                </li>
+                <li class="closed">
+                    <span class="day">Dimanche</span>
+                    <span class="time">Fermé</span>
+                </li>
+            </ul>
+            <p style="margin-top: 16px; font-size: 13px; opacity: 0.9; position: relative; z-index: 1;">
+                💡 WhatsApp disponible 24h/24 pour les urgences humanitaires
+            </p>
+        </div>
+    </section>
+
+    <!-- WHATSAPP DIRECT -->
+    <section class="section">
+        <div class="whatsapp-direct">
+            <h3>💬 Discutez avec nous sur WhatsApp</h3>
+            <p>Réponse rapide garantie. Idéal pour les questions urgentes, les dons Mobile Money ou les propositions de bénévolat.</p>
+            <a href="https://wa.me/23675030857?text=Bonjour,%20je%20souhaite%20contacter%20l'Association%20I%20KOUE%20GUI%20A%20ITA" class="btn-whatsapp" target="_blank">
+                📱 Démarrer une conversation
+            </a>
+        </div>
+    </section>
+
+    <!-- FORMULAIRE -->
+    <section class="section section-alt">
+        <h2 class="section-title">Envoyez-nous un message</h2>
+        <p class="section-subtitle">Nous vous répondrons sous 48h maximum</p>
+
+        <div class="form-container">
+            <h3>📝 Formulaire de Contact</h3>
+            <p>Tous les champs marqués d'un <span style="color: var(--rouge-solidarite);">*</span> sont obligatoires.</p>
+
+            <form id="contactForm" onsubmit="window.handleContactForm(event)">
+                <div class="form-group">
+                    <label>Nom complet <span class="required">*</span></label>
+                    <input type="text" id="contactNom" required placeholder="Votre nom et prénoms">
+                </div>
+
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" id="contactEmail" required placeholder="votre@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" id="contactTel" placeholder="+236 ...">
+                </div>
+
+                <div class="form-group">
+                    <label>Sujet <span class="required">*</span></label>
+                    <select id="contactSujet" required>
+                        <option value="">-- Choisissez un sujet --</option>
+                        <option>Demande d'information</option>
+                        <option>Proposition de partenariat</option>
+                        <option>Devenir bénévole</option>
+                        <option>Faire un don</option>
+                        <option>Devenir membre</option>
+                        <option>Demande de rapport / Transparence</option>
+                        <option>Urgence humanitaire</option>
+                        <option>Autre</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Message <span class="required">*</span></label>
+                    <textarea id="contactMessage" required placeholder="Décrivez votre demande en détail..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-blue"> Envoyer le message</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- MAP -->
+    <section class="section">
+        <h2 class="section-title">Nous Trouver</h2>
+        <p class="section-subtitle">Notre siège à Galabadja II, 8ème Arrondissement de Bangui</p>
+
+        <div class="map-container">
+            <div class="map-icon">📍</div>
+            <h4>Galabadja II, 8ème Arrondissement</h4>
+            <p>Bangui, République Centrafricaine</p>
+            <a href="https://maps.google.com/?q=Galabadja+II+Bangui+RCA" class="btn-map" target="_blank">
+                🗺️ Ouvrir dans Google Maps
+            </a>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-alt">
+        <h2 class="section-title">Questions Fréquentes</h2>
+        <p class="section-subtitle">Les réponses aux questions les plus posées</p>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Comment devenir membre de l'association ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Conformément à l'Article 9 des Statuts, vous devez accepter nos statuts, partager nos objectifs, remplir une fiche d'adhésion et vous acquitter des frais d'adhésion. <a href="#" onclick="window.showPage('soutenir')">Rendez-vous sur la page "Faire un Don / Adhérer"</a> pour remplir le formulaire en ligne.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Comment faire un don ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Vous pouvez faire un don via <strong>Orange Money</strong> (+236 75 03 08 57), <strong>Moov Money</strong> (+236 72 06 12 02) ou <strong>Airtel Money</strong>. Toutes les instructions sont disponibles sur la <a href="#" onclick="window.showPage('soutenir')">page "Faire un Don"</a>. Envoyez ensuite la capture d'écran de la transaction sur WhatsApp.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Où se trouve votre siège social ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Notre siège social est situé à <strong>Galabadja II, 8ème Arrondissement de Bangui</strong>, République Centrafricaine (Article 2 des Statuts). Nous sommes ouverts du lundi au vendredi de 8h à 17h et le samedi de 9h à 13h.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Comment devenir bénévole ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Nous accueillons les bénévoles dans nos 6 domaines d'intervention : Éducation, Santé, Agriculture, Juridique, Humanitaire et Jeunesse. <a href="#" onclick="window.showPage('soutenir')">Remplissez le formulaire bénévole</a> ou contactez-nous directement sur WhatsApp au +236 75 03 08 57.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Comment obtenir vos rapports d'activités ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Tous nos rapports d'activités et financiers sont disponibles en téléchargement sur la <a href="#" onclick="window.showPage('transparence')">page "Transparence"</a>. Conformément à l'Article 16 des Statuts, nous garantissons une gestion transparente et redevable de nos ressources.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="window.toggleFaq(this)">
+                    <span>Êtes-vous une association reconnue officiellement ?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Oui. L'Association I KOUE GUI A ITA est reconnue d'utilité publique conformément à la <strong>Loi N° 61/233 du 27 Mai 1961</strong> régissant les associations en République Centrafricaine. Nous sommes apolitiques, non confessionnelles et sans but lucratif (Article 4 des Statuts).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <h2>Ensemble, construisons une Centrafrique solidaire</h2>
+        <p>Votre message est le premier pas vers un engagement concret</p>
+        <div class="hero-buttons">
+            <a href="#" onclick="window.showPage('soutenir')" class="btn btn-primary">💛 FAIRE UN DON</a>
+            <a href="#" onclick="window.showPage('a-propos')" class="btn btn-secondary">ℹ️ NOUS CONNAÎTRE</a>
+        </div>
+    </section>
+        </div>
+
+        <!-- PAGE ADMIN SEED -->
+        <div class="page" id="page-admin-seed">
+            <div id="react-admin-seed-root"></div>
+        </div>
+
+        <!-- PAGE LOGIN -->
+        <div class="page" id="page-login">
+            <div id="react-login-root"></div>
+        </div>
+
+        <!-- PAGE DASHBOARD -->
+        <div class="page" id="page-dashboard">
+            <div id="react-dashboard-root"></div>
+        </div>
+
+        <!-- PAGE MENTIONS LÉGALES -->
+        <div class="page" id="page-mentions-legales">
+            <div class="page-header">
+                <h2>Mentions Légales</h2>
+            </div>
+        </div>
+
+        <!-- PAGE ESPACE MEMBRE -->
+    </main>
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4 style="color: var(--or-solaire);">I KOUE GUI A ITA</h4>
+                <p><strong>Devise :</strong> Ensemble – Volonté – Engagement</p>
+                <p style="margin-top: 16px;">📍 Galabadja II, 8ème Arrondissement<br>Bangui, République Centrafricaine</p>
+            </div>
+            <div class="footer-col">
+                <h4 style="color: var(--or-solaire);">LIENS RAPIDES</h4>
+                <a href="#" onclick="window.showPage('accueil'); window.scrollTo(0,0);">Accueil</a>
+                <a href="#" onclick="window.showPage('a-propos'); window.scrollTo(0,0);">À Propos</a>
+                <a href="#" onclick="window.showPage('gouvernance'); window.scrollTo(0,0);">Gouvernance</a>
+                <a href="#" onclick="window.showPage('domaines'); window.scrollTo(0,0);">Nos Domaines</a>
+                <a href="#" onclick="window.showPage('transparence'); window.scrollTo(0,0);">Transparence</a>
+                <a href="#" onclick="window.showPage('contact'); window.scrollTo(0,0);">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4 style="color: var(--or-solaire);">CONTACT</h4>
+                <p>📞 +236 75 03 08 57</p>
+                <p>📱 +236 72 06 12 02</p>
+                <p>📧 associationikoueguiaita@gmail.com</p>
+                <p style="margin-top: 8px;">👍 Facebook : I KOUE GUI A ITA</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Association I KOUE GUI A ITA - Conforme à la Loi N° 61/233 du 27 Mai 1961</p>
+            <div style="margin-top: 12px; display: flex; justify-content: center; gap: 16px; font-size: 12px; color: rgba(255,255,255,0.6);">
+                <a href="#" style="color: inherit; text-decoration: none;" onclick="event.preventDefault(); window.location.href='/login'">🔒 Espace Membre</a>
+                <span>|</span>
+                <a href="#" style="color: inherit; text-decoration: none;" onclick="window.showPage('mentions-legales')">Mentions Légales</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- BOTTOM NAV (MOBILE) -->
+    <nav class="bottom-nav">
+        <a href="#" onclick="window.showPage('accueil')" class="active" id="nav-accueil">
+            <span class="nav-icon">🏠</span>
+            <span>Accueil</span>
+        </a>
+        <a href="#" onclick="window.showPage('domaines')" id="nav-domaines">
+            <span class="nav-icon">🌍</span>
+            <span>Domaines</span>
+        </a>
+        <a href="#" onclick="window.showPage('soutenir')" id="nav-soutenir">
+            <span class="nav-icon">💛</span>
+            <span>Faire un Don</span>
+        </a>
+        <a href="#" onclick="window.showPage('contact')" id="nav-contact">
+            <span class="nav-icon">📞</span>
+            <span>Contact</span>
+        </a>
+    </nav>
+    
+    <a href="https://wa.me/23675030857" class="whatsapp-float" target="_blank" aria-label="Contact WhatsApp">
+        💬
+    </a>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{
+  "name": "Association I KOUE GUI A ITA",
+  "description": "Site web officiel de l'Association I KOUE GUI A ITA, reconnue d'utilité publique en République Centrafricaine.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

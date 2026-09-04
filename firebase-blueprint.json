@@ -1,0 +1,28 @@
+{
+  "collections": [
+    {
+      "name": "messages",
+      "rules": {
+        "read": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president']",
+        "create": "true",
+        "update": "false",
+        "delete": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president']"
+      },
+      "indexes": [
+        {
+          "fields": ["createdAt"],
+          "orders": ["desc"]
+        }
+      ]
+    },
+    {
+      "name": "users",
+      "rules": {
+        "read": "request.auth != null && (request.auth.uid == resource.id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president'])",
+        "create": "false",
+        "update": "request.auth != null && (request.auth.uid == resource.id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president'])",
+        "delete": "false"
+      }
+    }
+  ]
+}
