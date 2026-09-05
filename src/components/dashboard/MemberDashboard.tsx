@@ -254,12 +254,16 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
                 right: 0,
                 background: 'var(--blanc-pur)',
                 display: 'flex',
-                justifyContent: 'space-around',
+                overflowX: 'auto',
+                gap: '4px',
                 padding: '10px 4px',
                 borderTop: '1px solid var(--bordure)',
                 boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
                 zIndex: 1000,
-                paddingBottom: 'calc(10px + env(safe-area-inset-bottom))'
+                paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
+                scrollbarWidth: 'none',
+                WebkitOverflowScrolling: 'touch',
+                justifyContent: tabs.length > 4 ? 'flex-start' : 'space-around'
             }}>
                 {tabs.map(tab => (
                     <button
@@ -276,15 +280,16 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
                             border: 'none',
                             fontWeight: activeTab === tab.id ? 700 : 500,
                             cursor: 'pointer',
-                            flex: 1,
-                            padding: 0
+                            minWidth: tabs.length > 4 ? '76px' : 'auto',
+                            flex: tabs.length > 4 ? '0 0 auto' : '1',
+                            padding: '4px'
                         }}
                     >
                         {React.cloneElement(tab.icon as React.ReactElement, { 
                             color: activeTab === tab.id ? 'var(--orange-energie)' : '#888', 
                             size: 24 
                         })}
-                        <span style={{ fontSize: '11px', marginTop: '2px' }}>{tab.label}</span>
+                        <span style={{ fontSize: '11px', marginTop: '2px', textAlign: 'center' }}>{tab.label}</span>
                     </button>
                 ))}
             </div>

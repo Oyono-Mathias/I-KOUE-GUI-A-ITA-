@@ -17,6 +17,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [agEvents, setAgEvents] = useState<any[]>([]);
     const [news, setNews] = useState<any[]>([]);
     const [reports, setReports] = useState<any[]>([]);
+    const [messages, setMessages] = useState<any[]>([]);
+    const [adhesions, setAdhesions] = useState<any[]>([]);
 
     // Form states
     const [searchTerm, setSearchTerm] = useState('');
@@ -53,11 +55,19 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
         const unsubReports = onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
             setReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+
+        const unsubMessages = onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
+            setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+
+        const unsubAdhesions = onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
+            setAdhesions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
             setLoading(false);
         });
 
         return () => {
-            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports();
+            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages(); unsubAdhesions();
         };
     }, []);
 
@@ -96,9 +106,22 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
         }
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isSubmitting) return;
+        
+        setIsSubmitting(true);
         try {
+            // Empêcher les doublons par email côté client (en attendant les règles Firestore)
+            const existingUser = users.find(u => u.email.toLowerCase() === newMember.email.toLowerCase());
+            if (existingUser) {
+                alert('Un membre avec cet email existe déjà !');
+                setIsSubmitting(false);
+                return;
+            }
+
             // Création d'un document utilisateur (simulant l'ajout)
             await addDoc(collection(db, 'users'), {
                 displayName: newMember.displayName,
@@ -114,6 +137,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
         } catch (error) {
             console.error("Erreur d'ajout :", error);
             alert("Erreur lors de l'ajout du membre.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -213,11 +238,13 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const tabs = [
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
+        { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'conseiller'] },
         { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'vice_president', 'tresorier', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'vice_president', 'communicateur', 'admin_bureau', 'admin'] },
+        { id: 'messages', label: 'Messages Publics', icon: <Send size={18} />, roles: ['super_admin', 'communicateur', 'admin_bureau'] },
         { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
     ].filter(t => t.roles.includes('all') || t.roles.includes(currentUser.role));
 
@@ -285,12 +312,14 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             <option value="vice_president">Vice-Présidents</option>
                             <option value="super_admin">Président</option>
                         </select>
-                        <button 
-                            onClick={() => setShowAddMember(!showAddMember)}
-                            style={{ padding: '14px 20px', background: 'var(--orange-energie)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
-                        >
-                            <Plus size={18} /> Ajouter
-                        </button>
+                        {['super_admin', 'vice_president', 'admin_bureau'].includes(currentUser.role) && (
+                            <button 
+                                onClick={() => setShowAddMember(!showAddMember)}
+                                style={{ padding: '14px 20px', background: 'var(--orange-energie)', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                            >
+                                <Plus size={18} /> Ajouter
+                            </button>
+                        )}
                     </div>
 
                     {showAddMember && (
@@ -594,6 +623,57 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <div style={{ fontSize: '12px', color: '#666', borderTop: '1px solid var(--bordure)', paddingTop: '8px' }}>
                                         Soumis par: <strong>{r.author}</strong>
                                     </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ADHESIONS */}
+            {activeTab === 'adhesions' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)' }}>
+                        <h4 style={{ margin: '0 0 16px 0', color: 'var(--bleu-rca)' }}>Nouvelles demandes d'adhésion</h4>
+                        {adhesions.length === 0 ? (
+                            <p style={{ color: '#666', fontStyle: 'italic' }}>Aucune demande en attente.</p>
+                        ) : (
+                            adhesions.map(a => (
+                                <div key={a.id} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <h5 style={{ margin: '0 0 4px 0' }}>{a.nom}</h5>
+                                        <span style={{ fontSize: '12px', color: '#666' }}>{a.createdAt ? new Date(a.createdAt.toDate()).toLocaleDateString('fr-FR') : ''}</span>
+                                    </div>
+                                    <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Email:</strong> {a.email}</p>
+                                    <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Tél:</strong> {a.telephone}</p>
+                                    <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}><strong>Motivation:</strong> {a.motivation}</p>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Accepter</button>
+                                        <button style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Refuser</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* MESSAGES PUBLICS */}
+            {activeTab === 'messages' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)' }}>
+                        <h4 style={{ margin: '0 0 16px 0', color: 'var(--bleu-rca)' }}>Messages du site public</h4>
+                        {messages.length === 0 ? (
+                            <p style={{ color: '#666', fontStyle: 'italic' }}>Aucun message reçu.</p>
+                        ) : (
+                            messages.map(m => (
+                                <div key={m.id} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <h5 style={{ margin: '0 0 4px 0' }}>{m.nom} ({m.sujet})</h5>
+                                        <span style={{ fontSize: '12px', color: '#666' }}>{m.createdAt ? new Date(m.createdAt.toDate()).toLocaleDateString('fr-FR') : ''}</span>
+                                    </div>
+                                    <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}><strong>Contact:</strong> {m.email} | {m.telephone}</p>
+                                    <p style={{ margin: '0', fontSize: '14px', background: '#f9f9f9', padding: '12px', borderRadius: '8px' }}>{m.message}</p>
                                 </div>
                             ))
                         )}

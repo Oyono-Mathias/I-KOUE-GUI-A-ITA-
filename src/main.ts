@@ -14,7 +14,7 @@ import { Education } from './components/Education';
 // Global Navigation State
 declare global {
   interface Window {
-    showPage: (pageId: string) => void;
+    showPage: (pageId: string, skipHistory?: boolean) => void;
     toggleMenu: () => void;
     handleContactForm: (e: Event) => void;
     handleAdhesionForm: (e: Event) => void;
@@ -25,7 +25,7 @@ declare global {
 }
 
 // Basic navigation logic
-window.showPage = (pageId) => {
+window.showPage = (pageId, skipHistory = false) => {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
     if (targetPage) targetPage.classList.add('active');
@@ -56,7 +56,34 @@ window.showPage = (pageId) => {
     if (navLink) navLink.classList.add('active');
     
     window.scrollTo(0, 0);
+
+    // Gérer l'historique de navigation
+    if (!skipHistory) {
+        window.history.pushState({ pageId }, '', `#${pageId}`);
+    }
 };
+
+window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.pageId) {
+        window.showPage(event.state.pageId, true);
+    } else {
+        // Fallback for initial load
+        const hash = window.location.hash.replace('#', '');
+        if (hash && document.getElementById('page-' + hash)) {
+            window.showPage(hash, true);
+        } else {
+            window.showPage('accueil', true);
+        }
+    }
+});
+
+// Initial load handling
+document.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('page-' + hash)) {
+        window.showPage(hash, true);
+    }
+});
 
 window.toggleMenu = () => {
     const menu = document.getElementById('mobileMenu');
