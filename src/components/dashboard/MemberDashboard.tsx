@@ -57,34 +57,7 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
     const isAjour = userData.statut === 'actif'; // Simplify status
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 60px)' }}>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '16px', marginBottom: '24px', borderBottom: '1px solid var(--bordure)' }}>
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => changeTab(tab.id)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            padding: '10px 16px',
-                            background: activeTab === tab.id ? 'var(--orange-energie)' : 'var(--blanc-pur)',
-                            color: activeTab === tab.id ? 'white' : 'var(--bleu-rca)',
-                            border: '1px solid',
-                            borderColor: activeTab === tab.id ? 'var(--orange-energie)' : 'var(--bordure)',
-                            borderRadius: '8px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {tab.icon}
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', paddingBottom: '70px' }}>
             <div style={{ flex: 1 }}>
                 {activeTab === 'accueil' && (
                     <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
@@ -271,6 +244,49 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* FIXED BOTTOM NAVIGATION BAR FOR MOBILE */}
+            <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'var(--blanc-pur)',
+                display: 'flex',
+                justifyContent: 'space-around',
+                padding: '10px 4px',
+                borderTop: '1px solid var(--bordure)',
+                boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
+                zIndex: 1000,
+                paddingBottom: 'calc(10px + env(safe-area-inset-bottom))'
+            }}>
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => changeTab(tab.id)}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            background: 'transparent',
+                            color: activeTab === tab.id ? 'var(--orange-energie)' : '#888',
+                            border: 'none',
+                            fontWeight: activeTab === tab.id ? 700 : 500,
+                            cursor: 'pointer',
+                            flex: 1,
+                            padding: 0
+                        }}
+                    >
+                        {React.cloneElement(tab.icon as React.ReactElement, { 
+                            color: activeTab === tab.id ? 'var(--orange-energie)' : '#888', 
+                            size: 24 
+                        })}
+                        <span style={{ fontSize: '11px', marginTop: '2px' }}>{tab.label}</span>
+                    </button>
+                ))}
             </div>
             
             <style>{`

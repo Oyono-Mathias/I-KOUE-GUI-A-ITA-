@@ -29,6 +29,27 @@ window.showPage = (pageId) => {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const targetPage = document.getElementById('page-' + pageId);
     if (targetPage) targetPage.classList.add('active');
+
+    const publicHeader = document.getElementById('public-header');
+    const footerEl = document.querySelector('.footer') as HTMLElement | null;
+    const bottomNavEl = document.querySelector('.bottom-nav') as HTMLElement | null;
+    const whatsappEl = document.querySelector('.whatsapp-float') as HTMLElement | null;
+
+    if (pageId === 'dashboard') {
+        document.body.classList.add('on-dashboard');
+        if (publicHeader) publicHeader.style.display = 'none';
+        if (footerEl) footerEl.style.display = 'none';
+        if (bottomNavEl) bottomNavEl.style.display = 'none';
+        if (whatsappEl) whatsappEl.style.display = 'none';
+    } else {
+        document.body.classList.remove('on-dashboard');
+        if (publicHeader) publicHeader.style.display = '';
+
+        // Sur le site public (Accueil, Domaines, etc.), le pied de page DOIT exister
+        if (footerEl) footerEl.style.display = '';
+        if (bottomNavEl) bottomNavEl.style.display = '';
+        if (whatsappEl) whatsappEl.style.display = '';
+    }
     
     document.querySelectorAll('.bottom-nav a').forEach(link => link.classList.remove('active'));
     const navLink = document.getElementById('nav-' + pageId);
@@ -55,15 +76,41 @@ onAuthStateChanged(auth, (user) => {
     const loginContainer = document.getElementById('loginContainer');
     const dashboardContainer = document.getElementById('dashboardContainer');
     const userEmailDisplay = document.getElementById('userEmailDisplay');
+    const headerDashboardLink = document.getElementById('header-dashboard-link');
+    const footerEl = document.querySelector('.footer') as HTMLElement | null;
+    const bottomNavEl = document.querySelector('.bottom-nav') as HTMLElement | null;
+    const whatsappEl = document.querySelector('.whatsapp-float') as HTMLElement | null;
 
     if (user) {
+        document.body.classList.add('user-connected');
         if(loginContainer) loginContainer.style.display = 'none';
         if(dashboardContainer) dashboardContainer.style.display = 'block';
         if(userEmailDisplay) userEmailDisplay.textContent = user.email || '';
+        if(headerDashboardLink) headerDashboardLink.style.display = 'inline-flex';
+
+        // Cacher le pied de page UNIQUEMENT si l'utilisateur se trouve dans l'espace dashboard
+        const isDashboardActive = document.getElementById('page-dashboard')?.classList.contains('active') || document.body.classList.contains('on-dashboard');
+        if (isDashboardActive) {
+            if (footerEl) footerEl.style.display = 'none';
+            if (bottomNavEl) bottomNavEl.style.display = 'none';
+            if (whatsappEl) whatsappEl.style.display = 'none';
+        } else {
+            if (footerEl) footerEl.style.display = '';
+            if (bottomNavEl) bottomNavEl.style.display = '';
+            if (whatsappEl) whatsappEl.style.display = '';
+        }
     } else {
+        document.body.classList.remove('user-connected');
+        document.body.classList.remove('on-dashboard');
         if(loginContainer) loginContainer.style.display = 'block';
         if(dashboardContainer) dashboardContainer.style.display = 'none';
         if(userEmailDisplay) userEmailDisplay.textContent = '';
+        if(headerDashboardLink) headerDashboardLink.style.display = 'none';
+
+        // Rétablissement pour les visiteurs
+        if (footerEl) footerEl.style.display = '';
+        if (bottomNavEl) bottomNavEl.style.display = '';
+        if (whatsappEl) whatsappEl.style.display = '';
     }
 });
 

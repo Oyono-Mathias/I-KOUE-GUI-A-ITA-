@@ -213,42 +213,17 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const tabs = [
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
-        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'admin_bureau', 'admin'] },
-        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'admin_bureau', 'admin'] },
-        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'tresorier', 'admin_bureau', 'admin'] },
-        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'admin_bureau', 'admin'] },
-        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'communicateur', 'admin_bureau', 'admin'] },
-        { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'admin_bureau', 'admin'] },
+        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'vice_president', 'tresorier', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'vice_president', 'communicateur', 'admin_bureau', 'admin'] },
+        { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
     ].filter(t => t.roles.includes('all') || t.roles.includes(currentUser.role));
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '90px' }}>
             
-            {/* MOBILE-FIRST TABS */}
-            <div style={{ 
-                display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', 
-                WebkitOverflowScrolling: 'touch', borderBottom: '1px solid var(--bordure)',
-                scrollbarWidth: 'none'
-            }}>
-                {tabs.map(tab => (
-                    <button 
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        style={{ 
-                            display: 'flex', alignItems: 'center', gap: '6px', 
-                            padding: '10px 16px', flexShrink: 0,
-                            background: activeTab === tab.id ? 'var(--bleu-rca)' : 'var(--blanc-pur)', 
-                            color: activeTab === tab.id ? 'white' : 'var(--bleu-rca)', 
-                            border: '1px solid', borderColor: activeTab === tab.id ? 'var(--bleu-rca)' : 'var(--bordure)',
-                            borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer',
-                            fontSize: '14px'
-                        }}
-                    >
-                        {tab.icon} {tab.label}
-                    </button>
-                ))}
-            </div>
-
             {/* 1. ACCUEIL */}
             {activeTab === 'accueil' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.3s' }}>
@@ -303,9 +278,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                         >
                             <option value="all">Tous les rôles</option>
                             <option value="membre">Membres</option>
-                            <option value="tresorier">Trésoriers</option>
-                            <option value="admin_bureau">Secrétaires / Admins</option>
+                            <option value="conseiller">Conseillers</option>
                             <option value="communicateur">Communicateurs</option>
+                            <option value="tresorier">Trésoriers</option>
+                            <option value="admin_bureau">Secrétaires Généraux</option>
+                            <option value="vice_president">Vice-Présidents</option>
                             <option value="super_admin">Président</option>
                         </select>
                         <button 
@@ -336,9 +313,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Rôle initial</label>
                                     <select value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--bordure)', fontSize: '16px', background: 'white' }}>
                                         <option value="membre">Membre</option>
-                                        <option value="tresorier">Trésorier</option>
-                                        <option value="admin_bureau">Secrétaire / Admin</option>
+                                        <option value="conseiller">Conseiller</option>
                                         <option value="communicateur">Communicateur</option>
+                                        <option value="tresorier">Trésorier</option>
+                                        <option value="admin_bureau">Secrétaire Général</option>
+                                        <option value="vice_president">Vice-Président</option>
                                     </select>
                                 </div>
                             </div>
@@ -362,9 +341,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                                 style={{ marginTop: '8px', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', background: 'var(--fond-alterne)', border: '1px solid var(--bordure)', cursor: 'pointer' }}
                                             >
                                                 <option value="membre">MEMBRE</option>
-                                                <option value="tresorier">TRÉSORIER</option>
-                                                <option value="admin_bureau">SECRÉTAIRE / ADMIN</option>
+                                                <option value="conseiller">CONSEILLER</option>
                                                 <option value="communicateur">COMMUNICATEUR</option>
+                                                <option value="tresorier">TRÉSORIER</option>
+                                                <option value="admin_bureau">SECRÉTAIRE GÉNÉRAL</option>
+                                                <option value="vice_president">VICE-PRÉSIDENT</option>
                                                 <option value="super_admin">PRÉSIDENT FONDATEUR</option>
                                             </select>
                                         ) : (
@@ -415,9 +396,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                         {[
                             { role: 'Président Fondateur', desc: 'Représente l’association. Veille à l\'application des statuts (Art. 17).', color: 'var(--or-solaire)', count: users.filter(u => u.role === 'super_admin').length },
+                            { role: 'Vice-Président', desc: 'Assiste le Président et le remplace en cas d\'empêchement.', color: '#9C27B0', count: users.filter(u => u.role === 'vice_president').length },
                             { role: 'Secrétaire Général', desc: 'Rédige les PV, gère les archives et coordonne l\'administration.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
                             { role: 'Trésorier', desc: 'Responsable des fonds, recouvre les cotisations et prépare le bilan.', color: 'var(--vert-espoir)', count: users.filter(u => u.role === 'tresorier').length },
-                            { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length }
+                            { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length },
+                            { role: 'Conseillers', desc: 'Assiste le bureau par ses conseils et son expertise.', color: '#607D8B', count: users.filter(u => u.role === 'conseiller').length }
                         ].map((r, i) => (
                             <div key={i} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', borderTop: `4px solid ${r.color}` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -618,6 +601,53 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                 </div>
             )}
 
+            {/* FIXED BOTTOM NAVIGATION BAR FOR MOBILE */}
+            <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'var(--blanc-pur)',
+                display: 'flex',
+                overflowX: 'auto',
+                gap: '4px',
+                padding: '10px 8px',
+                borderTop: '1px solid var(--bordure)',
+                boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
+                zIndex: 1000,
+                paddingBottom: 'calc(10px + env(safe-area-inset-bottom))',
+                scrollbarWidth: 'none',
+                WebkitOverflowScrolling: 'touch',
+                justifyContent: tabs.length > 4 ? 'flex-start' : 'space-around'
+            }}>
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            background: 'transparent',
+                            color: activeTab === tab.id ? 'var(--bleu-rca)' : '#888',
+                            border: 'none',
+                            fontWeight: activeTab === tab.id ? 700 : 500,
+                            cursor: 'pointer',
+                            minWidth: tabs.length > 4 ? '76px' : 'auto',
+                            flex: tabs.length > 4 ? '0 0 auto' : '1',
+                            padding: '4px'
+                        }}
+                    >
+                        {React.cloneElement(tab.icon as React.ReactElement, { 
+                            color: activeTab === tab.id ? 'var(--bleu-rca)' : '#888', 
+                            size: 24 
+                        })}
+                        <span style={{ fontSize: '11px', marginTop: '2px', whiteSpace: 'nowrap' }}>{tab.label}</span>
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

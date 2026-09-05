@@ -93,40 +93,23 @@ export function PresidentDashboard({ currentUser }: { currentUser: UserData }) {
     ];
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ background: 'linear-gradient(135deg, #FFD700, #B8860B)', padding: '24px', borderRadius: '16px', color: '#000', boxShadow: 'var(--shadow)', display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <Crown size={40} color="#000" />
-                <div>
-                    <h2 style={{ margin: 0, fontSize: '20px' }}>Espace Président Fondateur</h2>
-                    <p style={{ margin: '4px 0 0 0', opacity: 0.8, fontWeight: 'bold', fontSize: '14px' }}>Art. 15 & 17 du RI - Supervision & Validation</p>
-                </div>
-            </div>
-
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '90px' }}>
             <div style={{ 
-                display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', 
-                WebkitOverflowScrolling: 'touch', borderBottom: '1px solid var(--bordure)',
-                scrollbarWidth: 'none'
+                background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)', 
+                border: '1px solid #FCD34D',
+                padding: '10px 14px', 
+                borderRadius: '10px', 
+                color: '#92400E', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
             }}>
-                {tabs.map(tab => (
-                    <button 
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        style={{ 
-                            display: 'flex', alignItems: 'center', gap: '6px', 
-                            padding: '10px 16px', flexShrink: 0,
-                            background: activeTab === tab.id ? 'var(--or-solaire)' : 'var(--blanc-pur)', 
-                            color: activeTab === tab.id ? '#000' : 'var(--bleu-rca)', 
-                            border: '1px solid', borderColor: activeTab === tab.id ? 'var(--or-solaire)' : 'var(--bordure)',
-                            borderRadius: '24px', fontWeight: 'bold', cursor: 'pointer',
-                            fontSize: '14px', position: 'relative'
-                        }}
-                    >
-                        {tab.icon} {tab.label}
-                        {tab.id === 'validations' && pendingCount > 0 && activeTab !== tab.id && (
-                            <div style={{ position: 'absolute', top: '-5px', right: '-5px', background: 'var(--rouge-solidarite)', color: 'white', width: '10px', height: '10px', borderRadius: '50%' }} />
-                        )}
-                    </button>
-                ))}
+                <Crown size={20} color="#B45309" style={{ flexShrink: 0 }} />
+                <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#78350F' }}>Haute Supervision Statutaire</div>
+                    <div style={{ fontSize: '11px', color: '#92400E', opacity: 0.9 }}>Articles 15 & 17 du RI · Validations & Arbitrage</div>
+                </div>
             </div>
 
             {activeTab === 'accueil' && (
@@ -269,6 +252,53 @@ export function PresidentDashboard({ currentUser }: { currentUser: UserData }) {
                     </div>
                 </div>
             )}
+
+            {/* FIXED BOTTOM NAVIGATION BAR FOR MOBILE */}
+            <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'var(--blanc-pur)',
+                display: 'flex',
+                justifyContent: 'space-around',
+                padding: '10px 4px',
+                borderTop: '1px solid var(--bordure)',
+                boxShadow: '0 -4px 12px rgba(0,0,0,0.05)',
+                zIndex: 1000,
+                paddingBottom: 'calc(10px + env(safe-area-inset-bottom))'
+            }}>
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            background: 'transparent',
+                            color: activeTab === tab.id ? 'var(--or-solaire)' : '#888',
+                            border: 'none',
+                            fontWeight: activeTab === tab.id ? 700 : 500,
+                            cursor: 'pointer',
+                            flex: 1,
+                            padding: 0,
+                            position: 'relative'
+                        }}
+                    >
+                        {React.cloneElement(tab.icon as React.ReactElement, { 
+                            color: activeTab === tab.id ? 'var(--or-solaire)' : '#888', 
+                            size: 24 
+                        })}
+                        <span style={{ fontSize: '11px', marginTop: '2px', textAlign: 'center' }}>{tab.label}</span>
+                        {tab.id === 'validations' && pendingCount > 0 && activeTab !== tab.id && (
+                            <div style={{ position: 'absolute', top: '0px', right: '25%', background: 'var(--rouge-solidarite)', color: 'white', width: '10px', height: '10px', borderRadius: '50%' }} />
+                        )}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }

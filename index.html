@@ -53,11 +53,11 @@
         .header {
             background: var(--bleu-rca);
             color: var(--blanc-pur);
-            padding: 12px 16px;
+            padding: 8px 14px;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: var(--shadow);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
         }
 
         .header-top {
@@ -69,12 +69,12 @@
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .logo {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: var(--blanc-pur);
             display: flex;
@@ -82,42 +82,47 @@
             justify-content: center;
             font-weight: bold;
             color: var(--bleu-rca);
-            font-size: 14px;
-            border: 2px solid var(--or-solaire);
+            font-size: 13px;
+            border: 1.5px solid var(--or-solaire);
+            flex-shrink: 0;
         }
 
         .logo-text h1 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--blanc-pur);
+            line-height: 1.1;
+            margin: 0;
         }
 
         .logo-text .devise {
-            font-size: 10px;
+            font-size: 8.5px;
             color: var(--or-solaire);
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
+            opacity: 0.9;
         }
 
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .lang-selector {
             display: flex;
-            gap: 4px;
-            font-size: 12px;
+            gap: 2px;
+            font-size: 11px;
         }
 
         .lang-selector button {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255,255,255,0.25);
             color: var(--blanc-pur);
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 600;
         }
 
         .lang-selector button.active {
@@ -130,11 +135,11 @@
             background: none;
             border: none;
             color: var(--blanc-pur);
-            font-size: 24px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 8px;
-            min-width: 44px;
-            min-height: 44px;
+            padding: 4px;
+            min-width: 36px;
+            min-height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -804,21 +809,54 @@
             transform: scale(0.9);
         }
 
-        /* PAGE CONTENT */
+        /* PAGE CONTENT - Épuré et désaturé */
         .page-header {
-            background: var(--bleu-rca);
+            background: linear-gradient(135deg, #0A3D62 0%, #0d4670 100%);
             color: var(--blanc-pur);
-            padding: 32px 20px;
+            padding: 16px 16px;
+            border-bottom: 2px solid rgba(212, 160, 23, 0.25);
         }
 
         .page-header h2 {
-            font-size: 26px;
-            margin-bottom: 8px;
+            font-size: 19px;
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
         }
 
         .page-header p {
-            font-size: 15px;
-            opacity: 0.9;
+            font-size: 13px;
+            opacity: 0.88;
+            line-height: 1.4;
+            margin: 0;
+            max-width: 650px;
+        }
+
+        /* REGLE EXACTE: Le pied de page et la barre publique sont masqués UNIQUEMENT dans les espaces membres/bureau/présidence (#page-dashboard) */
+        body.on-dashboard .footer,
+        body.on-dashboard .bottom-nav,
+        body.on-dashboard .whatsapp-float,
+        body:has(#page-dashboard.active) .footer,
+        body:has(#page-dashboard.active) .bottom-nav,
+        body:has(#page-dashboard.active) .whatsapp-float {
+            display: none !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+
+        body.on-dashboard,
+        body:has(#page-dashboard.active) {
+            padding-bottom: 0 !important;
+        }
+
+        /* Masquer l'en-tête public général lorsqu'on est dans les espaces (Dashboard) */
+        body.on-dashboard #public-header,
+        body:has(#page-dashboard.active) #public-header {
+            display: none !important;
         }
 
         .content-block {
@@ -2328,9 +2366,9 @@
     <a href="#main-content" class="skip-link">Aller au contenu principal</a>
 
     <!-- HEADER -->
-    <header class="header">
+    <header class="header" id="public-header">
         <div class="header-top">
-            <div class="logo-container">
+            <div class="logo-container" onclick="window.showPage('accueil')" style="cursor: pointer;">
                 <div class="logo">IK</div>
                 <div class="logo-text">
                     <h1>I KOUE GUI A ITA</h1>
@@ -2338,6 +2376,9 @@
                 </div>
             </div>
             <div class="header-actions">
+                <a href="#" id="header-dashboard-link" onclick="event.preventDefault(); window.showPage('dashboard');" style="display: none; align-items: center; gap: 4px; padding: 4px 9px; background: var(--or-solaire); color: var(--bleu-rca); border-radius: 20px; font-weight: 700; font-size: 11px; text-decoration: none; white-space: nowrap;">
+                    👤 Mon Espace
+                </a>
                 <div class="lang-selector">
                     <button class="active">FR</button>
                     <button>SG</button>
