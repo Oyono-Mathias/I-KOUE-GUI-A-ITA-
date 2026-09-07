@@ -1,0 +1,461 @@
+/* ============================================
+    🎨 DESIGN SYSTEM - I KOUE GUI A ITA (TRÉSORIER)
+    ============================================ */
+.tres-dashboard-container {
+    --bleu-rca: #0A3D62;
+    --bleu-ciel: #3498DB;
+    --or-solaire: #D4A017;
+    --or-clair: #F4C430;
+    --blanc-pur: #FFFFFF;
+    --vert-espoir: #2E7D32;
+    --rouge-solidarite: #C62828;
+    --violet-dignite: #6A1B9A;
+    --orange-energie: #E65100;
+    --texte-principal: #2C3E50;
+    --texte-secondaire: #6B7280;
+    --fond-alterne: #F5F7FA;
+    --bordure: #E5E7EB;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --transition: all 0.2s ease;
+
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--texte-principal);
+    background: var(--fond-alterne);
+    min-height: 100vh;
+    padding-bottom: 80px;
+}
+
+.tres-dashboard-container * {
+    box-sizing: border-box;
+}
+
+/* HEADER */
+.tres-dashboard-container .dashboard-header {
+    background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+    color: var(--blanc-pur);
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+}
+
+.tres-dashboard-container .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.tres-dashboard-container .logo-container { display: flex; align-items: center; gap: 10px; }
+
+.tres-dashboard-container .logo {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--blanc-pur);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; color: var(--bleu-rca); font-size: 14px;
+    border: 2px solid var(--or-solaire);
+}
+
+.tres-dashboard-container .logo-text h1 { font-size: 14px; font-weight: 700; color: var(--blanc-pur); margin: 0; }
+.tres-dashboard-container .logo-text .devise { font-size: 9px; color: var(--or-solaire); letter-spacing: 0.5px; margin: 0; }
+.tres-dashboard-container .header-actions { display: flex; gap: 8px; }
+
+.tres-dashboard-container .header-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: none;
+    color: var(--blanc-pur); font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: var(--transition); position: relative;
+}
+
+.tres-dashboard-container .header-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.25); }
+
+.tres-dashboard-container .member-info-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px;
+}
+
+.tres-dashboard-container .member-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--or-solaire); color: var(--bleu-rca);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 18px; border: 2px solid var(--blanc-pur);
+}
+
+.tres-dashboard-container .member-details { flex: 1; }
+.tres-dashboard-container .member-name { font-size: 15px; font-weight: 700; color: var(--blanc-pur); }
+.tres-dashboard-container .member-role { font-size: 11px; color: var(--or-solaire); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.tres-dashboard-container .member-badge { background: var(--or-solaire); color: var(--bleu-rca); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+.tres-dashboard-container .notif-badge {
+    position: absolute; top: -4px; right: -4px;
+    background: var(--rouge-solidarite); color: var(--blanc-pur);
+    font-size: 10px; font-weight: 700;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; padding: 0 4px;
+}
+
+/* TAB NAV */
+.tres-dashboard-container .tab-nav {
+    display: flex; overflow-x: auto;
+    background: var(--blanc-pur); border-bottom: 1px solid var(--bordure);
+    position: sticky; top: 0px; z-index: 90; scrollbar-width: none;
+}
+.tres-dashboard-container .tab-nav::-webkit-scrollbar { display: none; }
+
+.tres-dashboard-container .tab-btn {
+    flex: 1; min-width: 100px; padding: 12px 8px;
+    background: none; border: none; border-bottom: 3px solid transparent;
+    color: var(--texte-secondaire); font-size: 11px; font-weight: 600;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    white-space: nowrap; transition: var(--transition);
+}
+
+.tres-dashboard-container .tab-btn .tab-icon { font-size: 20px; }
+.tres-dashboard-container .tab-btn.active { color: var(--bleu-rca); border-bottom-color: var(--or-solaire); }
+.tres-dashboard-container .tab-btn:active { background: var(--fond-alterne); }
+
+/* TAB CONTENT */
+.tres-dashboard-container .tab-content { display: none; padding: 20px 16px; animation: fadeIn 0.3s ease; }
+.tres-dashboard-container .tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.tres-dashboard-container .card {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--bordure);
+}
+
+.tres-dashboard-container .card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+}
+
+.tres-dashboard-container .card-title { font-size: 18px; font-weight: 700; color: var(--bleu-rca); margin: 0; }
+.tres-dashboard-container .card-title::after { content: ''; display: block; width: 40px; height: 3px; background: var(--or-solaire); margin-top: 6px; border-radius: 2px; }
+
+/* WELCOME CARD */
+.tres-dashboard-container .welcome-card {
+    background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
+    color: var(--blanc-pur); border-radius: var(--radius-lg);
+    padding: 24px 20px; margin-bottom: 16px; position: relative; overflow: hidden;
+}
+
+.tres-dashboard-container .welcome-card::before {
+    content: '💰'; position: absolute;
+    top: -20px; right: -20px; font-size: 140px; opacity: 0.15;
+}
+
+.tres-dashboard-container .welcome-card h2 { font-size: 22px; margin-bottom: 8px; position: relative; z-index: 1; margin-top: 0; }
+.tres-dashboard-container .welcome-card p { font-size: 14px; opacity: 0.95; position: relative; z-index: 1; margin: 0; }
+
+.tres-dashboard-container .welcome-card .role-badge {
+    display: inline-block; background: var(--or-solaire); color: var(--bleu-rca);
+    padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; margin-bottom: 12px; position: relative; z-index: 1;
+}
+
+/* FINANCE SUMMARY */
+.tres-dashboard-container .finance-summary {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px;
+}
+
+.tres-dashboard-container .finance-card {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--bordure);
+}
+
+.tres-dashboard-container .finance-card.income { border-left: 4px solid var(--vert-espoir); }
+.tres-dashboard-container .finance-card.expense { border-left: 4px solid var(--rouge-solidarite); }
+.tres-dashboard-container .finance-card.balance { border-left: 4px solid var(--bleu-ciel); }
+.tres-dashboard-container .finance-card.pending { border-left: 4px solid var(--orange-energie); }
+
+.tres-dashboard-container .finance-card .fin-icon { font-size: 24px; margin-bottom: 8px; }
+.tres-dashboard-container .finance-card .fin-label { font-size: 11px; color: var(--texte-secondaire); text-transform: uppercase; margin-bottom: 6px; }
+.tres-dashboard-container .finance-card .fin-amount { font-size: 20px; font-weight: 700; }
+
+.tres-dashboard-container .finance-card.income .fin-amount { color: var(--vert-espoir); }
+.tres-dashboard-container .finance-card.expense .fin-amount { color: var(--rouge-solidarite); }
+.tres-dashboard-container .finance-card.balance .fin-amount { color: var(--bleu-ciel); }
+.tres-dashboard-container .finance-card.pending .fin-amount { color: var(--orange-energie); }
+
+.tres-dashboard-container .finance-card .fin-sublabel { font-size: 10px; color: var(--texte-secondaire); margin-top: 4px; }
+
+/* STATS */
+.tres-dashboard-container .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 16px; }
+
+.tres-dashboard-container .stat-card {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 16px; text-align: center; box-shadow: var(--shadow-sm);
+    border: 1px solid var(--bordure); border-top: 3px solid var(--or-solaire);
+    transition: var(--transition); cursor: pointer;
+}
+
+.tres-dashboard-container .stat-card:active { transform: scale(0.98); }
+.tres-dashboard-container .stat-card .stat-icon { font-size: 28px; margin-bottom: 8px; }
+.tres-dashboard-container .stat-card .stat-value { font-size: 22px; font-weight: 700; color: var(--bleu-rca); }
+.tres-dashboard-container .stat-card .stat-label { font-size: 11px; color: var(--texte-secondaire); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.tres-dashboard-container .stat-card .stat-sublabel { font-size: 10px; color: var(--texte-secondaire); margin-top: 2px; }
+
+.tres-dashboard-container .stat-card.alert { border-top-color: var(--rouge-solidarite); }
+.tres-dashboard-container .stat-card.alert .stat-value { color: var(--rouge-solidarite); }
+.tres-dashboard-container .stat-card.success { border-top-color: var(--vert-espoir); }
+.tres-dashboard-container .stat-card.success .stat-value { color: var(--vert-espoir); }
+
+/* BUTTONS */
+.tres-dashboard-container .btn {
+    padding: 10px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; border: none; min-height: 40px;
+    transition: var(--transition); white-space: nowrap;
+}
+
+.tres-dashboard-container .btn:active { transform: scale(0.97); }
+.tres-dashboard-container .btn-primary { background: var(--bleu-rca); color: var(--blanc-pur); }
+.tres-dashboard-container .btn-gold { background: var(--or-solaire); color: var(--bleu-rca); }
+.tres-dashboard-container .btn-success { background: var(--vert-espoir); color: var(--blanc-pur); }
+.tres-dashboard-container .btn-danger { background: var(--rouge-solidarite); color: var(--blanc-pur); }
+.tres-dashboard-container .btn-outline { background: transparent; color: var(--bleu-rca); border: 2px solid var(--bleu-rca); }
+.tres-dashboard-container .btn-secondary { background: var(--fond-alterne); color: var(--texte-principal); }
+.tres-dashboard-container .btn-block { width: 100%; }
+.tres-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 32px; }
+
+/* FORMS */
+.tres-dashboard-container .form-group { margin-bottom: 16px; }
+.tres-dashboard-container .form-group label { display: block; font-size: 14px; font-weight: 600; color: var(--texte-principal); margin-bottom: 6px; }
+.tres-dashboard-container .form-group label .required { color: var(--rouge-solidarite); }
+
+.tres-dashboard-container .form-group input, .tres-dashboard-container .form-group select, .tres-dashboard-container .form-group textarea {
+    width: 100%; padding: 12px; border: 2px solid var(--bordure);
+    border-radius: var(--radius-sm); font-size: 15px; font-family: inherit;
+    min-height: 44px; transition: var(--transition);
+    background: var(--blanc-pur); color: var(--texte-principal);
+}
+
+.tres-dashboard-container .form-group input:focus, .tres-dashboard-container .form-group select:focus, .tres-dashboard-container .form-group textarea:focus { outline: none; border-color: var(--bleu-rca); }
+.tres-dashboard-container .form-group textarea { min-height: 100px; resize: vertical; }
+.tres-dashboard-container .form-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+/* QUICK ACTIONS */
+.tres-dashboard-container .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+
+.tres-dashboard-container .quick-action {
+    background: var(--blanc-pur); border: 2px dashed var(--bordure);
+    border-radius: var(--radius-md); padding: 16px; text-align: center;
+    cursor: pointer; transition: var(--transition); text-decoration: none; color: inherit;
+}
+
+.tres-dashboard-container .quick-action:active { transform: scale(0.97); border-color: var(--or-solaire); background: #FFFBEB; }
+.tres-dashboard-container .quick-action .qa-icon { font-size: 28px; margin-bottom: 6px; }
+.tres-dashboard-container .quick-action .qa-title { font-size: 13px; font-weight: 600; color: var(--bleu-rca); }
+.tres-dashboard-container .quick-action .qa-subtitle { font-size: 11px; color: var(--texte-secondaire); margin-top: 2px; }
+
+/* ALERTS */
+.tres-dashboard-container .alert-box { border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; display: flex; gap: 12px; align-items: flex-start; }
+.tres-dashboard-container .alert-box.warning { background: #FFF3E0; border-left: 4px solid var(--orange-energie); }
+.tres-dashboard-container .alert-box.danger { background: #FFEBEE; border-left: 4px solid var(--rouge-solidarite); }
+.tres-dashboard-container .alert-box.success { background: #E8F5E9; border-left: 4px solid var(--vert-espoir); }
+.tres-dashboard-container .alert-box.info { background: #E3F2FD; border-left: 4px solid var(--bleu-ciel); }
+.tres-dashboard-container .alert-icon { font-size: 20px; flex-shrink: 0; }
+.tres-dashboard-container .alert-content h4 { font-size: 14px; color: var(--bleu-rca); margin-bottom: 4px; margin-top: 0; }
+.tres-dashboard-container .alert-content p { font-size: 13px; color: var(--texte-secondaire); margin: 0; }
+
+/* TRANSACTION ITEM */
+.tres-dashboard-container .transaction-item {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 14px; margin-bottom: 10px; border: 1px solid var(--bordure);
+    display: flex; align-items: center; gap: 12px; transition: var(--transition);
+}
+
+.tres-dashboard-container .transaction-item:active { background: var(--fond-alterne); }
+
+.tres-dashboard-container .transaction-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+}
+
+.tres-dashboard-container .transaction-icon.income { background: #E8F5E9; }
+.tres-dashboard-container .transaction-icon.expense { background: #FFEBEE; }
+.tres-dashboard-container .transaction-icon.pending { background: #FFF3E0; }
+
+.tres-dashboard-container .transaction-info { flex: 1; min-width: 0; }
+.tres-dashboard-container .transaction-title { font-size: 14px; font-weight: 600; color: var(--bleu-rca); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tres-dashboard-container .transaction-meta { font-size: 12px; color: var(--texte-secondaire); }
+
+.tres-dashboard-container .transaction-amount { text-align: right; flex-shrink: 0; }
+.tres-dashboard-container .transaction-amount .amount { font-size: 16px; font-weight: 700; }
+.tres-dashboard-container .transaction-amount .amount.income { color: var(--vert-espoir); }
+.tres-dashboard-container .transaction-amount .amount.expense { color: var(--rouge-solidarite); }
+.tres-dashboard-container .transaction-amount .amount.pending { color: var(--orange-energie); }
+.tres-dashboard-container .transaction-amount .date { font-size: 11px; color: var(--texte-secondaire); margin-top: 2px; }
+
+/* MEMBER DUES */
+.tres-dashboard-container .dues-item {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 14px; margin-bottom: 10px; border: 1px solid var(--bordure);
+    display: flex; align-items: center; gap: 12px;
+}
+
+.tres-dashboard-container .dues-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--bleu-rca); color: var(--blanc-pur);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 16px; flex-shrink: 0;
+}
+
+.tres-dashboard-container .dues-info { flex: 1; min-width: 0; }
+.tres-dashboard-container .dues-name { font-size: 14px; font-weight: 600; color: var(--bleu-rca); margin-bottom: 2px; }
+.tres-dashboard-container .dues-meta { font-size: 12px; color: var(--texte-secondaire); }
+
+.tres-dashboard-container .dues-status { flex-shrink: 0; text-align: right; }
+.tres-dashboard-container .dues-amount { font-size: 14px; font-weight: 700; }
+.tres-dashboard-container .dues-amount.paid { color: var(--vert-espoir); }
+.tres-dashboard-container .dues-amount.unpaid { color: var(--rouge-solidarite); }
+
+/* REPORT CARD */
+.tres-dashboard-container .report-card {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 16px; margin-bottom: 12px; border: 1px solid var(--bordure);
+    display: flex; align-items: center; gap: 12px;
+}
+
+.tres-dashboard-container .report-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    background: var(--fond-alterne);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+}
+
+.tres-dashboard-container .report-info { flex: 1; }
+.tres-dashboard-container .report-title { font-size: 14px; font-weight: 600; color: var(--bleu-rca); margin-bottom: 2px; }
+.tres-dashboard-container .report-meta { font-size: 12px; color: var(--texte-secondaire); }
+
+/* CHART PLACEHOLDER */
+.tres-dashboard-container .chart-container {
+    background: var(--fond-alterne); border-radius: var(--radius-md);
+    padding: 20px; margin-bottom: 16px;
+}
+
+.tres-dashboard-container .chart-bar-container { display: flex; align-items: flex-end; gap: 8px; height: 150px; margin-top: 16px; }
+
+.tres-dashboard-container .chart-bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    position: relative; min-height: 20px;
+    transition: var(--transition);
+}
+
+.tres-dashboard-container .chart-bar:hover { opacity: 0.8; }
+
+.tres-dashboard-container .chart-bar .bar-label {
+    position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; color: var(--texte-secondaire); white-space: nowrap;
+}
+
+.tres-dashboard-container .chart-bar .bar-value {
+    position: absolute; top: -18px; left: 50%; transform: translateX(-50%);
+    font-size: 10px; font-weight: 700; color: var(--bleu-rca);
+}
+
+/* SUB TABS */
+.tres-dashboard-container .sub-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
+.tres-dashboard-container .sub-tabs::-webkit-scrollbar { display: none; }
+
+.tres-dashboard-container .sub-tab {
+    padding: 8px 14px; border: 2px solid var(--bordure);
+    background: var(--blanc-pur); color: var(--texte-principal);
+    border-radius: 20px; font-size: 12px; font-weight: 600;
+    white-space: nowrap; cursor: pointer; min-height: 36px; transition: var(--transition);
+}
+
+.tres-dashboard-container .sub-tab.active { background: var(--bleu-rca); color: var(--blanc-pur); border-color: var(--bleu-rca); }
+
+/* FILTERS */
+.tres-dashboard-container .filters-bar {
+    background: var(--blanc-pur); border-radius: var(--radius-md);
+    padding: 12px; margin-bottom: 16px;
+    box-shadow: var(--shadow-sm); border: 1px solid var(--bordure);
+}
+
+.tres-dashboard-container .search-input {
+    width: 100%; padding: 10px 12px 10px 36px;
+    border: 2px solid var(--bordure); border-radius: var(--radius-sm);
+    font-size: 14px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 10px center;
+}
+
+.tres-dashboard-container .search-input:focus { outline: none; border-color: var(--bleu-rca); }
+
+.tres-dashboard-container .filter-select {
+    width: 100%; padding: 10px; border: 2px solid var(--bordure);
+    border-radius: var(--radius-sm); font-size: 14px; background: var(--blanc-pur); color: var(--texte-principal);
+}
+
+/* SECTION HEADER */
+.tres-dashboard-container .section-header { margin-bottom: 16px; }
+.tres-dashboard-container .section-header h2 { font-size: 22px; font-weight: 700; color: var(--bleu-rca); margin-bottom: 4px; margin-top: 0; }
+.tres-dashboard-container .section-header p { font-size: 14px; color: var(--texte-secondaire); margin: 0; }
+
+/* BADGES */
+.tres-dashboard-container .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.tres-dashboard-container .badge-success { background: #E8F5E9; color: var(--vert-espoir); }
+.tres-dashboard-container .badge-warning { background: #FFF3E0; color: var(--orange-energie); }
+.tres-dashboard-container .badge-danger { background: #FFEBEE; color: var(--rouge-solidarite); }
+.tres-dashboard-container .badge-info { background: #E3F2FD; color: var(--bleu-ciel); }
+.tres-dashboard-container .badge-gray { background: #F3F4F6; color: var(--texte-secondaire); }
+
+/* EMPTY STATE */
+.tres-dashboard-container .empty-state { text-align: center; padding: 40px 20px; background: var(--blanc-pur); border-radius: var(--radius-md); border: 2px dashed var(--bordure); }
+.tres-dashboard-container .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+.tres-dashboard-container .empty-state h3 { font-size: 16px; color: var(--texte-principal); margin-bottom: 8px; }
+.tres-dashboard-container .empty-state p { font-size: 14px; color: var(--texte-secondaire); margin-bottom: 16px; }
+
+/* BOTTOM NAV */
+.tres-dashboard-container .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--blanc-pur); border-top: 1px solid var(--bordure);
+    display: flex; justify-content: space-around; padding: 8px 0;
+    z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.tres-dashboard-container .bottom-nav a, .tres-dashboard-container .bottom-nav button { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--texte-secondaire); font-size: 10px; padding: 4px 8px; background: none; border: none; cursor: pointer; }
+.tres-dashboard-container .bottom-nav a .nav-icon, .tres-dashboard-container .bottom-nav button .nav-icon { font-size: 22px; margin-bottom: 2px; }
+.tres-dashboard-container .bottom-nav a.active, .tres-dashboard-container .bottom-nav button.active { color: var(--bleu-rca); }
+.tres-dashboard-container .bottom-nav a.active .nav-icon, .tres-dashboard-container .bottom-nav button.active .nav-icon { color: var(--or-solaire); }
+
+/* WHATSAPP FAB */
+.tres-dashboard-container .whatsapp-float {
+    position: fixed; bottom: 90px; right: 20px;
+    width: 56px; height: 56px; background: #25D366; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 28px; text-decoration: none;
+    box-shadow: 0 4px 12px rgba(37,211,102,0.4); z-index: 800;
+    transition: var(--transition);
+}
+
+.tres-dashboard-container .whatsapp-float:active { transform: scale(0.95); }
+
+/* CHECKBOX */
+.tres-dashboard-container .checkbox-group { display: flex; align-items: flex-start; gap: 10px; padding: 12px; background: var(--fond-alterne); border-radius: var(--radius-sm); margin-bottom: 12px; }
+.tres-dashboard-container .checkbox-group input { width: 20px; height: 20px; min-width: 20px; margin-top: 2px; accent-color: var(--bleu-rca); }
+.tres-dashboard-container .checkbox-group label { font-size: 14px; color: var(--texte-principal); margin: 0; font-weight: normal; line-height: 1.5; }
+
+/* RESPONSIVE */
+@media (min-width: 768px) {
+    .tres-dashboard-container .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .tres-dashboard-container .finance-summary { grid-template-columns: repeat(4, 1fr); }
+    .tres-dashboard-container .quick-actions { grid-template-columns: repeat(3, 1fr); }
+    .tres-dashboard-container .form-row { grid-template-columns: 1fr 1fr; }
+    .tres-dashboard-container { padding-bottom: 0; }
+    .tres-dashboard-container .bottom-nav { display: none; }
+}
+
+/* PROGRESS BAR */
+.tres-dashboard-container .progress-bar { width: 100%; height: 8px; background: var(--fond-alterne); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.tres-dashboard-container .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--or-solaire), var(--or-clair)); border-radius: 4px; transition: width 0.5s ease; }

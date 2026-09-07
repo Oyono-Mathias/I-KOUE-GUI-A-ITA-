@@ -120,7 +120,7 @@ export default function Dashboard() {
                     {/* Actions compactes */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                         <button 
-                            onClick={() => window.showPage('accueil')}
+                            onClick={() => (window as any).showPage('accueil')}
                             title="Voir le site public"
                             style={{
                                 display: 'flex',

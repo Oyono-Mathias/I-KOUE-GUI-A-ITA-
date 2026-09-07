@@ -1,28 +1,95 @@
 {
-  "collections": [
-    {
-      "name": "messages",
-      "rules": {
-        "read": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president']",
-        "create": "true",
-        "update": "false",
-        "delete": "request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president']"
+  "entities": {
+    "SiteConfig": {
+      "title": "Site Config",
+      "description": "Global configuration for the site",
+      "type": "object",
+      "properties": {
+        "history": { "type": "string", "maxLength": 5000 },
+        "objectives": { "type": "array" },
+        "values": { "type": "array" },
+        "address": { "type": "string", "maxLength": 200 },
+        "phone1": { "type": "string", "maxLength": 50 },
+        "phone2": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 },
+        "facebookUrl": { "type": "string", "maxLength": 200 }
       },
-      "indexes": [
-        {
-          "fields": ["createdAt"],
-          "orders": ["desc"]
-        }
-      ]
+      "required": ["email"]
     },
-    {
-      "name": "users",
-      "rules": {
-        "read": "request.auth != null && (request.auth.uid == resource.id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president'])",
-        "create": "false",
-        "update": "request.auth != null && (request.auth.uid == resource.id || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['bureau', 'president'])",
-        "delete": "false"
-      }
+    "NewsItem": {
+      "title": "News Item",
+      "description": "News article",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "maxLength": 5000 },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "date": { "type": "timestamp" },
+        "category": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["title", "date"]
+    },
+    "DomainItem": {
+      "title": "Domain Item",
+      "description": "Area of intervention",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "iconName": { "type": "string", "maxLength": 50 },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "order"]
+    },
+    "PublicReport": {
+      "title": "Public Report",
+      "description": "Reports available to the public",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "type": { "type": "string", "enum": ["activite", "finance_simplifie"] },
+        "description": { "type": "string", "maxLength": 1000 },
+        "fileUrl": { "type": "string", "maxLength": 1000 },
+        "date": { "type": "timestamp" }
+      },
+      "required": ["title", "type", "fileUrl"]
+    },
+    "MembershipRequest": {
+      "title": "Membership Request",
+      "description": "User requests to join",
+      "type": "object",
+      "properties": {
+        "nom": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 100 },
+        "tel": { "type": "string", "maxLength": 50 },
+        "motivation": { "type": "string", "maxLength": 2000 },
+        "statut": { "type": "string", "enum": ["en_attente", "accepte", "refuse"] },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["nom", "email", "tel", "statut", "createdAt"]
     }
-  ]
+  },
+  "firestore": {
+    "/site_config/{configId}": {
+      "schema": { "$ref": "#/entities/SiteConfig" },
+      "description": "Stores site general info like history, address"
+    },
+    "/news/{newsId}": {
+      "schema": { "$ref": "#/entities/NewsItem" },
+      "description": "Stores news and activities"
+    },
+    "/domains/{domainId}": {
+      "schema": { "$ref": "#/entities/DomainItem" },
+      "description": "Stores intervention domains"
+    },
+    "/public_reports/{reportId}": {
+      "schema": { "$ref": "#/entities/PublicReport" },
+      "description": "Stores public activity and simplified finance reports"
+    },
+    "/membership_requests/{requestId}": {
+      "schema": { "$ref": "#/entities/MembershipRequest" },
+      "description": "Stores incoming membership requests"
+    }
+  }
 }

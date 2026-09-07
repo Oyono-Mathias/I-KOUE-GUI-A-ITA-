@@ -4,14 +4,16 @@
   --color-bleu-rca: #0A3D62;
   --color-bleu-ciel: #3498DB;
   --color-or-solaire: #D4A017;
+  --color-or-clair: #F4C430;
   --color-blanc-pur: #FFFFFF;
   --color-vert-espoir: #2E7D32;
   --color-rouge-solidarite: #C62828;
   --color-violet-dignite: #6A1B9A;
   --color-orange-energie: #E65100;
   --color-texte-principal: #2C3E50;
+  --color-texte-secondaire: #6B7280;
   --color-fond-alterne: #F5F7FA;
-  --color-bordure: #E0E0E0;
+  --color-bordure: #E5E7EB;
 }
 
 html {
