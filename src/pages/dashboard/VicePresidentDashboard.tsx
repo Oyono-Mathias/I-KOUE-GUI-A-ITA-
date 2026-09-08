@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
@@ -7,7 +8,10 @@ import './VicePresidentDashboard.css';
 
 export const VicePresidentDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { userData } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   // Filters
@@ -344,15 +348,7 @@ export const VicePresidentDashboard = () => {
                 <button className="header-btn" onClick={handleLogout} aria-label="Déconnexion" title="Déconnexion">🚪</button>
             </div>
         </div>
-        <div className="member-info-bar">
-            <div className="member-avatar">👔</div>
-            <div className="member-details">
-                <div className="member-name">Vice-Président</div>
-                <div className="member-role">🤝 Vice-Président du Bureau Exécutif</div>
-            </div>
-            <div className="member-badge">Bureau</div>
-        </div>
-    </header>
+        </header>
 
     {/* TAB NAVIGATION */}
     <nav className="tab-nav">
@@ -387,7 +383,7 @@ export const VicePresidentDashboard = () => {
     <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
         <div className="welcome-card">
             <span className="role-badge"> Vice-Président</span>
-            <h2>Bienvenue, Mr le Vice-Président </h2>
+            <h2>Bienvenue, Mr le Vice-Président {userData?.nom || userData?.displayName || ''}</h2>
             <p>Vous assistez le Président dans la coordination des activités de l'association.</p>
         </div>
 

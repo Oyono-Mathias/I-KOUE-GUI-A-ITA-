@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { signOut } from 'firebase/auth';
-import { db, auth, storage } from '../../lib/firebase';
+import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, auth, storage, secondaryAuth } from '../../lib/firebase';
 import './SecretaireDashboard.css';
 
 export const SecretaireDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { userData } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   // Filters
@@ -25,6 +29,7 @@ export const SecretaireDashboard = () => {
   const [convoModalOpen, setConvoModalOpen] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [memberModalOpen, setMemberModalOpen] = useState<any>(null);
+  const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
 
   // Upload State
@@ -47,7 +52,7 @@ export const SecretaireDashboard = () => {
 
   // Real-time Listeners
   useEffect(() => {
-    const unsubMembers = onSnapshot(collection(db, 'members'), (snap) => setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubMembers = onSnapshot(collection(db, 'users'), (snap) => setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubDocs = onSnapshot(query(collection(db, 'documents'), orderBy('uploadedAt', 'desc')), (snap) => setDocuments(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubPV = onSnapshot(query(collection(db, 'pv'), orderBy('createdAt', 'desc')), (snap) => setPv(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubConvos = onSnapshot(query(collection(db, 'convocations'), orderBy('sentAt', 'desc')), (snap) => setConvocations(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -241,15 +246,7 @@ export const SecretaireDashboard = () => {
                   <button className="header-btn" onClick={handleLogout}>🚪</button>
               </div>
           </div>
-          <div className="member-info-bar">
-              <div className="member-avatar">📋</div>
-              <div className="member-details">
-                  <div className="member-name">Secrétaire Général</div>
-                  <div className="member-role">📋 Secrétaire Général du Bureau</div>
-              </div>
-              <div className="member-badge">Bureau</div>
-          </div>
-      </header>
+          </header>
 
       {/* TAB NAV */}
       <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
@@ -397,7 +394,10 @@ export const SecretaireDashboard = () => {
 
       {/* TAB: MEMBERS */}
       <div className={`tab-content ${activeTab === 'members' ? 'active' : ''}`}>
-          <div className="section-header"><h2>👥 Fiches Membres</h2></div>
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>👥 Fiches Membres</h2>
+            <button className="btn btn-primary" onClick={() => setAddMemberModalOpen(true)}>+ Nouveau membre</button>
+        </div>
           <div className="sub-tabs">
               <button className={`sub-tab ${memberFilter === 'all' ? 'active' : ''}`} onClick={() => setMemberFilter('all')}>Tous</button>
               <button className={`sub-tab ${memberFilter === 'actif' ? 'active' : ''}`} onClick={() => setMemberFilter('actif')}>✅ Actifs</button>
@@ -415,6 +415,7 @@ export const SecretaireDashboard = () => {
                       </div>
                       <div className="document-actions">
                           <button className="btn btn-outline btn-small" onClick={() => setMemberModalOpen(m)}>👁️ Voir</button>
+                          <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}>🗑️ Supprimer</button>
                       </div>
                   </div>
               ))}
@@ -800,7 +801,68 @@ export const SecretaireDashboard = () => {
           </div>
       )}
 
-      {memberModalOpen && (
+      
+    {addMemberModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px' }}>
+                <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Ajouter un nouveau membre</h3>
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const nom = (document.getElementById('secNewMemNom') as HTMLInputElement).value;
+                    const email = (document.getElementById('secNewMemEmail') as HTMLInputElement).value;
+                    const password = (document.getElementById('secNewMemPwd') as HTMLInputElement).value;
+                    const tel = (document.getElementById('secNewMemTel') as HTMLInputElement).value;
+                    const role = (document.getElementById('secNewMemRole') as HTMLSelectElement).value;
+                    const cat = (document.getElementById('secNewMemCat') as HTMLSelectElement).value;
+                    
+                    if(nom && email && password) {
+                        try {
+                            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                            await setDoc(doc(db, 'users', userCred.user.uid), {
+                                nom, email, telephone: tel, role, categorie: cat, statut: 'actif', createdAt: serverTimestamp()
+                            });
+                            setAddMemberModalOpen(false);
+                        } catch(err: any) {
+                            alert("Erreur lors de la création du compte : " + err.message);
+                        }
+                    }
+                }}>
+                    <div className="form-group"><label>Nom complet</label><input type="text" id="secNewMemNom" required style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Email</label><input type="email" id="secNewMemEmail" required style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Mot de passe</label><input type="password" id="secNewMemPwd" required style={{ width: '100%', padding: '8px' }} minLength={6} /></div>
+                    <div className="form-group"><label>Téléphone</label><input type="text" id="secNewMemTel" style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Rôle</label>
+                            <select id="secNewMemRole" style={{ width: '100%', padding: '8px' }}>
+                                <option value="member">Membre standard</option>
+                                <option value="president">Président</option>
+                                <option value="vice_president">Vice-Président</option>
+                                <option value="secretaire">Secrétaire Général</option>
+                                <option value="tresorier">Trésorier</option>
+                                <option value="communicateur">Communicateur</option>
+                                <option value="conseiller">Conseiller</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Catégorie</label>
+                            <select id="secNewMemCat" style={{ width: '100%', padding: '8px' }}>
+                                <option value="actif">Actif</option>
+                                <option value="bienfaiteur">Bienfaiteur</option>
+                                <option value="fondateur">Fondateur</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                        <button type="submit" className="btn btn-primary">Créer le compte</button>
+                        <button type="button" className="btn btn-outline" onClick={() => setAddMemberModalOpen(false)}>Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )}
+
+    {memberModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
               <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px', textAlign: 'center' }}>
                   <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--bleu-rca)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 'bold', margin: '0 auto 12px' }}>

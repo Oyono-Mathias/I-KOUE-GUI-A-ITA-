@@ -22,3 +22,6 @@ export const db = initializeFirestore(app, {
 }, "ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5");
 
 export const auth = getAuth(app);
+
+export const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+export const secondaryAuth = getAuth(secondaryApp);

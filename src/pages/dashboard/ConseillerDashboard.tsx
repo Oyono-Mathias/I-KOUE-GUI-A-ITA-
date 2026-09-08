@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
@@ -7,7 +8,10 @@ import './ConseillerDashboard.css';
 
 export const ConseillerDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { userData } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   // Data State
@@ -17,6 +21,11 @@ export const ConseillerDashboard = () => {
   const [rapports, setRapports] = useState<any[]>([]);
   const [partenaires, setPartenaires] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [suppleanceHistory, setSuppleanceHistory] = useState<any[]>([]);
+  const [isSuppleanceActive, setIsSuppleanceActive] = useState(false);
+
   const [meetings, setMeetings] = useState<any[]>([]);
   const [commissionMembers, setCommissionMembers] = useState<any[]>([]);
 
@@ -50,6 +59,13 @@ export const ConseillerDashboard = () => {
     const unsubRapports = onSnapshot(query(collection(db, 'rapports'), orderBy('date', 'desc')), (snap) => setRapports(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubPartners = onSnapshot(collection(db, 'partners'), (snap) => setPartenaires(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubDocs = onSnapshot(query(collection(db, 'documents'), orderBy('date', 'desc')), (snap) => setDocuments(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubCommissions = onSnapshot(query(collection(db, 'commissions'), orderBy('createdAt', 'desc')), (snap) => setCommissions(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubTasks = onSnapshot(query(collection(db, 'tasks'), orderBy('createdAt', 'desc')), (snap) => setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSuppleance = onSnapshot(query(collection(db, 'suppleance_history'), orderBy('date', 'desc')), (snap) => setSuppleanceHistory(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSuppleanceState = onSnapshot(doc(db, 'system', 'suppleance'), (docSnap) => {
+      if (docSnap.exists()) setIsSuppleanceActive(docSnap.data().active || false);
+    });
+
     const unsubMeetings = onSnapshot(query(collection(db, 'meetings'), where('commission', '==', advisorContext.commission)), (snap) => setMeetings(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     
     // For commission members, we could load users with role 'member' and specific commission, but let's mock the members display since it's informational and we don't have a commission_members col yet.
@@ -58,7 +74,7 @@ export const ConseillerDashboard = () => {
         { id: 'cm2', nom: 'Jean DUPONT', role: 'Membre', email: 'jean@email.com', telephone: '+236 70 00 00 01' }
     ]);
 
-    return () => { unsubAvis(); unsubRapports(); unsubPartners(); unsubDocs(); unsubMeetings(); unsubBoardMessages(); unsubProjets(); };
+    return () => { unsubAvis(); unsubRapports(); unsubPartners(); unsubDocs(); unsubMeetings(); unsubBoardMessages(); unsubProjets(); unsubCommissions(); unsubTasks(); unsubSuppleance(); unsubSuppleanceState(); };
   }, []);
 
   const formatDate = (date: any) => {
@@ -198,15 +214,7 @@ export const ConseillerDashboard = () => {
                     <button className="header-btn" onClick={handleLogout}>🚪</button>
                 </div>
             </div>
-            <div className="member-info-bar">
-                <div className="member-avatar">💡</div>
-                <div className="member-details">
-                    <div className="member-name">Conseiller</div>
-                    <div className="member-role">💡 Conseiller du Bureau Exécutif</div>
-                </div>
-                <div className="member-badge">Bureau</div>
-            </div>
-        </header>
+            </header>
 
         {/* TAB NAV (Desktop only conceptually, scrollable) */}
         <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
@@ -216,11 +224,24 @@ export const ConseillerDashboard = () => {
             <button className={`tab-btn ${activeTab === 'rapports' ? 'active' : ''}`} onClick={() => setActiveTab('rapports')}><span className="tab-icon">📄</span><span>Rapports</span></button>
             <button className={`tab-btn ${activeTab === 'partenaires' ? 'active' : ''}`} onClick={() => setActiveTab('partenaires')}><span className="tab-icon">🤝</span><span>Partenaires</span></button>
             <button className={`tab-btn ${activeTab === 'veille' ? 'active' : ''}`} onClick={() => setActiveTab('veille')}><span className="tab-icon">📚</span><span>Veille</span></button>
+            <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}><span className="tab-icon">📋</span><span>Tâches</span></button>
+            <button className={`tab-btn ${activeTab === 'suppleance' ? 'active' : ''}`} onClick={() => setActiveTab('suppleance')}><span className="tab-icon">⚡</span><span>Suppléance</span></button>
         </nav>
 
         {/* TAB: DASHBOARD */}
         <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
-            <div className="welcome-card">
+            
+      {isSuppleanceActive && (
+          <div className="alert-box" style={{ background: '#fff3e0', borderColor: '#ff9800', marginBottom: '16px', margin: '0 16px' }}>
+              <div className="alert-icon">⚡</div>
+              <div className="alert-content">
+                  <h4>Mode Suppléance Actif</h4>
+                  <p>Le Président est actuellement suppléé par le Vice-Président.</p>
+              </div>
+          </div>
+      )}
+
+          <div className="welcome-card">
                 <span className="role-badge">Conseiller</span>
                 <h2>Bienvenue, Mr le Conseiller </h2>
                 <p>Vous apportez votre expertise au Bureau Exécutif et participez aux commissions techniques.</p>
@@ -403,6 +424,7 @@ export const ConseillerDashboard = () => {
           <button className={activeTab === 'projets' ? 'active' : ''} onClick={() => setActiveTab('projets')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📈</span><span>Projets</span></button>
           <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
             <button className={activeTab === 'partenaires' ? 'active' : ''} onClick={() => setActiveTab('partenaires')}><span className="nav-icon">🤝</span><span>Partenaires</span></button>
+            <button className={activeTab === 'tasks' ? 'active' : ''} onClick={() => setActiveTab('tasks')}><span className="nav-icon">📋</span><span>Tâches</span></button>
         </nav>
 
         {/* MODALS */}

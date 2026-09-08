@@ -32,3 +32,54 @@ body {
   width: 0px;
   background: transparent;
 }
+
+/* --- Global Mobile-First Overrides for Dashboard Headers --- */
+/* Removed top 56px rule */
+
+
+
+/* --- FORCE TAB NAV TO BOTTOM --- */
+.tab-nav,
+.president-dashboard-container .tab-nav,
+.vp-dashboard-container .tab-nav,
+.sec-dashboard-container .tab-nav,
+.tres-dashboard-container .tab-nav,
+.cons-dashboard-container .tab-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  top: auto !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  border-top: 1px solid var(--color-bordure) !important;
+  border-bottom: none !important;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.08) !important;
+  background: var(--color-blanc-pur) !important;
+  z-index: 1000 !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  overflow-x: auto !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+div[class$="-dashboard-container"] {
+  padding-bottom: 85px !important;
+}
+
+div[class$="-dashboard-container"] {
+  padding-bottom: 85px !important; /* Space for the bottom nav */
+}
+
+/* Ensure active state has a top border instead of bottom border since it's at the bottom */
+.tab-btn {
+  border-bottom: none !important;
+  border-top: 3px solid transparent !important;
+}
+.tab-btn.active {
+  border-top-color: var(--color-or-solaire) !important;
+  border-bottom-color: transparent !important;
+}

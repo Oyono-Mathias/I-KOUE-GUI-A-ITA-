@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { DashboardSwitcher } from './DashboardSwitcher';
 
 export const DashboardLayout = () => {
   const { userData, loading } = useAuth();
@@ -9,5 +10,10 @@ export const DashboardLayout = () => {
   if (!userData) return <Navigate to="/login" replace />;
 
   // Tous les tableaux de bord sont désormais des vues autonomes Mobile-First avec leur propre Header et Bottom Nav.
-  return <Outlet />;
+  return (
+    <>
+      <DashboardSwitcher />
+      <Outlet />
+    </>
+  );
 };

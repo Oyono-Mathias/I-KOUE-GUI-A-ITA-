@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
@@ -7,7 +8,10 @@ import './TresorierDashboard.css';
 
 export const TresorierDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { userData } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   // Data State
@@ -264,15 +268,7 @@ export const TresorierDashboard = () => {
                   <button className="header-btn" onClick={handleLogout}>🚪</button>
               </div>
           </div>
-          <div className="member-info-bar">
-              <div className="member-avatar">💰</div>
-              <div className="member-details">
-                  <div className="member-name">Trésorier Général</div>
-                  <div className="member-role">💰 Trésorier Général du Bureau</div>
-              </div>
-              <div className="member-badge">Bureau</div>
-          </div>
-      </header>
+          </header>
 
       {/* TAB NAV */}
       <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>

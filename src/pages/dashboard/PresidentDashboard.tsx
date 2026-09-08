@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
-import { db, auth } from '../../firebase';
+import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db, auth, secondaryAuth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import './PresidentDashboard.css';
 
 export const PresidentDashboard = () => {
   const navigate = useNavigate();
   const { userData } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'dashboard';
+  const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
 
   // Filters
@@ -21,6 +23,7 @@ export const PresidentDashboard = () => {
 
   // Modals
   const [memberModal, setMemberModal] = useState<any>(null);
+  const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
 
@@ -189,6 +192,13 @@ export const PresidentDashboard = () => {
             rejectedAt: serverTimestamp()
         });
         await logDecision('REFUS_MEMBRE', `Membre ${id} refusé`);
+      });
+  };
+
+  const deleteMember = (id: string) => {
+      confirmAction('🗑️ Êtes-vous sûr de vouloir supprimer définitivement ce compte ?', async () => {
+        await deleteDoc(doc(db, 'users', id));
+        await logDecision('SUPPRESSION_MEMBRE', `Membre ${id} supprimé`);
       });
   };
 
@@ -524,9 +534,12 @@ export const PresidentDashboard = () => {
 
     {/* TAB 2: MEMBRES */}
     <div className={`tab-content ${activeTab === 'members' ? 'active' : ''}`}>
-        <div className="section-header">
-            <h2>👥 Gestion des Membres</h2>
-            <p>{members.length} membre(s) au total</p>
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+                <h2>👥 Gestion des Membres</h2>
+                <p>{members.length} membre(s) au total</p>
+            </div>
+            <button className="btn btn-primary" onClick={() => setAddMemberModalOpen(true)}>+ Nouveau membre</button>
         </div>
 
         <div className="sub-tabs">
@@ -571,6 +584,7 @@ export const PresidentDashboard = () => {
                                   {m.statut !== 'suspendu' && m.statut !== 'refuse' && (
                                     <button className="btn btn-danger btn-small" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #EF4444', padding: '2px 8px' }} onClick={() => suspendMember(m.id)}>⚠️ Suspendre</button>
                                   )}
+                                  <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}>🗑️ Supprimer</button>
                                   <select className="search-input" style={{ padding: '2px 4px', fontSize: '11px', height: 'auto', backgroundImage: 'none' }} value={m.role || 'membre'} onChange={(e) => changeMemberRole(m.id, e.target.value)}>
                                     <option value="membre">👤 Membre</option>
                                     <option value="tresorier">💰 Trésorier</option>
@@ -994,6 +1008,70 @@ export const PresidentDashboard = () => {
     </nav>
 
     {/* MODALS & CONFIRM DIALOG */}
+    
+    {addMemberModalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px' }}>
+                <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Ajouter un nouveau membre</h3>
+                <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const nom = (document.getElementById('newMemNom') as HTMLInputElement).value;
+                    const email = (document.getElementById('newMemEmail') as HTMLInputElement).value;
+                    const password = (document.getElementById('newMemPwd') as HTMLInputElement).value;
+                    const tel = (document.getElementById('newMemTel') as HTMLInputElement).value;
+                    const role = (document.getElementById('newMemRole') as HTMLSelectElement).value;
+                    const cat = (document.getElementById('newMemCat') as HTMLSelectElement).value;
+                    
+                    if(nom && email && password) {
+                        try {
+                            // Create user in Firebase Auth without logging out current admin
+                            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
+                            
+                            // Save to Firestore with the same UID
+                            await setDoc(doc(db, 'users', userCred.user.uid), {
+                                nom, email, telephone: tel, role, categorie: cat, statut: 'actif', createdAt: serverTimestamp()
+                            });
+                            setAddMemberModalOpen(false);
+                        } catch(err: any) {
+                            alert("Erreur lors de la création du compte : " + err.message);
+                        }
+                    }
+                }}>
+                    <div className="form-group"><label>Nom complet</label><input type="text" id="newMemNom" required style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Email</label><input type="email" id="newMemEmail" required style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Mot de passe</label><input type="password" id="newMemPwd" required style={{ width: '100%', padding: '8px' }} minLength={6} /></div>
+                    <div className="form-group"><label>Téléphone</label><input type="text" id="newMemTel" style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Rôle</label>
+                            <select id="newMemRole" style={{ width: '100%', padding: '8px' }}>
+                                <option value="member">Membre standard</option>
+                                <option value="president">Président</option>
+                                <option value="vice_president">Vice-Président</option>
+                                <option value="secretaire">Secrétaire Général</option>
+                                <option value="tresorier">Trésorier</option>
+                                <option value="communicateur">Communicateur</option>
+                                <option value="conseiller">Conseiller</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Catégorie</label>
+                            <select id="newMemCat" style={{ width: '100%', padding: '8px' }}>
+                                <option value="actif">Actif</option>
+                                <option value="bienfaiteur">Bienfaiteur</option>
+                                <option value="fondateur">Fondateur</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                        <button type="submit" className="btn btn-primary">Créer le compte</button>
+                        <button type="button" className="btn btn-outline" onClick={() => setAddMemberModalOpen(false)}>Annuler</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )}
+
     {memberModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px' }}>

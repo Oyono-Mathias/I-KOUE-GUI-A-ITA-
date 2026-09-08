@@ -50,3 +50,6 @@ export const logout = async () => {
     throw error;
   }
 };
+
+export const secondaryApp = getApps().find(a => a.name === 'SecondaryApp') || initializeApp(firebaseConfig, "SecondaryApp");
+export const secondaryAuth = getAuth(secondaryApp);
