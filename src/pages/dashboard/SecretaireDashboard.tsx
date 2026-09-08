@@ -39,6 +39,10 @@ export const SecretaireDashboard = () => {
   const [meetings, setMeetings] = useState<any[]>([]);
   const [boardMessages, setBoardMessages] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [commissions, setCommissions] = useState<any[]>([]);
+  const [suppleanceHistory, setSuppleanceHistory] = useState<any[]>([]);
+  const [isSuppleanceActive, setIsSuppleanceActive] = useState(false);
+
   const [courriers, setCourriers] = useState<any[]>([]);
 
   // Real-time Listeners
@@ -50,10 +54,16 @@ export const SecretaireDashboard = () => {
     const unsubMod = onSnapshot(query(collection(db, 'moderation'), orderBy('createdAt', 'desc')), (snap) => setModeration(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubBoardMessages = onSnapshot(query(collection(db, 'board_messages'), orderBy('timestamp', 'asc')), (snap) => setBoardMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubTasks = onSnapshot(query(collection(db, 'tasks'), orderBy('createdAt', 'desc')), (snap) => setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubCommissions = onSnapshot(query(collection(db, 'commissions'), orderBy('createdAt', 'desc')), (snap) => setCommissions(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSuppleance = onSnapshot(query(collection(db, 'suppleance_history'), orderBy('date', 'desc')), (snap) => setSuppleanceHistory(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubSuppleanceState = onSnapshot(doc(db, 'system', 'suppleance'), (docSnap) => {
+      if (docSnap.exists()) setIsSuppleanceActive(docSnap.data().active || false);
+    });
+
     const unsubCourriers = onSnapshot(query(collection(db, 'courriers'), orderBy('date', 'desc')), (snap) => setCourriers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubMeetings = onSnapshot(query(collection(db, 'meetings'), orderBy('date', 'desc')), (snap) => setMeetings(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
 
-    return () => { unsubMembers(); unsubDocs(); unsubPV(); unsubConvos(); unsubMod(); unsubMeetings(); unsubBoardMessages(); unsubTasks(); unsubCourriers(); };
+    return () => { unsubMembers(); unsubDocs(); unsubPV(); unsubConvos(); unsubMod(); unsubMeetings(); unsubBoardMessages(); unsubTasks(); unsubCourriers(); unsubCommissions(); unsubSuppleance(); unsubSuppleanceState(); };
   }, []);
 
   const formatDate = (date: any) => {
@@ -81,6 +91,19 @@ export const SecretaireDashboard = () => {
   const totalNotifs = pendingPV + pendingMod;
 
   // ACTIONS: PV
+    const toggleSuppleance = async () => {
+      confirmAction('Modifier le mode suppléance ?', async () => {
+          await setDoc(doc(db, 'system', 'suppleance'), { active: !isSuppleanceActive, updatedAt: serverTimestamp() }, { merge: true });
+          if (!isSuppleanceActive) {
+            await addDoc(collection(db, 'suppleance_history'), {
+                date: new Date(),
+                raison: 'Activation par le Secrétaire',
+                activatedAt: serverTimestamp()
+            });
+          }
+      });
+  };
+
   const savePV = async (e: React.FormEvent) => {
     e.preventDefault();
     const meetingId = (document.getElementById('pvMeeting') as HTMLSelectElement).value;
@@ -235,6 +258,8 @@ export const SecretaireDashboard = () => {
           <button className={`tab-btn ${activeTab === 'pv' ? 'active' : ''}`} onClick={() => setActiveTab('pv')}><span className="tab-icon">📝</span><span>PV & CR</span></button>
           <button className={`tab-btn ${activeTab === 'convocations' ? 'active' : ''}`} onClick={() => setActiveTab('convocations')}><span className="tab-icon">📬</span><span>Convocations</span></button>
           <button className={`tab-btn ${activeTab === 'courriers' ? 'active' : ''}`} onClick={() => setActiveTab('courriers')}><span className="tab-icon">📬</span><span>Courriers</span></button>
+          <button className={`tab-btn ${activeTab === 'commissions' ? 'active' : ''}`} onClick={() => setActiveTab('commissions')}><span className="tab-icon">🏛️</span><span>Commissions</span></button>
+          <button className={`tab-btn ${activeTab === 'suppleance' ? 'active' : ''}`} onClick={() => setActiveTab('suppleance')}><span className="tab-icon">⚡</span><span>Suppléance</span></button>
           <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}><span className="tab-icon">📋</span><span>Tâches</span></button>
           <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
           <button className={`tab-btn ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}><span className="tab-icon">👥</span><span>Membres</span></button>
@@ -243,6 +268,17 @@ export const SecretaireDashboard = () => {
 
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
+          
+      {isSuppleanceActive && (
+          <div className="alert-box" style={{ background: '#fff3e0', borderColor: '#ff9800', marginBottom: '16px', margin: '0 16px' }}>
+              <div className="alert-icon">⚡</div>
+              <div className="alert-content">
+                  <h4>Mode Suppléance Actif</h4>
+                  <p>Le Président est actuellement suppléé.</p>
+              </div>
+          </div>
+      )}
+
           <div className="welcome-card">
               <span className="role-badge">📋 Secrétaire Général</span>
               <h2>Bienvenue, Mr le Secrétaire Général </h2>
@@ -450,15 +486,116 @@ export const SecretaireDashboard = () => {
         </div>
       </div>
 
+      
+      {/* TAB COMMISSIONS */}
+      <div className={`tab-content ${activeTab === 'commissions' ? 'active' : ''}`}>
+        <div className="section-header"><h2>🏛️ Commissions & Projets</h2><p>Gestion des comités de l'association</p></div>
+        <div className="card">
+            <h3 className="card-title">Liste des Commissions</h3>
+            <div className="stats-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                {commissions.length > 0 ? commissions.map(c => (
+                    <div key={c.id} className="stat-card">
+                        <div className="stat-label" style={{ fontSize: '16px', fontWeight: 'bold' }}>{c.name}</div>
+                        <div className="stat-sublabel">Resp: {c.lead}</div>
+                        <div className="stat-value" style={{ fontSize: '18px', marginTop: '8px' }}>{c.status || 'Actif'}</div>
+                        <button className="btn btn-outline btn-small" style={{ marginTop: '8px' }} onClick={async () => {
+                             await updateDoc(doc(db, 'commissions', c.id), { status: c.status === 'Actif' ? 'Inactif' : 'Actif' });
+                        }}>{c.status === 'Actif' ? 'Désactiver' : 'Activer'}</button>
+                    </div>
+                )) : (
+                    <div className="empty-state" style={{ gridColumn: '1 / -1' }}>Aucune commission enregistrée</div>
+                )}
+            </div>
+            <form onSubmit={async (e) => {
+                e.preventDefault();
+                const name = (document.getElementById('secComName') as HTMLInputElement).value;
+                const lead = (document.getElementById('secComLead') as HTMLInputElement).value;
+                if(name && lead) {
+                    await addDoc(collection(db, 'commissions'), { name, lead, status: 'Actif', createdAt: serverTimestamp() });
+                    (e.target as HTMLFormElement).reset();
+                }
+            }} style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
+                <h3 className="card-title">Créer une commission</h3>
+                <div className="form-row">
+                    <input type="text" id="secComName" placeholder="Nom de la commission" className="search-input" required />
+                    <input type="text" id="secComLead" placeholder="Responsable" className="search-input" required />
+                    <button type="submit" className="btn btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+      </div>
+
+      {/* TAB SUPPLEANCE */}
+      <div className={`tab-content ${activeTab === 'suppleance' ? 'active' : ''}`}>
+        <div className="section-header"><h2>⚡ Mode Suppléance</h2><p>Gestion et historique du mode suppléance</p></div>
+        <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h3 style={{ margin: 0 }}>Statut actuel : {isSuppleanceActive ? '🟢 Actif' : '⚪ Inactif'}</h3>
+                    <p style={{ color: '#666', fontSize: '13px', margin: '4px 0 0 0' }}>Le mode suppléance permet au VP de remplacer le Président.</p>
+                </div>
+                <button className={`btn ${isSuppleanceActive ? 'btn-outline' : 'btn-gold'}`} onClick={toggleSuppleance}>
+                    {isSuppleanceActive ? 'Désactiver' : 'Activer le mode'}
+                </button>
+            </div>
+        </div>
+        
+        <div className="card">
+            <h3 className="card-title">📜 Historique des suppléances</h3>
+            {suppleanceHistory.length === 0 ? <div className="empty-state"><h3>Aucun historique</h3></div> : (
+                suppleanceHistory.map(s => (
+                    <div key={s.id} className="report-card">
+                        <div className="report-icon">⚡</div>
+                        <div className="report-details">
+                            <div className="report-title">Suppléance activée</div>
+                            <div className="report-meta">Date: {formatDate(s.date)} • {s.raison || 'Sans motif'}</div>
+                        </div>
+                    </div>
+                ))
+            )}
+        </div>
+      </div>
+
       {/* TAB TASKS */}
       <div className={`tab-content ${activeTab === 'tasks' ? 'active' : ''}`}>
-        <div className="section-header"><h2>📋 Mes Tâches</h2><p>Tâches assignées par le Président / VP</p></div>
+        <div className="section-header"><h2>📋 Tâches & Délégation</h2><p>Gestion des tâches du bureau</p></div>
+
+        <div className="card" style={{ marginBottom: '16px' }}>
+            <h3 className="card-title">Nouvelle tâche</h3>
+            <form onSubmit={async (e) => {
+                e.preventDefault();
+                const title = (document.getElementById('secTaskTitle') as HTMLInputElement).value;
+                const desc = (document.getElementById('secTaskDesc') as HTMLTextAreaElement).value;
+                const assigned = (document.getElementById('secTaskAssign') as HTMLSelectElement).value;
+                if(title) {
+                    await addDoc(collection(db, 'tasks'), {
+                        title, description: desc, assignedTo: assigned, completed: false, createdBy: 'secretaire', createdAt: serverTimestamp()
+                    });
+                    (e.target as HTMLFormElement).reset();
+                }
+            }}>
+                <div className="form-group"><input type="text" id="secTaskTitle" placeholder="Titre de la tâche" required style={{ width: '100%', padding: '8px' }} /></div>
+                <div className="form-group"><textarea id="secTaskDesc" placeholder="Description" rows={2} style={{ width: '100%', padding: '8px' }}></textarea></div>
+                <div className="form-row">
+                    <select id="secTaskAssign" style={{ padding: '8px', flex: 1 }}>
+                        <option value="secretaire">Moi-même (Secrétaire)</option>
+                        <option value="president">Président</option>
+                        <option value="vice_president">Vice-Président</option>
+                        <option value="tresorier">Trésorier</option>
+                        <option value="communicateur">Communicateur</option>
+                        <option value="conseiller">Conseiller</option>
+                    </select>
+                    <button type="submit" className="btn btn-primary">Assigner</button>
+                </div>
+            </form>
+        </div>
+
         <div className="card">
-            {tasks.filter(t => t.assignedTo === 'secretaire').map(t => (
+            {tasks.map(t => (
                 <div key={t.id} className="transaction-item" style={{ alignItems: 'flex-start', padding: '12px', borderBottom: '1px solid #eee' }}>
                     <div style={{ flex: 1 }}>
                         <div className="transaction-title" style={{ fontWeight: 'bold' }}>{t.title}</div>
-                        <div className="transaction-meta" style={{ fontSize: '12px', color: '#666' }}>Assigné par: {t.createdBy}</div>
+                        <div className="transaction-meta" style={{ fontSize: '12px', color: '#666' }}>Assigné à: {t.assignedTo} | Par: {t.createdBy}</div>
                         <div style={{ fontSize: '13px', marginTop: '4px' }}>{t.description}</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
@@ -471,7 +608,7 @@ export const SecretaireDashboard = () => {
                     </div>
                 </div>
             ))}
-            {tasks.filter(t => t.assignedTo === 'secretaire').length === 0 && <div className="empty-state">Aucune tâche assignée.</div>}
+            {tasks.length === 0 && <div className="empty-state">Aucune tâche assignée.</div>}
         </div>
       </div>
 
@@ -580,6 +717,7 @@ export const SecretaireDashboard = () => {
       <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
           <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
           <button className={activeTab === 'courriers' ? 'active' : ''} onClick={() => setActiveTab('courriers')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📬</span><span>Courriers</span></button>
+          <button className={activeTab === 'commissions' ? 'active' : ''} onClick={() => setActiveTab('commissions')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🏛️</span><span>Comm.</span></button>
           <button className={activeTab === 'tasks' ? 'active' : ''} onClick={() => setActiveTab('tasks')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📋</span><span>Tâches</span></button>
           <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
           <button className={activeTab === 'archives' ? 'active' : ''} onClick={() => setActiveTab('archives')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🗂️</span><span>Archives</span></button>
