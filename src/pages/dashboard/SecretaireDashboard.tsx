@@ -184,8 +184,15 @@ export const SecretaireDashboard = () => {
       };
 
       if (selectedFile) {
+          // Validation de sécurité : taille maximale 10 Mo
+          if (selectedFile.size > 10 * 1024 * 1024) {
+              alert("Le fichier est trop volumineux (taille maximale : 10 Mo).");
+              return;
+          }
           try {
-              const storageRef = ref(storage, `documents/${Date.now()}_${selectedFile.name}`);
+              // Nettoyage sécurisé du nom de fichier pour éviter les caractères malveillants
+              const safeName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+              const storageRef = ref(storage, `documents/${Date.now()}_${safeName}`);
               await uploadBytes(storageRef, selectedFile);
               data.fileUrl = await getDownloadURL(storageRef);
               data.size = `${(selectedFile.size / 1024).toFixed(1)} KB`;
@@ -203,6 +210,12 @@ export const SecretaireDashboard = () => {
   const deleteDocument = (id: string) => {
       confirmAction('️ Supprimer ce document des archives ?', async () => {
           await deleteDoc(doc(db, 'documents', id));
+      });
+  };
+
+  const deleteMember = (id: string) => {
+      confirmAction('🗑️ Êtes-vous sûr de vouloir supprimer définitivement ce compte ?', async () => {
+          await deleteDoc(doc(db, 'users', id));
       });
   };
 

@@ -1,0 +1,74 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 1. FERMETURE PAR DÉFAUT
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Récupération sécurisée du profil utilisateur depuis Firestore
+    function getFirestoreUser() {
+      return firestore.exists(/databases/ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5/documents/users/$(request.auth.uid))
+        ? firestore.get(/databases/ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5/documents/users/$(request.auth.uid)).data
+        : (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+            ? firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data
+            : null);
+    }
+
+    function getUserRole() {
+      let data = getFirestoreUser();
+      return data != null ? data.role : (request.auth.token.role != null ? request.auth.token.role : null);
+    }
+
+    function getUserStatus() {
+      let data = getFirestoreUser();
+      return data != null ? (data.statut != null ? data.statut : data.status) : null;
+    }
+
+    function isNotSuspended() {
+      let s = getUserStatus();
+      return s == null || s != 'suspendu';
+    }
+
+    // Seuls le Secrétaire Général et la Présidence / Super Admin sont habilités pour les documents officiels
+    function canManageDocuments() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (
+        r in ['secretaire', 'super_admin', 'president', 'president_fondateur', 'admin']
+      );
+    }
+
+    // 2. DOCUMENTS ADMINISTRATIFS OFFICIELS (SEC-4C-02)
+    match /documents/{fileName} {
+      // Les membres authentifiés peuvent consulter et télécharger les documents officiels
+      allow read: if isSignedIn();
+
+      // Téléversement strictement réservé aux rôles administratifs habilités (Secrétaire & Présidence)
+      allow write: if canManageDocuments()
+        && request.resource.size < 10 * 1024 * 1024
+        && (
+          request.resource.contentType.matches('application/pdf') ||
+          request.resource.contentType.matches('application/msword') ||
+          request.resource.contentType.matches('application/vnd.openxmlformats-officedocument.*') ||
+          request.resource.contentType.matches('image/.*') ||
+          request.resource.contentType.matches('text/.*')
+        );
+
+      // Suppression strictement réservée aux administrateurs habilités
+      allow delete: if canManageDocuments();
+    }
+
+    // 3. MÉDIAS DE COMMUNICATION ET IMAGES PUBLIQUES
+    match /media/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if canManageDocuments();
+    }
+  }
+}

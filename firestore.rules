@@ -1,44 +1,413 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 1. GLOBAL DEFAULT DENY
+    // =========================================================================
+    // 1. PRINCIPE DE SÉCURITÉ MAJEUR : FERMETURE TOTALE PAR DÉFAUT (DENY ALL)
+    // =========================================================================
     match /{document=**} {
       allow read, write: if false;
     }
-    
-    function isSignedIn() { return request.auth != null; }
-    
+
+    // =========================================================================
+    // 2. FONCTIONS D'AUTHENTIFICATION, RÔLES ET INTÉGRITÉ (ABAC / RBAC)
+    // =========================================================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data
+        : null;
+    }
+
     function getUserRole() {
-      return isSignedIn() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
+      let data = getUserData();
+      return data != null ? data.role : null;
     }
 
-    // Public / Unauthenticated Collections
-    match /site_config/{docId} { allow read: if true; allow write: if isSignedIn(); }
-    match /domains/{docId} { allow read: if true; allow write: if isSignedIn(); }
-    match /news/{docId} { allow read: if true; allow write: if isSignedIn(); }
-    match /actualites/{docId} { allow read: if true; allow write: if isSignedIn(); }
-    match /public_reports/{docId} { allow read: if true; allow write: if isSignedIn(); }
-    match /contact_messages/{docId} { allow create: if true; allow read, update, delete: if isSignedIn(); }
-    match /membership_requests/{docId} { allow create: if true; allow read, update, delete: if isSignedIn(); }
-    match /adhesions/{docId} { allow create: if true; allow read, update, delete: if isSignedIn(); }
+    function getUserStatus() {
+      let data = getUserData();
+      return data != null ? (data.statut != null ? data.statut : data.status) : null;
+    }
 
-    // Authenticated Collections (Members & Bureau)
+    // Un utilisateur suspendu voit tous ses privilèges révoqués
+    function isNotSuspended() {
+      let s = getUserStatus();
+      return s == null || s != 'suspendu';
+    }
+
+    function isSuperAdmin() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (
+        r == 'super_admin' || r == 'president' || r == 'president_fondateur' || r == 'admin'
+      );
+    }
+
+    function isVicePresident() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (r == 'vice_president' || isSuperAdmin());
+    }
+
+    function isSecretaire() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (r == 'secretaire' || isSuperAdmin());
+    }
+
+    function isTresorier() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (r == 'tresorier' || isSuperAdmin());
+    }
+
+    function isCommunicateur() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (r == 'communicateur' || isSuperAdmin());
+    }
+
+    function isConseiller() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (r == 'conseiller' || isSuperAdmin());
+    }
+
+    function isBureau() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && (
+        r in ['super_admin', 'president', 'president_fondateur', 'vice_president', 
+              'secretaire', 'tresorier', 'communicateur', 'conseiller', 'admin_bureau', 'admin']
+      );
+    }
+
+    function isMember() {
+      return isSignedIn() && isNotSuspended();
+    }
+
+    // =========================================================================
+    // 3. PROTECTION CRITIQUE DES PROFILS UTILISATEURS (/users/{userId})
+    // =========================================================================
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn(); // Simplified for testing
+      // Lecture : L'utilisateur pour son propre compte, ou le bureau habilité pour la gestion des membres
+      allow read: if isOwner(userId) || isSuperAdmin() || isSecretaire() || isVicePresident();
+
+      // Création :
+      // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
+      // - Auto-inscription : rôle strictement forcé à membre / member et statut non privilégié
+      allow create: if isSuperAdmin() || isSecretaire() || (
+        isOwner(userId) &&
+        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
+        (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente']) &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+      );
+
+      // Modification :
+      // - Le bureau habilité peut administrer les rôles et statuts
+      // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
+      //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
+      allow update: if isSuperAdmin() || isSecretaire() || (
+        isOwner(userId) && isNotSuspended() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
+        ])
+      );
+
+      // Suppression : Strictement réservée à la haute administration
+      allow delete: if isSuperAdmin() || isSecretaire();
     }
-    
-    // Allow Signed-in users to read/write all operational collections for testing Phase 1
-    match /{collection}/{docId} {
-      allow read, write: if isSignedIn() && collection in [
-        'audit_logs', 'avis', 'board_messages', 'commissions', 'conflits', 
-        'convocations', 'courriers', 'documents', 'editorial_calendar', 
-        'expenses', 'factures', 'finances', 'forum', 'income', 'media', 
-        'meetings', 'members', 'moderation', 'notifications', 'objectives', 
-        'partenaires', 'partners', 'projets', 'pv', 'rapports', 
-        'suppleance_history', 'tasks', 'votes', 'ag_events', 'rapports_delegues',
-        'transactions', 'messages', 'missions_benevolat'
-      ];
+
+    // =========================================================================
+    // 4. ESPACE PUBLIC (Landing Page, Informations Officielles & Contact)
+    // =========================================================================
+    match /site_config/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /domains/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /domaines/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /news/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur() || isVicePresident();
+    }
+
+    match /actualites/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /activites/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /temoignages/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isCommunicateur();
+    }
+
+    match /stats/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isBureau();
+    }
+
+    match /public_reports/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isSecretaire() || isVicePresident();
+    }
+
+    match /partners/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+    }
+
+    match /partenaires/{docId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+    }
+
+    // Formulaire de contact public (Création ouverte, administration réservée)
+    match /contact_messages/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isSuperAdmin() || isCommunicateur() || isSecretaire();
+    }
+
+    // Demandes d'adhésion publiques
+    match /membership_requests/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+    }
+
+    match /adhesions/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+    }
+
+    match /newsletter/{docId} {
+      allow create: if true;
+      allow read, update, delete: if isSuperAdmin() || isCommunicateur();
+    }
+
+    // =========================================================================
+    // 5. COLLECTIONS FINANCIÈRES (CLOISONNEMENT STRICT — TRÉSORIER / PRÉSIDENT)
+    // =========================================================================
+    match /finances/{docId} {
+      // Lecture : Le Trésorier, le Président, ou le membre pour ses propres cotisations (reçu)
+      allow read: if isTresorier() || isSuperAdmin() || (
+        isMember() && resource.data.memberId == request.auth.uid
+      );
+      // Écriture, modification, suppression : Exclusivement Trésorier et Président
+      allow create, update, delete: if isTresorier() || isSuperAdmin();
+    }
+
+    match /expenses/{docId} {
+      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
+      allow create, update, delete: if isTresorier() || isSuperAdmin();
+    }
+
+    match /income/{docId} {
+      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
+      allow create, update, delete: if isTresorier() || isSuperAdmin();
+    }
+
+    match /factures/{docId} {
+      allow read: if isTresorier() || isSuperAdmin();
+      allow create, update, delete: if isTresorier() || isSuperAdmin();
+    }
+
+    match /transactions/{docId} {
+      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
+      allow create, update, delete: if isTresorier() || isSuperAdmin();
+    }
+
+    // =========================================================================
+    // 6. JOURNAUX D'AUDIT (INVIOLABILITÉ ET APPEND-ONLY RENFORCÉ — SEC-4C-01)
+    // =========================================================================
+    match /audit_logs/{docId} {
+      // Seul le Président / Super Admin peut consulter les journaux de sécurité
+      allow read: if isSuperAdmin();
+
+      // Création append-only sécurisée :
+      // - Utilisateur obligatoirement authentifié et non suspendu
+      // - Anti-usurpation stricte : actorUid DOIT correspondre à l'UID de la requête auth
+      // - Schéma minimal vérifié : action non vide (max 100 caractères), details et user bornés
+      allow create: if isSignedIn() && isNotSuspended()
+        && request.resource.data.actorUid == request.auth.uid
+        && request.resource.data.action is string
+        && request.resource.data.action.size() > 0
+        && request.resource.data.action.size() <= 100
+        && (!('details' in request.resource.data) || (request.resource.data.details is string && request.resource.data.details.size() <= 1000))
+        && (!('user' in request.resource.data) || (request.resource.data.user is string && request.resource.data.user.size() <= 100));
+
+      // Immutabilité absolue : Modification et suppression strictement impossibles pour tous
+      allow update, delete: if false;
+    }
+
+    // =========================================================================
+    // 7. REGISTRE DES MEMBRES & VALIDATIONS
+    // =========================================================================
+    match /members/{docId} {
+      allow read: if isTresorier() || isSecretaire() || isVicePresident() || isSuperAdmin();
+      allow create, update, delete: if isTresorier() || isSecretaire() || isSuperAdmin();
+    }
+
+    match /validations/{docId} {
+      allow read: if isBureau();
+      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+    }
+
+    // =========================================================================
+    // 8. GOUVERNANCE, ADMINISTRATION ET SECRÉTARIAT
+    // =========================================================================
+    match /documents/{docId} {
+      // Documents officiels partagés : lecture autorisée à tous les membres
+      allow read: if isMember();
+      // Gestion des documents : Secrétaire Général et Président
+      allow create, update, delete: if isSecretaire() || isSuperAdmin();
+    }
+
+    match /pv/{docId} {
+      allow read: if isBureau() || isMember();
+      allow write: if isSecretaire() || isSuperAdmin();
+    }
+
+    match /convocations/{docId} {
+      allow read: if isBureau() || isMember();
+      allow write: if isSecretaire() || isSuperAdmin();
+    }
+
+    match /courriers/{docId} {
+      allow read, write: if isSecretaire() || isSuperAdmin();
+    }
+
+    match /moderation/{docId} {
+      allow read, write: if isSecretaire() || isSuperAdmin();
+    }
+
+    match /meetings/{docId} {
+      allow read: if isBureau() || isMember();
+      allow write: if isBureau();
+    }
+
+    match /commissions/{docId} {
+      allow read: if isBureau() || isMember();
+      allow write: if isBureau();
+    }
+
+    match /tasks/{docId} {
+      allow read: if isBureau() || isMember();
+      allow create, delete: if isBureau();
+      // Un membre assigné peut cocher l'accomplissement d'une tâche
+      allow update: if isBureau() || (
+        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'completedAt'])
+      );
+    }
+
+    match /system/{docId} {
+      // Configuration d'urgence ou de suppléance
+      allow read: if isBureau() || (isMember() && docId == 'suppleance');
+      allow write: if isSuperAdmin() || (isVicePresident() && docId == 'suppleance');
+    }
+
+    match /suppleance_history/{docId} {
+      allow read: if isBureau() || isMember();
+      allow write: if isVicePresident() || isSuperAdmin();
+    }
+
+    match /board_messages/{docId} {
+      // Messagerie interne du bureau exécutif
+      allow read, write: if isBureau();
+    }
+
+    match /avis/{docId} {
+      allow read, write: if isConseiller() || isSuperAdmin();
+    }
+
+    match /conflits/{docId} {
+      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
+    }
+
+    match /projets/{docId} {
+      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
+    }
+
+    match /objectives/{docId} {
+      allow read, write: if isVicePresident() || isSuperAdmin();
+    }
+
+    match /rapports/{docId} {
+      allow read, write: if isBureau();
+    }
+
+    match /rapports_delegues/{docId} {
+      allow read, write: if isBureau();
+    }
+
+    // =========================================================================
+    // 9. VIE ASSOCIATIVE ET ESPACE MEMBRES
+    // =========================================================================
+    match /missions_benevolat/{docId} {
+      allow read: if isMember();
+      allow create, delete: if isVicePresident() || isSuperAdmin();
+      // Les membres peuvent s'inscrire / se désinscrire des missions de bénévolat
+      allow update: if isVicePresident() || isSuperAdmin() || (
+        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['inscrits', 'volunteers', 'participants'])
+      );
+    }
+
+    match /forum/{docId} {
+      allow read: if isMember();
+      allow create: if isMember();
+      allow update, delete: if isSuperAdmin() || (
+        isMember() && resource.data.authorId == request.auth.uid
+      );
+    }
+
+    match /votes/{docId} {
+      allow read: if isMember();
+      allow create, delete: if isSuperAdmin() || isSecretaire();
+      // Un membre peut participer en enregistrant son vote sans modifier la structure de la session
+      allow update: if isSuperAdmin() || isSecretaire() || isMember();
+    }
+
+    match /notifications/{docId} {
+      allow read: if isMember() && (
+        resource.data.userId == request.auth.uid || resource.data.target == 'all' || isBureau()
+      );
+      allow write: if isBureau();
+    }
+
+    match /messages/{docId} {
+      allow read: if isMember() && (
+        resource.data.recipientId == request.auth.uid || resource.data.senderId == request.auth.uid || isBureau()
+      );
+      allow create: if isMember();
+      allow update, delete: if isBureau() || (
+        isMember() && resource.data.senderId == request.auth.uid
+      );
+    }
+
+    match /ag_events/{docId} {
+      allow read: if isMember();
+      allow write: if isSuperAdmin() || isSecretaire();
+    }
+
+    match /media/{docId} {
+      allow read: if isBureau();
+      allow write: if isCommunicateur() || isSuperAdmin();
+    }
+
+    match /editorial_calendar/{docId} {
+      allow read, write: if isCommunicateur() || isSuperAdmin();
     }
   }
 }

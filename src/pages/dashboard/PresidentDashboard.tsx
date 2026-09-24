@@ -136,6 +136,7 @@ export const PresidentDashboard = () => {
         action,
         details,
         user: userData?.displayName || 'Président',
+        actorUid: auth.currentUser?.uid || userData?.uid || '',
         timestamp: serverTimestamp()
       });
     } catch (e) {

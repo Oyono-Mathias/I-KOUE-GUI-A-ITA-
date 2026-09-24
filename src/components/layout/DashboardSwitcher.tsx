@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
 export const DashboardSwitcher = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { userData } = useAuth();
 
-  const dashboards = [
+  const allDashboards = [
     { path: '/dashboard/super_admin', label: '👑 Président', role: 'super_admin' },
     { path: '/dashboard/admin_vice_president', label: '🤝 Vice-Président', role: 'vice_president' },
     { path: '/dashboard/admin_secretaire', label: '📝 Secrétaire', role: 'secretaire' },
@@ -14,6 +16,21 @@ export const DashboardSwitcher = () => {
     { path: '/dashboard/admin_conseiller', label: '⚖️ Conseiller', role: 'conseiller' },
     { path: '/dashboard/membre', label: '👥 Membre', role: 'membre' }
   ];
+
+  const currentRole = userData?.role || 'membre';
+  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentRole);
+
+  // Filtrage strict : chaque utilisateur ne voit QUE les tableaux de bord autorisés
+  const authorizedDashboards = allDashboards.filter(d => {
+    if (isSuper) return true;
+    if (d.role === 'membre') return true;
+    return d.role === currentRole;
+  });
+
+  // Si un membre standard n'a accès qu'à la vue membre, masquer complètement le bouton switcher
+  if (authorizedDashboards.length <= 1) {
+    return null;
+  }
 
   return (
     <div style={{ position: 'fixed', top: 'calc(16px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', zIndex: 99999 }}>
@@ -36,6 +53,7 @@ export const DashboardSwitcher = () => {
           padding: 0
         }}
         title="Changer de vue"
+        aria-label="Changer de vue"
       >
         🔄
       </button>
@@ -57,9 +75,9 @@ export const DashboardSwitcher = () => {
           flexDirection: 'column'
         }}>
           <div style={{ padding: '8px 12px', background: '#f8fafc', fontSize: '11px', color: '#64748b', fontWeight: 'bold', borderBottom: '1px solid #f1f5f9' }}>
-            NAVIGATION RAPIDE
+            TABLEAUX DE BORD AUTORISÉS
           </div>
-          {dashboards.map(d => (
+          {authorizedDashboards.map(d => (
             <button
               key={d.path}
               onClick={() => {
