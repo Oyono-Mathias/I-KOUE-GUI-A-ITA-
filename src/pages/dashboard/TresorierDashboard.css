@@ -30,7 +30,7 @@
     color: var(--texte-principal);
     background: var(--fond-alterne);
     min-height: 100vh;
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 .tres-dashboard-container * {
@@ -38,10 +38,10 @@
 }
 
 /* HEADER */
-.tres-dashboard-container .dashboard-header {
+.tres-dashboard-container .dashboard-header { 
     background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
     color: var(--blanc-pur);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -64,7 +64,7 @@
 .tres-dashboard-container .header-actions { display: flex; gap: 8px; }
 
 .tres-dashboard-container .header-btn {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: 44px; height: 44px; border-radius: 50%;
     background: rgba(255,255,255,0.15); border: none;
     color: var(--blanc-pur); font-size: 18px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -86,7 +86,7 @@
 }
 
 .tres-dashboard-container .member-details { flex: 1; }
-.tres-dashboard-container .member-name { font-size: 15px; font-weight: 700; color: var(--blanc-pur); }
+.tres-dashboard-container .member-name { font-size: 16px; font-weight: 700; color: var(--blanc-pur); }
 .tres-dashboard-container .member-role { font-size: 11px; color: var(--or-solaire); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 .tres-dashboard-container .member-badge { background: var(--or-solaire); color: var(--bleu-rca); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
 
@@ -136,7 +136,7 @@
 }
 
 .tres-dashboard-container .card-title { font-size: 18px; font-weight: 700; color: var(--bleu-rca); margin: 0; }
-.tres-dashboard-container .card-title::after { content: ''; display: block; width: 40px; height: 3px; background: var(--or-solaire); margin-top: 6px; border-radius: 2px; }
+.tres-dashboard-container .card-title::after { content: ''; display: block; width: 44px; height: 3px; background: var(--or-solaire); margin-top: 6px; border-radius: 2px; }
 
 /* WELCOME CARD */
 .tres-dashboard-container .welcome-card {
@@ -166,7 +166,7 @@
 
 .tres-dashboard-container .finance-card {
     background: var(--blanc-pur); border-radius: var(--radius-md);
-    padding: 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--bordure);
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top)); box-shadow: var(--shadow-sm); border: 1px solid var(--bordure);
 }
 
 .tres-dashboard-container .finance-card.income { border-left: 4px solid var(--vert-espoir); }
@@ -190,7 +190,7 @@
 
 .tres-dashboard-container .stat-card {
     background: var(--blanc-pur); border-radius: var(--radius-md);
-    padding: 16px; text-align: center; box-shadow: var(--shadow-sm);
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top)); text-align: center; box-shadow: var(--shadow-sm);
     border: 1px solid var(--bordure); border-top: 3px solid var(--or-solaire);
     transition: var(--transition); cursor: pointer;
 }
@@ -207,11 +207,11 @@
 .tres-dashboard-container .stat-card.success .stat-value { color: var(--vert-espoir); }
 
 /* BUTTONS */
-.tres-dashboard-container .btn {
+.tres-dashboard-container .btn { min-height: 44px;
     padding: 10px 16px; border-radius: var(--radius-sm);
     font-size: 13px; font-weight: 600; text-decoration: none;
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    cursor: pointer; border: none; min-height: 40px;
+    cursor: pointer; border: none; min-height: 44px;
     transition: var(--transition); white-space: nowrap;
 }
 
@@ -223,7 +223,7 @@
 .tres-dashboard-container .btn-outline { background: transparent; color: var(--bleu-rca); border: 2px solid var(--bleu-rca); }
 .tres-dashboard-container .btn-secondary { background: var(--fond-alterne); color: var(--texte-principal); }
 .tres-dashboard-container .btn-block { width: 100%; }
-.tres-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 32px; }
+.tres-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 40px; }
 
 /* FORMS */
 .tres-dashboard-container .form-group { margin-bottom: 16px; }
@@ -232,7 +232,7 @@
 
 .tres-dashboard-container .form-group input, .tres-dashboard-container .form-group select, .tres-dashboard-container .form-group textarea {
     width: 100%; padding: 12px; border: 2px solid var(--bordure);
-    border-radius: var(--radius-sm); font-size: 15px; font-family: inherit;
+    border-radius: var(--radius-sm); font-size: 16px; font-family: inherit;
     min-height: 44px; transition: var(--transition);
     background: var(--blanc-pur); color: var(--texte-principal);
 }
@@ -246,7 +246,7 @@
 
 .tres-dashboard-container .quick-action {
     background: var(--blanc-pur); border: 2px dashed var(--bordure);
-    border-radius: var(--radius-md); padding: 16px; text-align: center;
+    border-radius: var(--radius-md); padding: 16px; padding-top: calc(16px + env(safe-area-inset-top)); text-align: center;
     cursor: pointer; transition: var(--transition); text-decoration: none; color: inherit;
 }
 
@@ -321,7 +321,7 @@
 /* REPORT CARD */
 .tres-dashboard-container .report-card {
     background: var(--blanc-pur); border-radius: var(--radius-md);
-    padding: 16px; margin-bottom: 12px; border: 1px solid var(--bordure);
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top)); margin-bottom: 12px; border: 1px solid var(--bordure);
     display: flex; align-items: center; gap: 12px;
 }
 
@@ -420,11 +420,11 @@
 .tres-dashboard-container .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--blanc-pur); border-top: 1px solid var(--bordure);
-    display: flex; justify-content: space-around; padding: 8px 0;
+    display: flex; justify-content: space-around; padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom));
     z-index: 900; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
 
-.tres-dashboard-container .bottom-nav a, .tres-dashboard-container .bottom-nav button { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--texte-secondaire); font-size: 10px; padding: 4px 8px; background: none; border: none; cursor: pointer; }
+.tres-dashboard-container .bottom-nav a, .tres-dashboard-container .bottom-nav button { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--texte-secondaire); font-size: 10px; padding: 4px 8px; min-height: 44px; justify-content: center; background: none; border: none; cursor: pointer; }
 .tres-dashboard-container .bottom-nav a .nav-icon, .tres-dashboard-container .bottom-nav button .nav-icon { font-size: 22px; margin-bottom: 2px; }
 .tres-dashboard-container .bottom-nav a.active, .tres-dashboard-container .bottom-nav button.active { color: var(--bleu-rca); }
 .tres-dashboard-container .bottom-nav a.active .nav-icon, .tres-dashboard-container .bottom-nav button.active .nav-icon { color: var(--or-solaire); }

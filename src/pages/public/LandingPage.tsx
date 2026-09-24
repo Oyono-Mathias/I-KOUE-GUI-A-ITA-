@@ -672,7 +672,7 @@ export const LandingPage = () => {
 
       {/* BOTTOM NAV (mobile) */}
       <nav className="bottom-nav" style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--blanc-pur)', borderTop: '1px solid var(--bordure)', display: 'flex', justifyContent: 'space-around', padding: '8px 0', zIndex: 90, boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
+          position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--blanc-pur)', borderTop: '1px solid var(--bordure)', display: 'flex', justifyContent: 'space-around', paddingTop: '8px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))', overflowX: 'auto', whiteSpace: 'nowrap', zIndex: 90, boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
       }}>
           <a href="#accueil" className={activeSection === 'accueil' ? 'active' : ''} onClick={(e) => scrollToSection(e, 'accueil')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeSection === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
               <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeSection === 'accueil' ? 'var(--or-solaire)' : '' }}>🏠</span>

@@ -1011,7 +1011,7 @@ export const PresidentDashboard = () => {
     
     {addMemberModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Ajouter un nouveau membre</h3>
                 <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -1063,7 +1063,7 @@ export const PresidentDashboard = () => {
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
                         <button type="submit" className="btn btn-primary">Créer le compte</button>
                         <button type="button" className="btn btn-outline" onClick={() => setAddMemberModalOpen(false)}>Annuler</button>
                     </div>
@@ -1074,12 +1074,12 @@ export const PresidentDashboard = () => {
 
     {memberModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>{memberModal.nom}</h3>
                 <p>Email: {memberModal.email || '-'}</p>
                 <p>Téléphone: {memberModal.telephone || '-'}</p>
                 <p>Statut: {memberModal.statut}</p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
                     <button className="btn btn-primary" onClick={() => setMemberModal(null)}>Fermer</button>
                     {memberModal.telephone && <a href={`https://wa.me/${memberModal.telephone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="btn btn-success">WhatsApp</a>}
                 </div>
@@ -1089,7 +1089,7 @@ export const PresidentDashboard = () => {
 
     {meetingModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Convoquer une réunion</h3>
                 <form onSubmit={saveMeeting}>
                     <div className="form-group"><label>Type</label><select id="meetingType"><option value="bureau">Bureau Exécutif</option><option value="ag_ordinaire">AG Ordinaire</option></select></div>
@@ -1099,7 +1099,7 @@ export const PresidentDashboard = () => {
                     </div>
                     <div className="form-group"><label>Lieu</label><input type="text" id="meetingLocation" defaultValue="Siège social" style={{ width: '100%', padding: '8px' }} required /></div>
                     <div className="form-group"><label>Ordre du jour</label><textarea id="meetingAgenda" rows={4} style={{ width: '100%', padding: '8px' }} required></textarea></div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <button type="submit" className="btn btn-primary">Convoquer</button>
                         <button type="button" className="btn btn-outline" onClick={() => setMeetingModalOpen(false)}>Annuler</button>
                     </div>
@@ -1110,10 +1110,10 @@ export const PresidentDashboard = () => {
 
     {confirmDialog.isOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%' }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Confirmation</h3>
                 <p style={{ whiteSpace: 'pre-wrap' }}>{confirmDialog.message}</p>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
                     <button className="btn btn-outline" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
                     <button className="btn btn-primary" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
                 </div>

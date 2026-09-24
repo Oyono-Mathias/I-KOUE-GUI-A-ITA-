@@ -19,12 +19,16 @@
 html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     color: #2C3E50;
     background: #FAFAFA;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* Hide scrollbar for a cleaner mobile app feel */

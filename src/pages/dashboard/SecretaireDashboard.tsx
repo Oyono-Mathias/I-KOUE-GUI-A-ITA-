@@ -474,7 +474,7 @@ export const SecretaireDashboard = () => {
                 }
             }} style={{ marginTop: '20px' }}>
                 <h3 className="card-title">Enregistrer un courrier</h3>
-                <div className="form-row" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <div className="form-row" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
                     <input type="text" id="cObjet" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Objet du courrier" required />
                     <input type="text" id="cTiers" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Expéditeur / Destinataire" required />
                     <select id="cType" className="search-input" style={{ width: 'auto', padding: '8px' }}>
@@ -729,7 +729,7 @@ export const SecretaireDashboard = () => {
       {/* MODALS */}
       {pvModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Rédiger un PV</h3>
                   <form onSubmit={savePV}>
                       <div className="form-group"><label>Réunion associée</label><select id="pvMeeting" required><option value="">-- Choisir une réunion --</option>{meetings.map(m => <option key={m.id} value={m.id}>{m.titre}</option>)}</select></div>
@@ -741,7 +741,7 @@ export const SecretaireDashboard = () => {
                       <div className="form-group"><label>Ordre du jour</label><textarea id="pvAgenda" rows={2} required></textarea></div>
                       <div className="form-group"><label>Contenu</label><textarea id="pvContent" rows={5} required></textarea></div>
                       <div className="form-group"><label>Décisions</label><textarea id="pvDecisions" rows={2}></textarea></div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Enregistrer</button>
                           <button type="button" className="btn btn-outline" onClick={() => setPvModalOpen(false)}>Annuler</button>
                       </div>
@@ -752,7 +752,7 @@ export const SecretaireDashboard = () => {
 
       {convoModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Créer une Convocation</h3>
                   <form onSubmit={saveConvo}>
                       <div className="form-group"><label>Type</label><select id="convoType" required><option value="bureau">Bureau</option><option value="ag_ordinaire">AG Ordinaire</option></select></div>
@@ -763,7 +763,7 @@ export const SecretaireDashboard = () => {
                       <div className="form-group"><label>Lieu</label><input type="text" id="convoLocation" defaultValue="Siège social" required /></div>
                       <div className="form-group"><label>Ordre du jour</label><textarea id="convoAgenda" rows={3} required></textarea></div>
                       <div className="form-group"><label>Destinataires</label><select id="convoRecipients" required><option value="bureau">Bureau</option><option value="all_members">Tous les membres</option></select></div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Envoyer</button>
                           <button type="button" className="btn btn-outline" onClick={() => setConvoModalOpen(false)}>Annuler</button>
                       </div>
@@ -774,7 +774,7 @@ export const SecretaireDashboard = () => {
 
       {uploadModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Archiver un Document</h3>
                   <form onSubmit={saveDocument}>
                       <div className="form-group"><label>Titre</label><input type="text" id="docTitle" required /></div>
@@ -792,7 +792,7 @@ export const SecretaireDashboard = () => {
                           <input type="checkbox" id="docConfidential" />
                           <label htmlFor="docConfidential">Document confidentiel (accès Bureau uniquement)</label>
                       </div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Archiver</button>
                           <button type="button" className="btn btn-outline" onClick={() => setUploadModalOpen(false)}>Annuler</button>
                       </div>
@@ -804,7 +804,7 @@ export const SecretaireDashboard = () => {
       
     {addMemberModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Ajouter un nouveau membre</h3>
                 <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -853,7 +853,7 @@ export const SecretaireDashboard = () => {
                             </select>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
                         <button type="submit" className="btn btn-primary">Créer le compte</button>
                         <button type="button" className="btn btn-outline" onClick={() => setAddMemberModalOpen(false)}>Annuler</button>
                     </div>
@@ -882,10 +882,10 @@ export const SecretaireDashboard = () => {
 
       {confirmDialog.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%' }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Confirmation</h3>
                   <p style={{ whiteSpace: 'pre-wrap' }}>{confirmDialog.message}</p>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
                       <button className="btn btn-outline" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
                       <button className="btn btn-primary" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
                   </div>

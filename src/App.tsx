@@ -15,6 +15,8 @@ import { SecretaireDashboard } from './pages/dashboard/SecretaireDashboard';
 import { TresorierDashboard } from './pages/dashboard/TresorierDashboard';
 import { ConseillerDashboard } from './pages/dashboard/ConseillerDashboard';
 
+import { NetworkStatusIndicator } from './components/layout/NetworkStatusIndicator';
+
 export const App = () => {
   const { loading } = useAuth();
 
@@ -27,7 +29,9 @@ export const App = () => {
   }
 
   return (
-    <Routes>
+    <>
+      <NetworkStatusIndicator />
+      <Routes>
       {/* ESPACE PUBLIC */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
@@ -61,6 +65,7 @@ export const App = () => {
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 };
 

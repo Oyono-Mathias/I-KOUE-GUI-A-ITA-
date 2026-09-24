@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import fs from 'fs';
+
+const content = `import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export const DashboardSwitcher = () => {
@@ -16,12 +18,12 @@ export const DashboardSwitcher = () => {
   ];
 
   return (
-    <div style={{ position: 'fixed', top: 'calc(16px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', zIndex: 99999 }}>
+    <div style={{ position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 99999 }}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          width: '44px',
-          height: '44px',
+          width: '40px',
+          height: '40px',
           borderRadius: '50%',
           background: 'rgba(255, 255, 255, 0.15)',
           border: 'none',
@@ -32,7 +34,7 @@ export const DashboardSwitcher = () => {
           alignItems: 'center',
           justifyContent: 'center',
           backdropFilter: 'blur(4px)',
-          cursor: 'pointer', minHeight: '44px',
+          cursor: 'pointer',
           padding: 0
         }}
         title="Changer de vue"
@@ -52,7 +54,6 @@ export const DashboardSwitcher = () => {
           boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           overflow: 'hidden',
           width: '200px',
-          maxWidth: '90vw',
           display: 'flex',
           flexDirection: 'column'
         }}>
@@ -73,7 +74,7 @@ export const DashboardSwitcher = () => {
                 background: location.pathname === d.path ? '#eff6ff' : 'transparent',
                 color: location.pathname === d.path ? '#1d4ed8' : '#334155',
                 fontSize: '13px',
-                cursor: 'pointer', minHeight: '44px',
+                cursor: 'pointer',
                 borderBottom: '1px solid #f1f5f9',
                 display: 'flex',
                 alignItems: 'center',
@@ -89,3 +90,5 @@ export const DashboardSwitcher = () => {
     </div>
   );
 };
+`;
+fs.writeFileSync('src/components/layout/DashboardSwitcher.tsx', content);

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { initializeFirestore, getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, doc, getDoc, setDoc, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -11,6 +11,7 @@ export const db = isAlreadyInitialized
   ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
   : initializeFirestore(app, {
       experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
     }, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const storage = getStorage(app);

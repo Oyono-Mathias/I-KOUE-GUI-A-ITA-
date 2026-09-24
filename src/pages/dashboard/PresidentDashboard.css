@@ -30,7 +30,7 @@
     color: var(--texte-principal);
     background: var(--fond-alterne);
     min-height: 100vh;
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 .president-dashboard-container * {
@@ -43,7 +43,7 @@
 .president-dashboard-container .dashboard-header-compact {
     background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
     color: var(--blanc-pur);
-    padding: 12px 16px;
+    padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -74,7 +74,7 @@
 }
 
 .president-dashboard-container .header-titles h1 {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--blanc-pur);
     margin: 0 0 2px 0;
@@ -95,8 +95,8 @@
 }
 
 .president-dashboard-container .header-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
     border: none;
@@ -138,11 +138,12 @@
     right: 0;
     margin-top: 8px;
     width: 280px;
+    max-width: calc(100vw - 32px);
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     z-index: 50;
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     color: #1a1a1a;
 }
 
@@ -154,7 +155,7 @@
 }
 
 .president-dashboard-container .notif-dropdown-item {
-    padding: 8px 0;
+    padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom));
     font-size: 13px;
     display: flex;
     align-items: center;
@@ -167,7 +168,7 @@
 .president-dashboard-container .notif-dropdown-item span { font-size: 16px; }
 
 .president-dashboard-container .notif-dropdown-empty {
-    padding: 8px 0;
+    padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom));
     font-size: 13px;
     color: #666;
 }
@@ -263,7 +264,7 @@
 .president-dashboard-container .card-title::after {
     content: '';
     display: block;
-    width: 40px;
+    width: 44px;
     height: 3px;
     background: var(--or-solaire);
     margin-top: 6px;
@@ -335,7 +336,7 @@
 .president-dashboard-container .stat-card {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     text-align: center;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--bordure);
@@ -377,7 +378,7 @@
 /* ============================================
     🔘 BUTTONS
     ============================================ */
-.president-dashboard-container .btn {
+.president-dashboard-container .btn { min-height: 44px;
     padding: 10px 16px;
     border-radius: var(--radius-sm);
     font-size: 13px;
@@ -387,9 +388,9 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    cursor: pointer;
+    cursor: pointer; min-height: 44px;
     border: none;
-    min-height: 40px;
+    min-height: 44px;
     transition: var(--transition);
     white-space: nowrap;
 }
@@ -407,7 +408,7 @@
 .president-dashboard-container .btn-outline { background: transparent; color: var(--bleu-rca); border: 2px solid var(--bleu-rca); }
 .president-dashboard-container .btn-secondary { background: var(--fond-alterne); color: var(--texte-principal); }
 .president-dashboard-container .btn-block { width: 100%; }
-.president-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 32px; }
+.president-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 40px; }
 
 /* ============================================
     📝 FORMS
@@ -431,7 +432,7 @@
     padding: 12px;
     border: 2px solid var(--bordure);
     border-radius: var(--radius-sm);
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     min-height: 44px;
     transition: var(--transition);
@@ -548,7 +549,7 @@
 .president-dashboard-container .meeting-item {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     margin-bottom: 12px;
     border-left: 4px solid var(--or-solaire);
     box-shadow: var(--shadow-sm);
@@ -565,7 +566,7 @@
 }
 
 .president-dashboard-container .meeting-title {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--bleu-rca);
 }
@@ -674,7 +675,7 @@
     background: var(--blanc-pur);
     border: 2px dashed var(--bordure);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
@@ -715,7 +716,7 @@
 .president-dashboard-container .finance-card {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--bordure);
 }
@@ -750,7 +751,7 @@
     border-top: 1px solid var(--bordure);
     display: flex;
     justify-content: space-around;
-    padding: 8px 0;
+    padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom));
     z-index: 900;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
@@ -763,7 +764,7 @@
     text-decoration: none;
     color: var(--texte-secondaire);
     font-size: 10px;
-    padding: 4px 8px;
+    padding: 4px 8px; min-height: 44px; justify-content: center;
     background: none;
     border: none;
     cursor: pointer;

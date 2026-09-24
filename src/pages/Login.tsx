@@ -26,7 +26,11 @@ export default function Login() {
       // La redirection sera gérée par le useEffect
     } catch (err: any) {
       console.error(err);
-      setError("Identifiants incorrects ou compte inexistant.");
+      if (err.code === 'auth/network-request-failed' || err.message?.includes('network-request-failed')) {
+        setError("Erreur réseau : Vérifiez votre connexion Internet.");
+      } else {
+        setError("Identifiants incorrects ou compte inexistant.");
+      }
       setLoading(false);
     }
   };
@@ -72,7 +76,7 @@ export default function Login() {
                   placeholder="associationikoueguiaita@gmail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--bordure)', minHeight: '48px' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--bordure)', minHeight: '48px', fontSize: '16px' }}
                 />
               </div>
 
@@ -84,7 +88,7 @@ export default function Login() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--bordure)', minHeight: '48px' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid var(--bordure)', minHeight: '48px', fontSize: '16px' }}
                 />
               </div>
 

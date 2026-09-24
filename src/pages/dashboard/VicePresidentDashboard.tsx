@@ -811,7 +811,7 @@ export const VicePresidentDashboard = () => {
                     await addDoc(collection(db, 'objectives'), { title, progress: 0, createdAt: serverTimestamp() });
                     (e.target as HTMLFormElement).reset();
                 }
-            }} style={{ marginTop: '20px', display: 'flex', gap: '8px' }}>
+            }} style={{ marginTop: '20px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 <input type="text" id="objTitle" className="search-input" style={{ flex: 1 }} placeholder="Nouvel objectif annuel..." required />
                 <button type="submit" className="btn btn-gold">Ajouter</button>
             </form>
@@ -1023,7 +1023,7 @@ export const VicePresidentDashboard = () => {
     {/* MODALS & CONFIRM DIALOG */}
     {meetingModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Convoquer une réunion</h3>
                 <form onSubmit={saveMeeting}>
                     <div className="form-group"><label>Type</label><select id="meetingType"><option value="bureau">Bureau Exécutif</option><option value="ag_ordinaire">AG Ordinaire</option></select></div>
@@ -1033,7 +1033,7 @@ export const VicePresidentDashboard = () => {
                     </div>
                     <div className="form-group"><label>Lieu</label><input type="text" id="meetingLocation" defaultValue="Siège social" style={{ width: '100%', padding: '8px' }} required /></div>
                     <div className="form-group"><label>Ordre du jour</label><textarea id="meetingAgenda" rows={4} style={{ width: '100%', padding: '8px' }} required></textarea></div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <button type="submit" className="btn btn-primary">Convoquer</button>
                         <button type="button" className="btn btn-outline" onClick={() => setMeetingModalOpen(false)}>Annuler</button>
                     </div>
@@ -1045,7 +1045,7 @@ export const VicePresidentDashboard = () => {
     
     {missionModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Nouvelle Mission Bénévolat</h3>
                 <form onSubmit={saveMission}>
                     <div className="form-group"><label>Titre de la mission</label><input type="text" id="missionTitle" required style={{ width: '100%', padding: '8px' }} /></div>
@@ -1058,7 +1058,7 @@ export const VicePresidentDashboard = () => {
                         <label>Nombre de bénévoles requis (0 = illimité)</label>
                         <input type="number" id="missionVolunteers" min="0" defaultValue="0" style={{ width: '100%', padding: '8px' }} />
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
                         <button type="submit" className="btn btn-primary">Publier la mission</button>
                         <button type="button" className="btn btn-outline" onClick={() => setMissionModalOpen(false)}>Annuler</button>
                     </div>
@@ -1070,7 +1070,7 @@ export const VicePresidentDashboard = () => {
 
     {taskModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+            <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Nouvelle tâche de coordination</h3>
                 <form onSubmit={saveTask}>
                     <div className="form-group"><label>Titre de la tâche</label><input type="text" id="taskTitle" required style={{ width: '100%', padding: '8px' }} /></div>
@@ -1090,7 +1090,7 @@ export const VicePresidentDashboard = () => {
                             <option value="vice_president">Moi-même</option>
                         </select>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                         <button type="submit" className="btn btn-primary">Enregistrer</button>
                         <button type="button" className="btn btn-outline" onClick={() => setTaskModalOpen(false)}>Annuler</button>
                     </div>
@@ -1101,10 +1101,10 @@ export const VicePresidentDashboard = () => {
 
     {confirmDialog.isOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%' }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Confirmation</h3>
                 <p style={{ whiteSpace: 'pre-wrap' }}>{confirmDialog.message}</p>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
                     <button className="btn btn-outline" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
                     <button className="btn btn-primary" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
                 </div>

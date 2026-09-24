@@ -664,7 +664,7 @@ export const CommunicateurDashboard: React.FC = () => {
                 }
             }} style={{ marginTop: '20px' }}>
                 <h3 className="card-title">Planifier une publication</h3>
-                <div className="form-row" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <div className="form-row" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
                     <input type="text" id="calTitle" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Titre / Sujet" required />
                     <input type="text" id="calCanal" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Canal (FB, Site, WhatsApp...)" required />
                     <input type="date" id="calDate" className="search-input" style={{ width: 'auto', padding: '8px' }} required />
@@ -963,7 +963,7 @@ export const CommunicateurDashboard: React.FC = () => {
             value={newsSearch}
             onChange={(e) => setNewsSearch(e.target.value)}
           />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
             <select 
               className="filter-select" 
               value={filterCategory} 
@@ -1157,7 +1157,7 @@ export const CommunicateurDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
             <button type="button" className="btn btn-secondary" onClick={() => saveNewsData('brouillon')} style={{ flex: 1 }}>
               💾 Sauvegarder brouillon
             </button>
@@ -1540,7 +1540,7 @@ export const CommunicateurDashboard: React.FC = () => {
             if ((e.target as HTMLElement).id === 'messageModal') setSelectedMessage(null);
           }}
         >
-          <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', margin: '20px auto', padding: '24px' }}>
+          <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', margin: '20px auto', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h3 style={{ color: 'var(--bleu-rca)', margin: 0 }}>💬 Message</h3>
               <button onClick={() => setSelectedMessage(null)} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer' }}>✕</button>

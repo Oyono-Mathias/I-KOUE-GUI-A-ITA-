@@ -53,7 +53,7 @@ export const NewsManager = () => {
       {showAdd && (
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
           <input required type="text" placeholder="Titre de l'actualité" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full p-3 border border-gray-200 rounded-lg text-lg font-bold" />
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="p-3 border border-gray-200 rounded-lg">
               <option>Actualité</option><option>Événement</option><option>Communiqué</option><option>Humanitaire</option>
             </select>

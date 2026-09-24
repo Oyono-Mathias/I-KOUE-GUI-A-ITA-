@@ -33,7 +33,7 @@
     color: var(--texte-principal);
     background: var(--fond-alterne);
     min-height: 100vh;
-    padding-bottom: 80px;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 @media (min-width: 768px) {
@@ -45,10 +45,10 @@
 /* ============================================
    🧭 HEADER DASHBOARD
    ============================================ */
-.communicateur-page .dashboard-header {
+.communicateur-page .dashboard-header { 
     background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
     color: var(--blanc-pur);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     position: sticky;
     top: 0;
     z-index: 100;
@@ -101,8 +101,8 @@
 }
 
 .communicateur-page .header-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: rgba(255,255,255,0.15);
     border: none;
@@ -149,7 +149,7 @@
 }
 
 .communicateur-page .member-name {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--blanc-pur);
 }
@@ -271,7 +271,7 @@
 .communicateur-page .card-title::after {
     content: '';
     display: block;
-    width: 40px;
+    width: 44px;
     height: 3px;
     background: var(--or-solaire);
     margin-top: 6px;
@@ -301,8 +301,8 @@
     color: var(--bleu-rca);
 }
 
-.communicateur-page .welcome-card h2 {
-    font-size: 22px;
+.communicateur-page .welcome-card h2 { font-size: clamp(20px, 6vw, 24px); 
+    
     margin-bottom: 8px;
     position: relative;
     z-index: 1;
@@ -335,7 +335,7 @@
 .communicateur-page .stat-card {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     text-align: center;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--bordure);
@@ -353,8 +353,8 @@
     margin-bottom: 8px;
 }
 
-.communicateur-page .stat-card .stat-value {
-    font-size: 22px;
+.communicateur-page .stat-card .stat-value { font-size: 22px; font-size: 22px;
+    
     font-weight: 700;
     color: var(--bleu-rca);
 }
@@ -377,7 +377,7 @@
     border-top-color: var(--rouge-solidarite);
 }
 
-.communicateur-page .stat-card.alert .stat-value {
+.communicateur-page .stat-card.alert .stat-value { font-size: 22px; font-size: 22px;
     color: var(--rouge-solidarite);
 }
 
@@ -391,7 +391,7 @@
 .communicateur-page .news-item {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     margin-bottom: 12px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--bordure);
@@ -477,7 +477,7 @@
 /* ============================================
    🔘 BUTTONS
    ============================================ */
-.communicateur-page .btn {
+.communicateur-page .btn { min-height: 44px;
     padding: 10px 16px;
     border-radius: var(--radius-sm);
     font-size: 13px;
@@ -489,7 +489,7 @@
     gap: 6px;
     cursor: pointer;
     border: none;
-    min-height: 40px;
+    min-height: 44px;
     transition: var(--transition);
     white-space: nowrap;
 }
@@ -544,7 +544,7 @@
 .communicateur-page .btn-small {
     padding: 6px 12px;
     font-size: 12px;
-    min-height: 32px;
+    min-height: 40px;
 }
 
 .communicateur-page .btn-icon {
@@ -580,7 +580,7 @@
     padding: 12px;
     border: 2px solid var(--bordure);
     border-radius: var(--radius-sm);
-    font-size: 15px;
+    font-size: 16px;
     font-family: inherit;
     min-height: 44px;
     transition: var(--transition);
@@ -668,7 +668,7 @@
     background: var(--blanc-pur);
     border: 2px dashed var(--bordure);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     text-align: center;
     cursor: pointer;
     transition: var(--transition);
@@ -919,7 +919,7 @@
     border-top: 1px solid var(--bordure);
     display: flex;
     justify-content: space-around;
-    padding: 8px 0;
+    padding: 8px 0; padding-bottom: calc(8px + env(safe-area-inset-bottom));
     z-index: 900;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 }
@@ -940,12 +940,12 @@
     text-decoration: none;
     color: var(--texte-secondaire);
     font-size: 10px;
-    padding: 4px 8px;
+    padding: 4px 8px; min-height: 44px; justify-content: center;
     cursor: pointer;
 }
 
 .communicateur-page .bottom-nav .nav-icon {
-    font-size: 22px;
+    
     margin-bottom: 2px;
 }
 
@@ -1101,7 +1101,7 @@
 .communicateur-page .domain-card {
     background: var(--blanc-pur);
     border-radius: var(--radius-md);
-    padding: 16px;
+    padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     margin-bottom: 12px;
     border-left: 4px solid var(--or-solaire);
     box-shadow: var(--shadow-sm);
@@ -1149,8 +1149,8 @@
     margin-bottom: 16px;
 }
 
-.communicateur-page .section-header h2 {
-    font-size: 22px;
+.communicateur-page .section-header h2 { font-size: clamp(20px, 6vw, 24px);
+    
     font-weight: 700;
     color: var(--bleu-rca);
     margin-bottom: 4px;

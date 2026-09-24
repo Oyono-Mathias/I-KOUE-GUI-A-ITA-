@@ -619,7 +619,7 @@ export const TresorierDashboard = () => {
                 }
             }} style={{ marginTop: '20px' }}>
                 <h3 className="card-title">Enregistrer une facture</h3>
-                <div className="form-row" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <div className="form-row" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
                     <input type="text" id="fFour" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Fournisseur / Motif" required />
                     <input type="number" id="fMont" className="search-input" style={{ flex: 1, padding: '8px' }} placeholder="Montant" required />
                     <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px' }}>Ajouter</button>
@@ -742,7 +742,7 @@ export const TresorierDashboard = () => {
       {/* MODALS */}
       {incomeModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Enregistrer une Recette</h3>
                   <form onSubmit={saveIncome}>
                       <div className="form-group">
@@ -775,7 +775,7 @@ export const TresorierDashboard = () => {
                       <div className="form-group"><label>Mode de paiement</label><select id="incomePayment" required><option value="orange_money">Orange Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="especes">Espèces</option><option value="virement">Virement</option></select></div>
                       <div className="form-group"><label>Référence / N° transaction</label><input type="text" id="incomeReference" /></div>
                       <div className="form-group"><label>Description</label><textarea id="incomeDescription" rows={2}></textarea></div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Enregistrer</button>
                           <button type="button" className="btn btn-outline" onClick={() => setIncomeModalOpen(false)}>Annuler</button>
                       </div>
@@ -786,7 +786,7 @@ export const TresorierDashboard = () => {
 
       {expenseModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '600px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Enregistrer une Dépense</h3>
                   <form onSubmit={saveExpense}>
                       <div className="form-group"><label>Titre de la dépense</label><input type="text" id="expenseTitle" required /></div>
@@ -800,7 +800,7 @@ export const TresorierDashboard = () => {
                       </div>
                       <div className="form-group"><label>Justification</label><textarea id="expenseDescription" required rows={3}></textarea></div>
                       <div className="alert-box info"><div className="alert-icon">ℹ️</div><div className="alert-content"><h4>Art. 16 Statuts</h4><p>La dépense sera soumise au Président pour cosignature.</p></div></div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Soumettre pour cosignature</button>
                           <button type="button" className="btn btn-outline" onClick={() => setExpenseModalOpen(false)}>Annuler</button>
                       </div>
@@ -811,7 +811,7 @@ export const TresorierDashboard = () => {
 
       {duesModalOpen.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
-              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px' }}>
+              <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Enregistrer une Cotisation</h3>
                   <form onSubmit={saveDuesPayment}>
                       <div className="form-group"><label>Membre</label><input type="text" value={duesModalOpen.memberName} disabled style={{ opacity: 0.7 }} /></div>
@@ -821,7 +821,7 @@ export const TresorierDashboard = () => {
                       </div>
                       <div className="form-group"><label>Mode de paiement</label><select id="duesPayment" required><option value="orange_money">Orange Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="especes">Espèces</option></select></div>
                       <div className="form-group"><label>Référence</label><input type="text" id="duesReference" /></div>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                           <button type="submit" className="btn btn-gold">Enregistrer</button>
                           <button type="button" className="btn btn-outline" onClick={() => setDuesModalOpen({ isOpen: false, memberId: '', memberName: '', amount: 0 })}>Annuler</button>
                       </div>
@@ -832,10 +832,10 @@ export const TresorierDashboard = () => {
 
       {confirmDialog.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%' }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
                   <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Confirmation</h3>
                   <p style={{ whiteSpace: 'pre-wrap' }}>{confirmDialog.message}</p>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
                       <button className="btn btn-outline" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
                       <button className="btn btn-primary" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
                   </div>
