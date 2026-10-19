@@ -373,10 +373,27 @@ service cloud.firestore {
     }
 
     match /votes/{docId} {
-      allow read: if isMember();
-      allow create, delete: if isSuperAdmin() || isSecretaire();
-      // Un membre peut participer en enregistrant son vote sans modifier la structure de la session
-      allow update: if isSuperAdmin() || isSecretaire() || isMember();
+      // Les résultats individuels ne sont accessibles qu'à l'auteur du vote et au bureau habilité.
+      allow read: if isSuperAdmin() || isSecretaire() || (
+        isMember() && resource.data.memberId == request.auth.uid
+      );
+
+      // Un vote est immuable et son identifiant déterministe (pollId_uid) empêche
+      // un même compte de créer plusieurs votes pour la même résolution.
+      allow create: if isMember()
+        && getUserStatus() in ['a_jour', 'actif']
+        && request.resource.data.keys().hasAll(['pollId', 'choice', 'memberId', 'timestamp'])
+        && request.resource.data.keys().hasOnly(['pollId', 'choice', 'memberId', 'timestamp'])
+        && request.resource.data.pollId is string
+        && request.resource.data.memberId == request.auth.uid
+        && docId == request.resource.data.pollId + '_' + request.auth.uid
+        && request.resource.data.choice in ['pour', 'contre', 'abstention']
+        && request.resource.data.timestamp == request.time
+        && exists(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId))
+        && get(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId)).data.status == 'ouvert_au_vote';
+
+      // Aucun vote ne peut être modifié ou supprimé depuis le client.
+      allow update, delete: if false;
     }
 
     match /notifications/{docId} {
