@@ -373,10 +373,12 @@ service cloud.firestore {
     }
 
     match /votes/{docId} {
-      // Les résultats individuels ne sont accessibles qu'à l'auteur du vote et au bureau habilité.
-      allow read: if isSuperAdmin() || isSecretaire() || (
-        isMember() && resource.data.memberId == request.auth.uid
+      // get autorise aussi la vérification d'un vote absent, sans exposer les votes des autres.
+      allow get: if isSuperAdmin() || isSecretaire() || (
+        isMember() && docId.matches('.*_' + request.auth.uid)
       );
+      // Les listes de votes sont réservées au bureau habilité pour protéger le secret du scrutin.
+      allow list: if isSuperAdmin() || isSecretaire();
 
       // Un vote est immuable et son identifiant déterministe (pollId_uid) empêche
       // un même compte de créer plusieurs votes pour la même résolution.
