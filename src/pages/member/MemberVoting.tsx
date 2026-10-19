@@ -5,7 +5,7 @@ import { useRealTimeCollection } from '../../hooks/useRealTime';
 import { SkeletonLoader } from '../../components/ui/SkeletonLoader';
 import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../firebase';
-import { collection, doc, getDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 
 export const MemberVoting = () => {
   const { userData, loading: userLoading } = useAuth();
