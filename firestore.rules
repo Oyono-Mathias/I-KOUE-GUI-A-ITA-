@@ -175,298 +175,11 @@ service cloud.firestore {
       allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
     }
 
-    // Validation stricte des soumissions publiques : champs, types et tailles bornés.
     function validEmail(value) {
       return value is string
         && value.size() > 3
         && value.size() <= 254
-        && value.matches('^[^ @]+@[^ @]+\\.[^ @]+
-
-    // =========================================================================
-    // 5. COLLECTIONS FINANCIÈRES (CLOISONNEMENT STRICT — TRÉSORIER / PRÉSIDENT)
-    // =========================================================================
-    match /finances/{docId} {
-      // Lecture : Le Trésorier, le Président, ou le membre pour ses propres cotisations (reçu)
-      allow read: if isTresorier() || isSuperAdmin() || (
-        isMember() && resource.data.memberId == request.auth.uid
-      );
-      // Écriture, modification, suppression : Exclusivement Trésorier et Président
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
-    }
-
-    match /expenses/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
-    }
-
-    match /income/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
-    }
-
-    match /factures/{docId} {
-      allow read: if isTresorier() || isSuperAdmin();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
-    }
-
-    match /transactions/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
-    }
-
-    // =========================================================================
-    // 6. JOURNAUX D'AUDIT (INVIOLABILITÉ ET APPEND-ONLY RENFORCÉ — SEC-4C-01)
-    // =========================================================================
-    match /audit_logs/{docId} {
-      // Seul le Président / Super Admin peut consulter les journaux de sécurité
-      allow read: if isSuperAdmin();
-
-      // Création append-only sécurisée :
-      // - Utilisateur obligatoirement authentifié et non suspendu
-      // - Anti-usurpation stricte : actorUid DOIT correspondre à l'UID de la requête auth
-      // - Schéma minimal vérifié : action non vide (max 100 caractères), details et user bornés
-      allow create: if isSignedIn() && isNotSuspended()
-        && request.resource.data.actorUid == request.auth.uid
-        && request.resource.data.action is string
-        && request.resource.data.action.size() > 0
-        && request.resource.data.action.size() <= 100
-        && (!('details' in request.resource.data) || (request.resource.data.details is string && request.resource.data.details.size() <= 1000))
-        && (!('user' in request.resource.data) || (request.resource.data.user is string && request.resource.data.user.size() <= 100));
-
-      // Immutabilité absolue : Modification et suppression strictement impossibles pour tous
-      allow update, delete: if false;
-    }
-
-    // =========================================================================
-    // 7. REGISTRE DES MEMBRES & VALIDATIONS
-    // =========================================================================
-    match /members/{docId} {
-      allow read: if isTresorier() || isSecretaire() || isVicePresident() || isSuperAdmin();
-      allow create, update, delete: if isTresorier() || isSecretaire() || isSuperAdmin();
-    }
-
-    match /validations/{docId} {
-      allow read: if isBureau();
-      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
-    }
-
-    // =========================================================================
-    // 8. GOUVERNANCE, ADMINISTRATION ET SECRÉTARIAT
-    // =========================================================================
-    match /documents/{docId} {
-      // Documents officiels partagés : lecture autorisée à tous les membres
-      allow read: if isMember();
-      // Gestion des documents : Secrétaire Général et Président
-      allow create, update, delete: if isSecretaire() || isSuperAdmin();
-    }
-
-    match /pv/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isSecretaire() || isSuperAdmin();
-    }
-
-    match /convocations/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isSecretaire() || isSuperAdmin();
-    }
-
-    match /courriers/{docId} {
-      allow read, write: if isSecretaire() || isSuperAdmin();
-    }
-
-    match /moderation/{docId} {
-      allow read, write: if isSecretaire() || isSuperAdmin();
-    }
-
-    match /meetings/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isBureau();
-    }
-
-    match /commissions/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isBureau();
-    }
-
-    match /tasks/{docId} {
-      allow read: if isBureau() || isMember();
-      allow create, delete: if isBureau();
-      // Les tâches sont créées, modifiées et clôturées par le bureau uniquement.
-      // L'interface assigne les tâches à des fonctions du bureau, pas à des membres ordinaires.
-      allow update: if isBureau();
-    }
-
-    match /system/{docId} {
-      // Configuration d'urgence ou de suppléance
-      allow read: if isBureau() || (isMember() && docId == 'suppleance');
-      allow write: if isSuperAdmin() || (isVicePresident() && docId == 'suppleance');
-    }
-
-    match /suppleance_history/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isVicePresident() || isSuperAdmin();
-    }
-
-    match /board_messages/{docId} {
-      // Messagerie interne du bureau exécutif
-      allow read, write: if isBureau();
-    }
-
-    match /avis/{docId} {
-      allow read, write: if isConseiller() || isSuperAdmin();
-    }
-
-    match /conflits/{docId} {
-      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
-    }
-
-    match /projets/{docId} {
-      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
-    }
-
-    match /objectives/{docId} {
-      allow read, write: if isVicePresident() || isSuperAdmin();
-    }
-
-    match /rapports/{docId} {
-      allow read, write: if isBureau();
-    }
-
-    match /rapports_delegues/{docId} {
-      allow read, write: if isBureau();
-    }
-
-    // =========================================================================
-    // 9. VIE ASSOCIATIVE ET ESPACE MEMBRES
-    // =========================================================================
-    match /missions_benevolat/{docId} {
-      allow read: if isMember();
-      allow create, delete: if isVicePresident() || isSuperAdmin();
-      // Un membre ne peut modifier que la liste participants, en ajoutant ou retirant
-      // uniquement son propre UID. Les champs de la mission restent protégés.
-      allow update: if isVicePresident() || isSuperAdmin() || (
-        isMember()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
-        && resource.data.participants is list
-        && request.resource.data.participants is list
-        && (
-          (
-            request.resource.data.participants.size() == resource.data.participants.size() + 1
-            && request.resource.data.participants.hasAll(resource.data.participants)
-            && request.resource.data.participants.hasAny([request.auth.uid])
-            && !resource.data.participants.hasAny([request.auth.uid])
-          )
-          ||
-          (
-            resource.data.participants.size() == request.resource.data.participants.size() + 1
-            && resource.data.participants.hasAll(request.resource.data.participants)
-            && resource.data.participants.hasAny([request.auth.uid])
-            && !request.resource.data.participants.hasAny([request.auth.uid])
-          )
-        )
-      );
-    }
-
-    match /forum/{docId} {
-      allow read: if isMember();
-      // L'auteur est toujours lié au compte authentifié; aucun champ additionnel arbitraire.
-      allow create: if isMember()
-        && request.resource.data.keys().hasAll(['authorId', 'authorName', 'content', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['authorId', 'authorName', 'content', 'createdAt', 'title'])
-        && request.resource.data.authorId == request.auth.uid
-        && request.resource.data.authorName is string
-        && request.resource.data.authorName.size() > 0
-        && request.resource.data.authorName.size() <= 100
-        && request.resource.data.content is string
-        && request.resource.data.content.size() > 0
-        && request.resource.data.content.size() <= 5000
-        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200))
-        && request.resource.data.createdAt == request.time;
-      allow update: if isMember()
-        && (isSuperAdmin() || resource.data.authorId == request.auth.uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'title'])
-        && (!('content' in request.resource.data) || (request.resource.data.content is string && request.resource.data.content.size() > 0 && request.resource.data.content.size() <= 5000))
-        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200));
-      allow delete: if isSuperAdmin() || (isMember() && resource.data.authorId == request.auth.uid);
-    }
-
-    match /votes/{docId} {
-      // get autorise aussi la vérification d'un vote absent, sans exposer les votes des autres.
-      allow get: if isSuperAdmin() || isSecretaire() || (
-        isMember() && docId.matches('.*_' + request.auth.uid)
-      );
-      // Les listes de votes sont réservées au bureau habilité pour protéger le secret du scrutin.
-      allow list: if isSuperAdmin() || isSecretaire();
-
-      // Un vote est immuable et son identifiant déterministe (pollId_uid) empêche
-      // un même compte de créer plusieurs votes pour la même résolution.
-      allow create: if isMember()
-        && getUserStatus() in ['a_jour', 'actif']
-        && request.resource.data.keys().hasAll(['pollId', 'choice', 'memberId', 'timestamp'])
-        && request.resource.data.keys().hasOnly(['pollId', 'choice', 'memberId', 'timestamp'])
-        && request.resource.data.pollId is string
-        && request.resource.data.memberId == request.auth.uid
-        && docId == request.resource.data.pollId + '_' + request.auth.uid
-        && request.resource.data.choice in ['pour', 'contre', 'abstention']
-        && request.resource.data.timestamp == request.time
-        && exists(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId))
-        && get(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId)).data.status == 'ouvert_au_vote';
-
-      // Aucun vote ne peut être modifié ou supprimé depuis le client.
-      allow update, delete: if false;
-    }
-
-    match /notifications/{docId} {
-      allow read: if isMember() && (
-        resource.data.userId == request.auth.uid || resource.data.target == 'all' || isBureau()
-      );
-      allow write: if isBureau();
-    }
-
-    match /messages/{docId} {
-      allow read: if isMember() && (
-        resource.data.recipientId == request.auth.uid || resource.data.senderId == request.auth.uid || isBureau()
-      );
-      // Un expéditeur ne peut pas créer un message au nom d'un autre compte.
-      allow create: if isMember()
-        && request.resource.data.keys().hasAll(['senderId', 'recipientId', 'content', 'createdAt'])
-        && request.resource.data.keys().hasOnly(['senderId', 'recipientId', 'content', 'createdAt', 'subject'])
-        && request.resource.data.senderId == request.auth.uid
-        && request.resource.data.recipientId is string
-        && request.resource.data.recipientId.size() > 0
-        && request.resource.data.recipientId.size() <= 128
-        && request.resource.data.content is string
-        && request.resource.data.content.size() > 0
-        && request.resource.data.content.size() <= 5000
-        && (!('subject' in request.resource.data) || (request.resource.data.subject is string && request.resource.data.subject.size() <= 200))
-        && request.resource.data.createdAt == request.time;
-      allow update: if isBureau() || (
-        isMember()
-        && resource.data.senderId == request.auth.uid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content'])
-        && request.resource.data.content is string
-        && request.resource.data.content.size() > 0
-        && request.resource.data.content.size() <= 5000
-      );
-      allow delete: if isBureau() || (isMember() && resource.data.senderId == request.auth.uid);
-    }
-
-    match /ag_events/{docId} {
-      allow read: if isMember();
-      allow write: if isSuperAdmin() || isSecretaire();
-    }
-
-    match /media/{docId} {
-      allow read: if isBureau();
-      allow write: if isCommunicateur() || isSuperAdmin();
-    }
-
-    match /editorial_calendar/{docId} {
-      allow read, write: if isCommunicateur() || isSuperAdmin();
-    }
-  }
-}
-);
+        && value.matches('^[^ @]+@[^ @]+\\.[^ @]+$');
     }
 
     function validContactMessage() {
@@ -505,25 +218,21 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time;
     }
 
-    // Formulaire de contact public : données bornées, traitement réservé au bureau.
     match /contact_messages/{docId} {
       allow create: if validContactMessage();
       allow read, update, delete: if isSuperAdmin() || isCommunicateur() || isSecretaire();
     }
 
-    // Demandes d'adhésion publiques.
     match /membership_requests/{docId} {
       allow create: if validMembershipRequest();
       allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
     }
 
-    // Ancienne collection d'adhésions : même validation que le formulaire public actuel.
     match /adhesions/{docId} {
       allow create: if validMembershipRequest();
       allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
     }
 
-    // Newsletter : seuls l'adresse e-mail et l'horodatage serveur sont acceptés.
     match /newsletter/{docId} {
       allow create: if request.resource.data.keys().hasAll(['email', 'createdAt'])
         && request.resource.data.keys().hasOnly(['email', 'createdAt'])
@@ -719,10 +428,24 @@ service cloud.firestore {
 
     match /forum/{docId} {
       allow read: if isMember();
-      allow create: if isMember();
-      allow update, delete: if isSuperAdmin() || (
-        isMember() && resource.data.authorId == request.auth.uid
-      );
+      allow create: if isMember()
+        && request.resource.data.keys().hasAll(['authorId', 'authorName', 'content', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['authorId', 'authorName', 'content', 'createdAt', 'title'])
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() > 0
+        && request.resource.data.authorName.size() <= 100
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
+        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200))
+        && request.resource.data.createdAt == request.time;
+      allow update: if isMember()
+        && (isSuperAdmin() || resource.data.authorId == request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'title'])
+        && (!('content' in request.resource.data) || (request.resource.data.content is string && request.resource.data.content.size() > 0 && request.resource.data.content.size() <= 5000))
+        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200));
+      allow delete: if isSuperAdmin() || (isMember() && resource.data.authorId == request.auth.uid);
     }
 
     match /votes/{docId} {
@@ -762,10 +485,27 @@ service cloud.firestore {
       allow read: if isMember() && (
         resource.data.recipientId == request.auth.uid || resource.data.senderId == request.auth.uid || isBureau()
       );
-      allow create: if isMember();
-      allow update, delete: if isBureau() || (
-        isMember() && resource.data.senderId == request.auth.uid
+      allow create: if isMember()
+        && request.resource.data.keys().hasAll(['senderId', 'recipientId', 'content', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['senderId', 'recipientId', 'content', 'createdAt', 'subject'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.recipientId is string
+        && request.resource.data.recipientId.size() > 0
+        && request.resource.data.recipientId.size() <= 128
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
+        && (!('subject' in request.resource.data) || (request.resource.data.subject is string && request.resource.data.subject.size() <= 200))
+        && request.resource.data.createdAt == request.time;
+      allow update: if isBureau() || (
+        isMember()
+        && resource.data.senderId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content'])
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
       );
+      allow delete: if isBureau() || (isMember() && resource.data.senderId == request.auth.uid);
     }
 
     match /ag_events/{docId} {
