@@ -306,10 +306,9 @@ service cloud.firestore {
     match /tasks/{docId} {
       allow read: if isBureau() || isMember();
       allow create, delete: if isBureau();
-      // Un membre assigné peut cocher l'accomplissement d'une tâche
-      allow update: if isBureau() || (
-        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'completedAt'])
-      );
+      // Les tâches sont créées, modifiées et clôturées par le bureau uniquement.
+      // L'interface assigne les tâches à des fonctions du bureau, pas à des membres ordinaires.
+      allow update: if isBureau();
     }
 
     match /system/{docId} {
@@ -358,9 +357,28 @@ service cloud.firestore {
     match /missions_benevolat/{docId} {
       allow read: if isMember();
       allow create, delete: if isVicePresident() || isSuperAdmin();
-      // Les membres peuvent s'inscrire / se désinscrire des missions de bénévolat
+      // Un membre ne peut modifier que la liste participants, en ajoutant ou retirant
+      // uniquement son propre UID. Les champs de la mission restent protégés.
       allow update: if isVicePresident() || isSuperAdmin() || (
-        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['inscrits', 'volunteers', 'participants'])
+        isMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+        && resource.data.participants is list
+        && request.resource.data.participants is list
+        && (
+          (
+            request.resource.data.participants.size() == resource.data.participants.size() + 1
+            && request.resource.data.participants.hasAll(resource.data.participants)
+            && request.resource.data.participants.hasAny([request.auth.uid])
+            && !resource.data.participants.hasAny([request.auth.uid])
+          )
+          ||
+          (
+            resource.data.participants.size() == request.resource.data.participants.size() + 1
+            && resource.data.participants.hasAll(request.resource.data.participants)
+            && resource.data.participants.hasAny([request.auth.uid])
+            && !request.resource.data.participants.hasAny([request.auth.uid])
+          )
+        )
       );
     }
 
