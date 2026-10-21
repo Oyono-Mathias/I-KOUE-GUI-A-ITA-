@@ -98,9 +98,16 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isSuperAdmin() || isSecretaire() || isVicePresident();
 
       // Création :
-      // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
-      // - Auto-inscription : rôle strictement forcé à membre / member et statut non privilégié
-      allow create: if isSuperAdmin() || isSecretaire() || (
+      // - La haute administration peut créer les profils nécessaires.
+      // - Le secrétariat ne peut créer que des profils membres non privilégiés et en attente.
+      // - L'auto-inscription reste limitée aux membres en attente.
+      allow create: if isSuperAdmin() || (
+        getUserRole() == 'secretaire' && isNotSuspended() &&
+        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
+        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
+        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+      ) || (
         isOwner(userId) &&
         (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
         (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
@@ -109,10 +116,15 @@ service cloud.firestore {
       );
 
       // Modification :
-      // - Le bureau habilité peut administrer les rôles et statuts
-      // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
-      //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
-      allow update: if isSuperAdmin() || isSecretaire() || (
+      // Seule la haute administration peut modifier un rôle. Le secrétariat peut gérer
+      // les autres champs de profil, mais pas les rôles, permissions, privilèges ou soldes.
+      // Un propriétaire ne peut jamais modifier son rôle, statut ou données sensibles.
+      allow update: if isSuperAdmin() || (
+        getUserRole() == 'secretaire' && isNotSuspended() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'role', 'permissions', 'isAdmin', 'solde', 'cotisation'
+        ])
+      ) || (
         isOwner(userId) && isNotSuspended() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
@@ -120,7 +132,7 @@ service cloud.firestore {
       );
 
       // Suppression : Strictement réservée à la haute administration
-      allow delete: if isSuperAdmin() || isSecretaire();
+      allow delete: if isSuperAdmin();
     }
 
     // =========================================================================
