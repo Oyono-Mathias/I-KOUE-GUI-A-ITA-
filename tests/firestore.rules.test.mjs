@@ -57,6 +57,13 @@ beforeEach(async () => {
       role: 'membre',
       statut: 'suspendu',
     });
+    await setDoc(doc(db, 'users', 'radie-admin'), {
+      role: 'super_admin',
+      statut: 'radie',
+    });
+    await setDoc(doc(db, 'audit_logs', 'security-entry'), {
+      event: 'test',
+    });
     await setDoc(doc(db, 'users', 'communicator'), {
       role: 'communicateur',
       statut: 'actif',
@@ -125,6 +132,13 @@ describe('règles Firebase Storage', () => {
       new Uint8Array([1, 2, 3]),
       { contentType: 'image/png' },
     ));
+  });
+});
+
+describe('révocation des privilèges des comptes radiés', () => {
+  it('refuse à un ancien super administrateur radié de lire les journaux de sécurité', async () => {
+    const db = testEnv.authenticatedContext('radie-admin').firestore();
+    await assertFails(getDoc(doc(db, 'audit_logs', 'security-entry')));
   });
 });
 
