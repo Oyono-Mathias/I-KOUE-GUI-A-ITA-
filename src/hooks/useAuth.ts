@@ -7,9 +7,9 @@ export interface UserData {
     uid: string;
     email: string | null;
     displayName: string | null;
-    role: 'super_admin' | 'president_fondateur' | 'president' | 'vice_president' | 'admin_bureau' | 'secretaire' | 'tresorier' | 'communicateur' | 'conseiller' | 'admin' | 'membre';
+    role: 'super_admin' | 'president_fondateur' | 'president' | 'vice_president' | 'admin_bureau' | 'secretaire' | 'tresorier' | 'communicateur' | 'conseiller' | 'admin' | 'membre' | 'member';
     photoURL: string | null;
-    statut: 'actif' | 'suspendu' | 'a_jour';
+    statut: 'en_attente' | 'actif' | 'suspendu' | 'a_jour';
 }
 
 export const useAuth = () => {
