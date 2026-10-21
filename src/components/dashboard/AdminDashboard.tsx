@@ -35,31 +35,36 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [showNewsForm, setShowNewsForm] = useState(false);
     const [newsData, setNewsData] = useState({ title: '', content: '' });
 
+    const handleListenerError = (source: string) => (error: Error) => {
+        console.error(`Erreur de lecture Firestore (${source}):`, error);
+        setLoading(false);
+    };
+
     useEffect(() => {
         // Real-time listeners for all modules
         const unsubUsers = onSnapshot(query(collection(db, 'users'), orderBy('displayName')), snap => {
             setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserData)));
-        });
+        }, handleListenerError('users'));
 
         const unsubFinances = onSnapshot(query(collection(db, 'finances'), orderBy('createdAt', 'desc')), snap => {
             setFinances(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, handleListenerError('finances'));
 
         const unsubAg = onSnapshot(query(collection(db, 'ag_events'), orderBy('createdAt', 'desc')), snap => {
             setAgEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, handleListenerError('ag_events'));
 
         const unsubNews = onSnapshot(query(collection(db, 'actualites'), orderBy('createdAt', 'desc')), snap => {
             setNews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, handleListenerError('actualites'));
 
         const unsubReports = onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
             setReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, handleListenerError('rapports_delegues'));
 
         const unsubMessages = onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
             setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, handleListenerError('messages'));
 
         // Le formulaire public écrit dans membership_requests. On écoute aussi
         // adhesions pour conserver la visibilité des demandes historiques.
@@ -70,7 +75,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                 ...current
             ]);
             setLoading(false);
-        });
+        }, handleListenerError('membership_requests'));
 
         const unsubAdhesions = onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
             const legacy = snap.docs.map(d => ({ id: d.id, sourceCollection: 'adhesions', ...d.data() }));
@@ -79,7 +84,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                 ...legacy
             ]);
             setLoading(false);
-        });
+        }, handleListenerError('adhesions'));
 
         return () => {
             unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages();
