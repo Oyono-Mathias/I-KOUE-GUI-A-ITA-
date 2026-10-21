@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, writeBatch } from 'firebase/firestore';
 import { db, functions } from '../../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { UserData } from '../../hooks/useAuth';
@@ -208,24 +208,47 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const handleAddAg = async (e: React.FormEvent) => {
         e.preventDefault();
-        await addDoc(collection(db, 'ag_events'), {
-            ...agData,
-            pvText: '',
-            createdAt: serverTimestamp()
-        });
-        
-        // Request validation for the Convocation
-        await addDoc(collection(db, 'validations'), {
-            type: 'ag',
-            title: `Convocation : ${agData.title}`,
-            description: `Ordre du jour : ${agData.agenda}. Date prévue : ${agData.date}`,
-            status: 'pending',
-            createdAt: serverTimestamp(),
-            requestedBy: currentUser.displayName || 'Secrétariat',
-        });
-        
-        setAgData({ title: '', date: '', agenda: '' });
-        setShowAgForm(false);
+        if (!agData.title.trim() || !agData.date.trim() || !agData.agenda.trim()) {
+            alert("Renseignez le titre, la date et l'ordre du jour de l'AG.");
+            return;
+        }
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+        try {
+            // Enregistrer l'AG et sa demande de validation dans une seule transaction atomique.
+            // Ainsi, aucune AG ne reste créée si la demande de validation échoue.
+            const batch = writeBatch(db);
+            const agRef = doc(collection(db, 'ag_events'));
+            const validationRef = doc(collection(db, 'validations'));
+            const createdAt = serverTimestamp();
+
+            batch.set(agRef, {
+                ...agData,
+                title: agData.title.trim(),
+                agenda: agData.agenda.trim(),
+                pvText: '',
+                createdAt
+            });
+            batch.set(validationRef, {
+                type: 'ag',
+                targetId: agRef.id,
+                title: `Convocation : ${agData.title.trim()}`,
+                description: `Ordre du jour : ${agData.agenda.trim()}. Date prévue : ${agData.date}`,
+                status: 'pending',
+                createdAt,
+                requestedBy: currentUser.displayName || 'Secrétariat',
+            });
+
+            await batch.commit();
+            setAgData({ title: '', date: '', agenda: '' });
+            setShowAgForm(false);
+        } catch (error) {
+            console.error("Erreur lors de la création de l'AG :", error);
+            alert("L'AG et sa demande de validation n'ont pas pu être enregistrées. Vérifiez vos autorisations puis réessayez.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleAddNews = async (e: React.FormEvent) => {
