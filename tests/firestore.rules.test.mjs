@@ -197,6 +197,41 @@ describe('auto-inscription et validation des membres', () => {
     }));
   });
 
+  it('refuse l’ajout de permissions privilégiées lors de l’auto-inscription', async () => {
+    const db = memberDb('self-privilege');
+    await assertFails(setDoc(doc(db, 'users', 'self-privilege'), {
+      uid: 'self-privilege',
+      email: 'member@example.com',
+      displayName: 'Membre test',
+      role: 'membre',
+      statut: 'en_attente',
+      permissions: ['manage_users'],
+    }));
+  });
+
+  it('refuse l’injection d’un solde lors de l’auto-inscription', async () => {
+    const db = memberDb('self-balance');
+    await assertFails(setDoc(doc(db, 'users', 'self-balance'), {
+      uid: 'self-balance',
+      email: 'member@example.com',
+      displayName: 'Membre test',
+      role: 'membre',
+      statut: 'en_attente',
+      solde: 1000000,
+    }));
+  });
+
+  it('autorise un profil membre en attente avec les champs autorisés', async () => {
+    const db = memberDb('self-safe');
+    await assertSucceeds(setDoc(doc(db, 'users', 'self-safe'), {
+      uid: 'self-safe',
+      email: 'member@example.com',
+      displayName: 'Membre test',
+      role: 'membre',
+      statut: 'en_attente',
+    }));
+  });
+
   it('refuse qu’un utilisateur contourne la validation avec le champ status', async () => {
     const db = memberDb('new-user');
     await assertFails(setDoc(doc(db, 'users', 'new-user'), {
