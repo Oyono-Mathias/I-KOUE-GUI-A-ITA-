@@ -110,36 +110,9 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isSubmitting) return;
-        
-        setIsSubmitting(true);
-        try {
-            // Empêcher les doublons par email côté client (en attendant les règles Firestore)
-            const existingUser = users.find(u => u.email.toLowerCase() === newMember.email.toLowerCase());
-            if (existingUser) {
-                alert('Un membre avec cet email existe déjà !');
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Création d'un document utilisateur (simulant l'ajout)
-            await addDoc(collection(db, 'users'), {
-                displayName: newMember.displayName,
-                email: newMember.email,
-                role: newMember.role,
-                phone: newMember.phone,
-                statut: 'actif',
-                createdAt: serverTimestamp()
-            });
-            alert('Membre ajouté avec succès !');
-            setNewMember({ displayName: '', email: '', role: 'membre', phone: '' });
-            setShowAddMember(false);
-        } catch (error) {
-            console.error("Erreur d'ajout :", error);
-            alert("Erreur lors de l'ajout du membre.");
-        } finally {
-            setIsSubmitting(false);
-        }
+        // Un document Firestore seul ne crée pas de compte Firebase Authentication.
+        // Ne pas créer de faux profils tant qu'un flux d'invitation sécurisé côté serveur n'existe pas.
+        alert("Ajout manuel indisponible : le système doit d'abord créer un compte d'authentification et son profil de manière sécurisée. Utilisez le formulaire public d'adhésion en attendant.");
     };
 
     const handleAddFinance = async (e: React.FormEvent) => {
@@ -324,7 +297,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
                     {showAddMember && (
                         <form onSubmit={handleAddMember} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <h4 style={{ margin: '0 0 8px 0', color: 'var(--bleu-rca)' }}>Créer / Ajouter un membre</h4>
+                            <h4 style={{ margin: '0 0 8px 0', color: 'var(--bleu-rca)' }}>Ajout manuel temporairement désactivé</h4>
+                            <p style={{ margin: 0, color: '#8a4b08', fontSize: '14px' }}>La création d'un profil Firestore seule ne crée pas de compte de connexion. Un flux d'invitation sécurisé côté serveur est nécessaire avant de réactiver cette fonction. En attendant, utilisez le formulaire public d'adhésion.</p>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Nom complet</label>
@@ -350,8 +324,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" style={{ padding: '14px', background: 'var(--bleu-rca)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', marginTop: '8px', cursor: 'pointer' }}>
-                                Enregistrer le membre
+                            <button type="submit" disabled style={{ padding: '14px', background: '#999', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', marginTop: '8px', cursor: 'not-allowed' }}>
+                                Fonction temporairement désactivée
                             </button>
                         </form>
                     )}
