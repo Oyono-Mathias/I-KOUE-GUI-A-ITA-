@@ -43,42 +43,51 @@ service cloud.firestore {
         && getUserStatus() != 'radie';
     }
 
+    function hasActivePrivilegedStatus() {
+      return getUserStatus() in ['actif', 'a_jour'];
+    }
+
     function isSuperAdmin() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus() && (
         r == 'super_admin' || r == 'president' || r == 'president_fondateur' || r == 'admin'
       );
     }
 
     function isVicePresident() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'vice_president' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'vice_president' || isSuperAdmin());
     }
 
     function isSecretaire() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'secretaire' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'secretaire' || isSuperAdmin());
     }
 
     function isTresorier() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'tresorier' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'tresorier' || isSuperAdmin());
     }
 
     function isCommunicateur() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'communicateur' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'communicateur' || isSuperAdmin());
     }
 
     function isConseiller() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'conseiller' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'conseiller' || isSuperAdmin());
     }
 
     function isBureau() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
-        r in ['super_admin', 'president', 'president_fondateur', 'vice_president', 
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus() && (
+        r in ['super_admin', 'president', 'president_fondateur', 'vice_president',
               'secretaire', 'tresorier', 'communicateur', 'conseiller', 'admin_bureau', 'admin']
       );
     }
