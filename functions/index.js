@@ -30,7 +30,7 @@ async function requireApprover(request) {
   }
 
   const profile = profileSnap.data();
-  if (profile.statut === "suspendu" || !APPROVER_ROLES.has(profile.role)) {
+  if ((profile.statut || profile.status) === "suspendu" || !APPROVER_ROLES.has(profile.role)) {
     throw new HttpsError("permission-denied", "Vous n'êtes pas autorisé à traiter les adhésions.");
   }
 
@@ -42,10 +42,12 @@ async function findApprovedRequest(email) {
   if (!normalized) return null;
 
   for (const collectionName of ["membership_requests", "adhesions"]) {
-    const snapshot = await db.collection(collectionName).where("email", "==", normalized).get();
+    // Les demandes historiques ne normalisaient pas forcément l'e-mail en écriture.
+    const snapshot = await db.collection(collectionName).get();
     const approved = snapshot.docs.find((doc) => {
       const data = doc.data();
-      return data.statut === "acceptee" || data.statut === "accepte";
+      return normalizeEmail(data.email) === normalized
+        && (data.statut === "acceptee" || data.statut === "accepte");
     });
     if (approved) return { collectionName, ref: approved.ref, data: approved.data() };
   }
@@ -121,7 +123,12 @@ exports.decideMembershipRequest = onCall(async (request) => {
   });
 
   if (decision === "acceptee") {
-    await activateExistingAuthUser(email, { ...data, reviewedBy });
+    try {
+      await activateExistingAuthUser(email, { ...data, reviewedBy });
+    } catch (error) {
+      // La décision est enregistrée. La synchronisation côté connexion pourra réessayer.
+      console.error("La demande est acceptée, mais l'activation immédiate du profil a échoué.", error);
+    }
   }
 
   return { ok: true, decision };
