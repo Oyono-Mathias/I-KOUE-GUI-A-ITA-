@@ -31,7 +31,11 @@ async function requireApprover(request) {
   }
 
   const profile = profileSnap.data();
-  if ((profile.statut || profile.status) === "suspendu" || !APPROVER_ROLES.has(profile.role)) {
+  const status = profile.statut || profile.status;
+  if (
+    ["suspendu", "radie"].includes(status)
+    || !APPROVER_ROLES.has(profile.role)
+  ) {
     throw new HttpsError("permission-denied", "Vous n'êtes pas autorisé à traiter les adhésions.");
   }
 
