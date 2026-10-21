@@ -39,15 +39,11 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
 
         const qGlobalNotifs = query(
             collection(db, 'notifications'),
-            where('target', '==', 'all'),
-            orderBy('createdAt', 'desc'),
-            limit(5)
+            where('target', '==', 'all')
         );
         const qPersonalNotifs = query(
             collection(db, 'notifications'),
-            where('userId', '==', userData.uid),
-            orderBy('createdAt', 'desc'),
-            limit(5)
+            where('userId', '==', userData.uid)
         );
         const unsubGlobalNotifs = onSnapshot(qGlobalNotifs, (snap) => {
             notificationSets.set('global', snap.docs.map(d => ({ id: d.id, ...d.data() })));
