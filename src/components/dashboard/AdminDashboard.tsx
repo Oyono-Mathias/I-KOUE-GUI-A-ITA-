@@ -281,7 +281,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
         { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
         { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire'] },
         { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'] },
-        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin'] },
         { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'communicateur'] },
         { id: 'messages', label: 'Messages Publics', icon: <Send size={18} />, roles: ['super_admin', 'communicateur', 'admin_bureau'] },
         { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
