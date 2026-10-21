@@ -80,6 +80,32 @@ async function castVote(uid = 'member-ok', id = `${pollId}_${uid}`, targetPollId
   });
 }
 
+describe('auto-inscription et validation des membres', () => {
+  it('refuse qu’un utilisateur s’attribue lui-même le statut actif', async () => {
+    const db = memberDb('new-user');
+    await assertFails(setDoc(doc(db, 'users', 'new-user'), {
+      role: 'membre',
+      statut: 'actif',
+    }));
+  });
+
+  it('refuse qu’un utilisateur contourne la validation avec le champ status', async () => {
+    const db = memberDb('new-user');
+    await assertFails(setDoc(doc(db, 'users', 'new-user'), {
+      role: 'membre',
+      status: 'actif',
+    }));
+  });
+
+  it('autorise une auto-inscription en attente de validation', async () => {
+    const db = memberDb('new-user');
+    await assertSucceeds(setDoc(doc(db, 'users', 'new-user'), {
+      role: 'membre',
+      statut: 'en_attente',
+    }));
+  });
+});
+
 describe('accès aux données réservées aux membres validés', () => {
   it('autorise un membre actif et à jour à lire les documents internes', async () => {
     const db = memberDb('member-ok');
