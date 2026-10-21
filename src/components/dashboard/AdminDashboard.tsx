@@ -65,56 +65,67 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     };
 
     useEffect(() => {
-        // Real-time listeners for all modules
-        const unsubUsers = onSnapshot(query(collection(db, 'users'), orderBy('displayName')), snap => {
-            setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserData)));
-        }, handleListenerError('users'));
+        const role = currentUser.role;
+        const canReadUsers = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'].includes(role);
+        const canReadFinances = ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'].includes(role);
+        const canReadMembership = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'].includes(role);
+        const unsubscribers: Array<() => void> = [];
 
-        const unsubFinances = onSnapshot(query(collection(db, 'finances'), orderBy('createdAt', 'desc')), snap => {
-            setFinances(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, handleListenerError('finances'));
+        // Les abonnements sont créés uniquement si les règles Firestore autorisent la lecture.
+        if (canReadUsers) {
+            unsubscribers.push(onSnapshot(query(collection(db, 'users'), orderBy('displayName')), snap => {
+                setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserData)));
+            }, handleListenerError('users')));
+        }
 
-        const unsubAg = onSnapshot(query(collection(db, 'ag_events'), orderBy('createdAt', 'desc')), snap => {
+        if (canReadFinances) {
+            unsubscribers.push(onSnapshot(query(collection(db, 'finances'), orderBy('createdAt', 'desc')), snap => {
+                setFinances(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            }, handleListenerError('finances')));
+        }
+
+        unsubscribers.push(onSnapshot(query(collection(db, 'ag_events'), orderBy('createdAt', 'desc')), snap => {
             setAgEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, handleListenerError('ag_events'));
+            setLoading(false);
+        }, handleListenerError('ag_events')));
 
-        const unsubNews = onSnapshot(query(collection(db, 'actualites'), orderBy('createdAt', 'desc')), snap => {
+        unsubscribers.push(onSnapshot(query(collection(db, 'actualites'), orderBy('createdAt', 'desc')), snap => {
             setNews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, handleListenerError('actualites'));
+        }, handleListenerError('actualites')));
 
-        const unsubReports = onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
+        unsubscribers.push(onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
             setReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, handleListenerError('rapports_delegues'));
+        }, handleListenerError('rapports_delegues')));
 
-        const unsubMessages = onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
+        unsubscribers.push(onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
             setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }, handleListenerError('messages'));
+        }, handleListenerError('messages')));
 
-        // Le formulaire public écrit dans membership_requests. On écoute aussi
-        // adhesions pour conserver la visibilité des demandes historiques.
-        const unsubMembershipRequests = onSnapshot(query(collection(db, 'membership_requests'), orderBy('createdAt', 'desc')), snap => {
-            const current = snap.docs.map(d => ({ id: d.id, sourceCollection: 'membership_requests', ...d.data() }));
-            setAdhesions(previous => [
-                ...previous.filter(item => item.sourceCollection !== 'membership_requests'),
-                ...current
-            ]);
+        if (canReadMembership) {
+            // Le formulaire public écrit dans membership_requests; adhesions contient l'historique.
+            unsubscribers.push(onSnapshot(query(collection(db, 'membership_requests'), orderBy('createdAt', 'desc')), snap => {
+                const current = snap.docs.map(d => ({ id: d.id, sourceCollection: 'membership_requests', ...d.data() }));
+                setAdhesions(previous => [
+                    ...previous.filter(item => item.sourceCollection !== 'membership_requests'),
+                    ...current
+                ]);
+                setLoading(false);
+            }, handleListenerError('membership_requests')));
+
+            unsubscribers.push(onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
+                const legacy = snap.docs.map(d => ({ id: d.id, sourceCollection: 'adhesions', ...d.data() }));
+                setAdhesions(previous => [
+                    ...previous.filter(item => item.sourceCollection !== 'adhesions'),
+                    ...legacy
+                ]);
+                setLoading(false);
+            }, handleListenerError('adhesions')));
+        } else {
             setLoading(false);
-        }, handleListenerError('membership_requests'));
+        }
 
-        const unsubAdhesions = onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
-            const legacy = snap.docs.map(d => ({ id: d.id, sourceCollection: 'adhesions', ...d.data() }));
-            setAdhesions(previous => [
-                ...previous.filter(item => item.sourceCollection !== 'adhesions'),
-                ...legacy
-            ]);
-            setLoading(false);
-        }, handleListenerError('adhesions'));
-
-        return () => {
-            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages();
-            unsubMembershipRequests(); unsubAdhesions();
-        };
-    }, []);
+        return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+    }, [currentUser.role]);
 
     // ACTIONS
     const handleRoleChange = async (uid: string, newRole: string) => {
@@ -257,11 +268,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const tabs = [
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
         { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
-        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'vice_president', 'tresorier', 'admin_bureau', 'admin', 'conseiller'] },
+        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
+        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire'] },
+        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'] },
         { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'vice_president', 'communicateur', 'admin_bureau', 'admin'] },
+        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'communicateur'] },
         { id: 'messages', label: 'Messages Publics', icon: <Send size={18} />, roles: ['super_admin', 'communicateur', 'admin_bureau'] },
         { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
     ].filter(t => t.roles.includes('all') || t.roles.includes(currentUser.role));
