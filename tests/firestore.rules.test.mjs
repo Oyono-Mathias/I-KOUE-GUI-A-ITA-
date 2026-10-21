@@ -205,3 +205,179 @@ describe('règles Firestore des tâches et missions', () => {
     }));
   });
 });
+
+
+describe('règles Firestore du forum et de la messagerie', () => {
+  it('autorise une publication de forum attribuée à son auteur authentifié', async () => {
+    const db = memberDb();
+    await assertSucceeds(setDoc(doc(db, 'forum', 'post-valid'), {
+      authorId: 'member-ok',
+      authorName: 'Membre',
+      title: 'Annonce',
+      content: 'Bonjour à tous',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse une publication de forum usurpant un autre auteur', async () => {
+    const db = memberDb();
+    await assertFails(setDoc(doc(db, 'forum', 'post-forged'), {
+      authorId: 'another-user',
+      authorName: 'Membre',
+      content: 'Publication usurpée',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse les champs arbitraires dans une publication de forum', async () => {
+    const db = memberDb();
+    await assertFails(setDoc(doc(db, 'forum', 'post-extra'), {
+      authorId: 'member-ok',
+      authorName: 'Membre',
+      content: 'Contenu',
+      isAdmin: true,
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse de modifier l’identité de l’auteur d’une publication existante', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'forum', 'post-existing'), {
+        authorId: 'member-ok',
+        authorName: 'Membre',
+        content: 'Contenu initial',
+        createdAt: new Date(),
+      });
+    });
+    await assertFails(updateDoc(doc(memberDb(), 'forum', 'post-existing'), {
+      authorId: 'another-user',
+    }));
+  });
+
+  it('autorise un message dont l’expéditeur correspond au compte authentifié', async () => {
+    const db = memberDb();
+    await assertSucceeds(setDoc(doc(db, 'messages', 'message-valid'), {
+      senderId: 'member-ok',
+      recipientId: 'member-late',
+      content: 'Bonjour',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse un message qui usurpe l’expéditeur', async () => {
+    const db = memberDb();
+    await assertFails(setDoc(doc(db, 'messages', 'message-forged'), {
+      senderId: 'another-user',
+      recipientId: 'member-late',
+      content: 'Bonjour',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse les champs arbitraires dans un message', async () => {
+    const db = memberDb();
+    await assertFails(setDoc(doc(db, 'messages', 'message-extra'), {
+      senderId: 'member-ok',
+      recipientId: 'member-late',
+      content: 'Bonjour',
+      role: 'admin',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse à un expéditeur de changer le destinataire après création', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'messages', 'message-existing'), {
+        senderId: 'member-ok',
+        recipientId: 'member-late',
+        content: 'Bonjour',
+        createdAt: new Date(),
+      });
+    });
+    await assertFails(updateDoc(doc(memberDb(), 'messages', 'message-existing'), {
+      recipientId: 'member-suspended',
+    }));
+  });
+});
+
+describe('règles Firestore des formulaires publics', () => {
+  it('accepte une demande de contact valide avec horodatage serveur', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(setDoc(doc(db, 'contact_messages', 'contact-valid'), {
+      name: 'Alex',
+      email: 'alex@example.com',
+      subject: 'Information',
+      message: 'Bonjour, je souhaite en savoir plus.',
+      status: 'nouveau',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse une demande de contact contenant un champ inattendu', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(setDoc(doc(db, 'contact_messages', 'contact-extra'), {
+      name: 'Alex',
+      email: 'alex@example.com',
+      subject: 'Information',
+      message: 'Bonjour',
+      status: 'nouveau',
+      role: 'admin',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse une demande de contact avec adresse e-mail invalide', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(setDoc(doc(db, 'contact_messages', 'contact-invalid-email'), {
+      name: 'Alex',
+      email: 'pas-une-adresse',
+      subject: 'Information',
+      message: 'Bonjour',
+      status: 'nouveau',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('accepte une demande de pré-adhésion valide', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(setDoc(doc(db, 'membership_requests', 'membership-valid'), {
+      nom: 'Alex Martin',
+      email: 'alex@example.com',
+      telephone: '+23670000000',
+      categorie: 'benevole',
+      motivation: 'Je souhaite participer aux activités.',
+      statut: 'en_attente',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse une demande de pré-adhésion qui tente de choisir un statut privilégié', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(setDoc(doc(db, 'membership_requests', 'membership-forged'), {
+      nom: 'Alex Martin',
+      email: 'alex@example.com',
+      telephone: '+23670000000',
+      categorie: 'benevole',
+      motivation: 'Motivation',
+      statut: 'actif',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('accepte une inscription newsletter limitée à e-mail et horodatage serveur', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertSucceeds(setDoc(doc(db, 'newsletter', 'newsletter-valid'), {
+      email: 'alex@example.com',
+      createdAt: serverTimestamp(),
+    }));
+  });
+
+  it('refuse une inscription newsletter avec données supplémentaires', async () => {
+    const db = testEnv.unauthenticatedContext().firestore();
+    await assertFails(setDoc(doc(db, 'newsletter', 'newsletter-extra'), {
+      email: 'alex@example.com',
+      role: 'admin',
+      createdAt: serverTimestamp(),
+    }));
+  });
+});
