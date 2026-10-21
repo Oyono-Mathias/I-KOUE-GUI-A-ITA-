@@ -3,8 +3,9 @@ const { initializeApp } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
-initializeApp();
-const db = getFirestore();
+const app = initializeApp();
+// L'application utilise une base Firestore nommée, pas la base (default).
+const db = getFirestore(app, "ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5");
 
 const APPROVER_ROLES = new Set([
   "super_admin",
