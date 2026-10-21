@@ -383,7 +383,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             <option value="conseiller">Conseillers</option>
                             <option value="communicateur">Communicateurs</option>
                             <option value="tresorier">Trésoriers</option>
-                            <option value="admin_bureau">Secrétaires Généraux</option>
+                            <option value="admin_bureau">Administrateurs du bureau</option>
                             <option value="vice_president">Vice-Présidents</option>
                             <option value="super_admin">Président</option>
                         </select>
@@ -421,7 +421,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                         <option value="conseiller">Conseiller</option>
                                         <option value="communicateur">Communicateur</option>
                                         <option value="tresorier">Trésorier</option>
-                                        <option value="admin_bureau">Secrétaire Général</option>
+                                        <option value="admin_bureau">Administrateur du bureau</option>
                                         <option value="vice_president">Vice-Président</option>
                                     </select>
                                 </div>
@@ -449,7 +449,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                                 <option value="conseiller">CONSEILLER</option>
                                                 <option value="communicateur">COMMUNICATEUR</option>
                                                 <option value="tresorier">TRÉSORIER</option>
-                                                <option value="admin_bureau">SECRÉTAIRE GÉNÉRAL</option>
+                                                <option value="admin_bureau">ADMINISTRATEUR DU BUREAU</option>
                                                 <option value="vice_president">VICE-PRÉSIDENT</option>
                                                 <option value="super_admin">PRÉSIDENT FONDATEUR</option>
                                             </select>
@@ -502,7 +502,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                         {[
                             { role: 'Président Fondateur', desc: 'Représente l’association. Veille à l\'application des statuts (Art. 17).', color: 'var(--or-solaire)', count: users.filter(u => u.role === 'super_admin').length },
                             { role: 'Vice-Président', desc: 'Assiste le Président et le remplace en cas d\'empêchement.', color: '#9C27B0', count: users.filter(u => u.role === 'vice_president').length },
-                            { role: 'Secrétaire Général', desc: 'Rédige les PV, gère les archives et coordonne l\'administration.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
+                            { role: 'Administrateur du bureau', desc: 'Accès aux espaces du bureau selon les autorisations Firestore attribuées à ce rôle.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
                             { role: 'Trésorier', desc: 'Responsable des fonds, recouvre les cotisations et prépare le bilan.', color: 'var(--vert-espoir)', count: users.filter(u => u.role === 'tresorier').length },
                             { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length },
                             { role: 'Conseillers', desc: 'Assiste le bureau par ses conseils et son expertise.', color: '#607D8B', count: users.filter(u => u.role === 'conseiller').length }
