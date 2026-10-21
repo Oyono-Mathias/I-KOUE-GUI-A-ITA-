@@ -141,7 +141,7 @@ exports.syncApprovedMembership = onCall(async (request) => {
 
   const authUser = await getAuth().getUser(request.auth.uid);
   const email = normalizeEmail(authUser.email);
-  if (!email) {
+  if (!email || !authUser.emailVerified) {
     throw new HttpsError("failed-precondition", "Un compte avec une adresse e-mail vérifiée est requis.");
   }
 
