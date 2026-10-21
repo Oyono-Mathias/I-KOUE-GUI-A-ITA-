@@ -53,6 +53,8 @@ beforeEach(async () => {
       role: 'membre',
       statut: 'suspendu',
     });
+    await setDoc(doc(db, 'documents', 'doc-internal'), { title: 'Document interne' });
+    await setDoc(doc(db, 'pv', 'pv-internal'), { title: 'Procès-verbal interne' });
     await setDoc(doc(db, 'tasks', 'task-1'), { title: 'Coordination', completed: false, assignedTo: 'secretaire' });
     await setDoc(doc(db, 'missions_benevolat', 'mission-1'), { title: 'Nettoyage', participants: ['other-member'], status: 'ouverte' });
     await setDoc(doc(db, 'ag_events', pollId), {
@@ -77,6 +79,33 @@ async function castVote(uid = 'member-ok', id = `${pollId}_${uid}`, targetPollId
     timestamp: serverTimestamp(),
   });
 }
+
+describe('accès aux données réservées aux membres validés', () => {
+  it('autorise un membre actif et à jour à lire les documents internes', async () => {
+    const db = memberDb('member-ok');
+    await assertSucceeds(getDoc(doc(db, 'documents', 'doc-internal')));
+    await assertSucceeds(getDoc(doc(db, 'pv', 'pv-internal')));
+  });
+
+  it('refuse les documents internes à un compte en attente de validation', async () => {
+    const db = memberDb('member-late');
+    await assertFails(getDoc(doc(db, 'documents', 'doc-internal')));
+    await assertFails(getDoc(doc(db, 'pv', 'pv-internal')));
+  });
+
+  it('refuse les documents internes à un compte suspendu', async () => {
+    const db = memberDb('member-suspended');
+    await assertFails(getDoc(doc(db, 'documents', 'doc-internal')));
+    await assertFails(getDoc(doc(db, 'pv', 'pv-internal')));
+  });
+
+  it('refuse l’accès à un compte authentifié sans profil Firestore', async () => {
+    const db = memberDb('missing-profile');
+    await assertFails(getDoc(doc(db, 'documents', 'doc-internal')));
+    await assertFails(getDoc(doc(db, 'pv', 'pv-internal')));
+    await assertFails(getDoc(doc(db, 'missions_benevolat', 'mission-1')));
+  });
+});
 
 describe('règles Firestore des votes', () => {
   it('autorise un vote valide pour un membre à jour et un scrutin ouvert', async () => {
