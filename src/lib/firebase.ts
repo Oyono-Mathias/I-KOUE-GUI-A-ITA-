@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { initializeFirestore, getFirestore, doc, getDoc, setDoc, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
+import { initializeFirestore, getFirestore, doc, getDoc, setDoc, persistentLocalCache, persistentMultipleTabManager, serverTimestamp } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -31,8 +31,9 @@ export const loginWithGoogle = async () => {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        role: 'member',
-        createdAt: new Date().toISOString()
+        role: 'membre',
+        statut: 'en_attente',
+        createdAt: serverTimestamp()
       });
     }
 
