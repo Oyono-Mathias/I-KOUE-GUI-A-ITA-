@@ -129,6 +129,10 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     // ACTIONS
     const handleRoleChange = async (uid: string, newRole: string) => {
+        if (!['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentUser.role)) {
+            alert("Seule la haute administration peut modifier les rôles.");
+            return;
+        }
         try {
             await updateDoc(doc(db, 'users', uid), { role: newRole });
             alert('Rôle mis à jour avec succès !');
@@ -439,7 +443,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <div>
                                         <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{user.displayName || 'Sans nom'}</h4>
                                         <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{user.email}</p>
-                                        {currentUser.role === 'super_admin' ? (
+                                        {['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentUser.role) ? (
                                             <select 
                                                 value={user.role} 
                                                 onChange={(e) => handleRoleChange(user.uid, e.target.value)}
