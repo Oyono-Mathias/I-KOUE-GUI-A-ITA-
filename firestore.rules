@@ -36,9 +36,9 @@ service cloud.firestore {
     }
 
     // Un utilisateur suspendu voit tous ses privilèges révoqués
+    // Refus par défaut si le profil Firestore n'existe pas.
     function isNotSuspended() {
-      let s = getUserStatus();
-      return s == null || s != 'suspendu';
+      return getUserData() != null && getUserStatus() != 'suspendu';
     }
 
     function isSuperAdmin() {
@@ -81,8 +81,13 @@ service cloud.firestore {
       );
     }
 
+    // Un compte connecté n'est pas automatiquement un membre validé.
+    // Seuls les profils actifs ou à jour accèdent à l'espace membres.
     function isMember() {
-      return isSignedIn() && isNotSuspended();
+      return isSignedIn()
+        && getUserData() != null
+        && isNotSuspended()
+        && getUserStatus() in ['actif', 'a_jour'];
     }
 
     // =========================================================================
