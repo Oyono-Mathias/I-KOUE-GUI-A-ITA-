@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db, functions } from '../../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { UserData } from '../../hooks/useAuth';
 import { 
     Home, Users, Banknote, CalendarDays, Newspaper, FileText, 
@@ -11,6 +12,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [activeTab, setActiveTab] = useState('accueil');
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState(false);
+    const [membershipDecisionId, setMembershipDecisionId] = useState<string | null>(null);
 
     // Data states
     const [users, setUsers] = useState<UserData[]>([]);
@@ -35,6 +37,26 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const [showNewsForm, setShowNewsForm] = useState(false);
     const [newsData, setNewsData] = useState({ title: '', content: '' });
+
+    const handleMembershipDecision = async (requestId: string, sourceCollection: string, decision: 'acceptee' | 'refusee') => {
+        if (!window.confirm(decision === 'acceptee'
+            ? 'Confirmer l’acceptation de cette demande ? Le profil sera activé si le candidat possède déjà un compte, sinon à sa prochaine connexion.'
+            : 'Confirmer le refus de cette demande ?')) return;
+
+        setMembershipDecisionId(requestId);
+        try {
+            const decide = httpsCallable(functions, 'decideMembershipRequest');
+            await decide({ requestId, sourceCollection, decision });
+            alert(decision === 'acceptee'
+                ? 'Demande acceptée. Si le candidat n’a pas encore de compte, son profil sera activé à sa prochaine connexion Google.'
+                : 'Demande refusée.');
+        } catch (error) {
+            console.error('Erreur de décision d’adhésion:', error);
+            alert('La décision n’a pas pu être enregistrée. Vérifiez vos autorisations et le déploiement des fonctions Firebase.');
+        } finally {
+            setMembershipDecisionId(null);
+        }
+    };
 
     const handleListenerError = (source: string) => (error: Error) => {
         console.error(`Erreur de lecture Firestore (${source}):`, error);
@@ -234,7 +256,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const tabs = [
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
-        { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'conseiller'] },
+        { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
         { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
         { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'vice_president', 'tresorier', 'admin_bureau', 'admin', 'conseiller'] },
@@ -649,11 +671,20 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Email:</strong> {a.email}</p>
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Tél:</strong> {a.telephone}</p>
                                     <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}><strong>Motivation:</strong> {a.motivation}</p>
-                                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#8a4b08' }}>Validation temporairement indisponible : elle doit déclencher un parcours sécurisé de création de compte.</p>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button type="button" disabled title="Flux d'invitation sécurisé requis" style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: 0.6, cursor: 'not-allowed' }}>Accepter</button>
-                                        <button type="button" disabled title="Workflow de validation requis" style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: 0.6, cursor: 'not-allowed' }}>Refuser</button>
-                                    </div>
+                                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: a.statut === 'en_attente' ? '#8a4b08' : '#2E7D32' }}>
+                                        Statut : <strong>{a.statut || 'historique'}</strong>
+                                        {a.statut === 'acceptee' ? ' — le candidat sera activé lors de sa connexion Google si nécessaire.' : ''}
+                                    </p>
+                                    {a.statut === 'en_attente' && (
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button type="button" disabled={membershipDecisionId === a.id} onClick={() => handleMembershipDecision(a.id, a.sourceCollection, 'acceptee')} style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: membershipDecisionId === a.id ? 0.6 : 1, cursor: membershipDecisionId === a.id ? 'wait' : 'pointer' }}>
+                                                {membershipDecisionId === a.id ? 'Traitement…' : 'Accepter'}
+                                            </button>
+                                            <button type="button" disabled={membershipDecisionId === a.id} onClick={() => handleMembershipDecision(a.id, a.sourceCollection, 'refusee')} style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: membershipDecisionId === a.id ? 0.6 : 1, cursor: membershipDecisionId === a.id ? 'wait' : 'pointer' }}>
+                                                Refuser
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}
