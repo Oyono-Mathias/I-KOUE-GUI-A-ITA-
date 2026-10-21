@@ -59,6 +59,10 @@ async function findApprovedRequest(email) {
 async function activateExistingAuthUser(email, requestData) {
   try {
     const authUser = await getAuth().getUserByEmail(email);
+    // N'activer un compte existant que si l'adresse e-mail est vérifiée.
+    // La synchronisation à la connexion applique la même exigence.
+    if (!authUser.emailVerified) return;
+
     const profileRef = db.collection("users").doc(authUser.uid);
     const profileSnap = await profileRef.get();
 
