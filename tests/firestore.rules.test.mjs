@@ -19,6 +19,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
+import { getBytes, ref, uploadBytes } from 'firebase/storage';
 
 const projectId = 'demo-ikoue-rules';
 const pollId = 'poll-1';
@@ -29,6 +30,9 @@ before(async () => {
     projectId,
     firestore: {
       rules: await readFile(new URL('../firestore.rules', import.meta.url), 'utf8'),
+    },
+    storage: {
+      rules: await readFile(new URL('../storage.rules', import.meta.url), 'utf8'),
     },
   });
 });
@@ -53,6 +57,10 @@ beforeEach(async () => {
       role: 'membre',
       statut: 'suspendu',
     });
+    await setDoc(doc(db, 'users', 'communicator'), {
+      role: 'communicateur',
+      statut: 'actif',
+    });
     await setDoc(doc(db, 'documents', 'doc-internal'), { title: 'Document interne' });
     await setDoc(doc(db, 'pv', 'pv-internal'), { title: 'Procès-verbal interne' });
     await setDoc(doc(db, 'tasks', 'task-1'), { title: 'Coordination', completed: false, assignedTo: 'secretaire' });
@@ -62,6 +70,13 @@ beforeEach(async () => {
     });
     await setDoc(doc(db, 'ag_events', 'poll-closed'), {
       status: 'termine',
+    });
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await uploadBytes(
+        ref(context.storage(), 'documents/internal.pdf'),
+        new Uint8Array([37, 80, 68, 70]),
+        { contentType: 'application/pdf' },
+      );
     });
   });
 });
@@ -79,6 +94,41 @@ async function castVote(uid = 'member-ok', id = `${pollId}_${uid}`, targetPollId
     timestamp: serverTimestamp(),
   });
 }
+
+describe('règles Firebase Storage', () => {
+  it('autorise un membre validé à lire un document officiel', async () => {
+    const storage = testEnv.authenticatedContext('member-ok').storage();
+    await assertSucceeds(getBytes(ref(storage, 'documents/internal.pdf')));
+  });
+
+  it('refuse la lecture des documents officiels à un compte en attente', async () => {
+    const storage = testEnv.authenticatedContext('member-late').storage();
+    await assertFails(getBytes(ref(storage, 'documents/internal.pdf')));
+  });
+
+  it('refuse la lecture des documents officiels à un compte sans profil', async () => {
+    const storage = testEnv.authenticatedContext('missing-profile').storage();
+    await assertFails(getBytes(ref(storage, 'documents/internal.pdf')));
+  });
+
+  it('refuse le dépôt de médias par un membre ordinaire', async () => {
+    const storage = testEnv.authenticatedContext('member-ok').storage();
+    await assertFails(uploadBytes(
+      ref(storage, 'media/member-upload.png'),
+      new Uint8Array([1, 2, 3]),
+      { contentType: 'image/png' },
+    ));
+  });
+
+  it('autorise le dépôt de médias par le communicateur', async () => {
+    const storage = testEnv.authenticatedContext('communicator').storage();
+    await assertSucceeds(uploadBytes(
+      ref(storage, 'media/official-upload.png'),
+      new Uint8Array([1, 2, 3]),
+      { contentType: 'image/png' },
+    ));
+  });
+});
 
 describe('auto-inscription et validation des membres', () => {
   it('refuse qu’un utilisateur s’attribue lui-même le statut actif', async () => {
