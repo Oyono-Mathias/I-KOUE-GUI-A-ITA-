@@ -103,7 +103,8 @@ service cloud.firestore {
       allow create: if isSuperAdmin() || isSecretaire() || (
         isOwner(userId) &&
         (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
-        (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente']) &&
+        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
+        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
         (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
       );
 
