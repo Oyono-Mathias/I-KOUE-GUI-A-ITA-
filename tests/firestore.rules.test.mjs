@@ -61,6 +61,10 @@ beforeEach(async () => {
       role: 'super_admin',
       statut: 'radie',
     });
+    await setDoc(doc(db, 'users', 'pending-admin'), {
+      role: 'super_admin',
+      statut: 'en_attente',
+    });
     await setDoc(doc(db, 'audit_logs', 'security-entry'), {
       event: 'test',
     });
@@ -132,6 +136,13 @@ describe('règles Firebase Storage', () => {
       new Uint8Array([1, 2, 3]),
       { contentType: 'image/png' },
     ));
+  });
+});
+
+describe('statut actif requis pour les rôles privilégiés', () => {
+  it('refuse à un super administrateur en attente de lire les journaux de sécurité', async () => {
+    const db = testEnv.authenticatedContext('pending-admin').firestore();
+    await assertFails(getDoc(doc(db, 'audit_logs', 'security-entry')));
   });
 });
 
