@@ -71,13 +71,11 @@ beforeEach(async () => {
     await setDoc(doc(db, 'ag_events', 'poll-closed'), {
       status: 'termine',
     });
-    await testEnv.withSecurityRulesDisabled(async (context) => {
-      await uploadBytes(
-        ref(context.storage(), 'documents/internal.pdf'),
-        new Uint8Array([37, 80, 68, 70]),
-        { contentType: 'application/pdf' },
-      );
-    });
+    await uploadBytes(
+      ref(context.storage(), 'documents/internal.pdf'),
+      new Uint8Array([37, 80, 68, 70]),
+      { contentType: 'application/pdf' },
+    );
   });
 });
 
