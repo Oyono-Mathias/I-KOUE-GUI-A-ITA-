@@ -61,13 +61,29 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
             setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         });
 
+        // Le formulaire public écrit dans membership_requests. On écoute aussi
+        // adhesions pour conserver la visibilité des demandes historiques.
+        const unsubMembershipRequests = onSnapshot(query(collection(db, 'membership_requests'), orderBy('createdAt', 'desc')), snap => {
+            const current = snap.docs.map(d => ({ id: d.id, sourceCollection: 'membership_requests', ...d.data() }));
+            setAdhesions(previous => [
+                ...previous.filter(item => item.sourceCollection !== 'membership_requests'),
+                ...current
+            ]);
+            setLoading(false);
+        });
+
         const unsubAdhesions = onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
-            setAdhesions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            const legacy = snap.docs.map(d => ({ id: d.id, sourceCollection: 'adhesions', ...d.data() }));
+            setAdhesions(previous => [
+                ...previous.filter(item => item.sourceCollection !== 'adhesions'),
+                ...legacy
+            ]);
             setLoading(false);
         });
 
         return () => {
-            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages(); unsubAdhesions();
+            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages();
+            unsubMembershipRequests(); unsubAdhesions();
         };
     }, []);
 
@@ -613,7 +629,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             <p style={{ color: '#666', fontStyle: 'italic' }}>Aucune demande en attente.</p>
                         ) : (
                             adhesions.map(a => (
-                                <div key={a.id} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
+                                <div key={`${a.sourceCollection}-${a.id}`} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <h5 style={{ margin: '0 0 4px 0' }}>{a.nom}</h5>
                                         <span style={{ fontSize: '12px', color: '#666' }}>{a.createdAt ? new Date(a.createdAt.toDate()).toLocaleDateString('fr-FR') : ''}</span>
