@@ -33,7 +33,7 @@ async function requireApprover(request) {
   const profile = profileSnap.data();
   const status = profile.statut || profile.status;
   if (
-    ["suspendu", "radie"].includes(status)
+    !["actif", "a_jour"].includes(status)
     || !APPROVER_ROLES.has(profile.role)
   ) {
     throw new HttpsError("permission-denied", "Vous n'êtes pas autorisé à traiter les adhésions.");
