@@ -231,12 +231,16 @@ service cloud.firestore {
 
     match /membership_requests/{docId} {
       allow create: if validMembershipRequest();
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow read: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      // Les décisions passent par Cloud Functions (Admin SDK); aucune modification
+      // directe du statut n'est autorisée depuis un client.
+      allow update, delete: if false;
     }
 
     match /adhesions/{docId} {
       allow create: if validMembershipRequest();
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow read: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow update, delete: if false;
     }
 
     match /newsletter/{docId} {
