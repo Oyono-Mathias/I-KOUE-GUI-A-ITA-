@@ -38,7 +38,9 @@ service cloud.firestore {
     // Un utilisateur suspendu voit tous ses privilèges révoqués
     // Refus par défaut si le profil Firestore n'existe pas.
     function isNotSuspended() {
-      return getUserData() != null && getUserStatus() != 'suspendu';
+      return getUserData() != null
+        && getUserStatus() != 'suspendu'
+        && getUserStatus() != 'radie';
     }
 
     function isSuperAdmin() {
