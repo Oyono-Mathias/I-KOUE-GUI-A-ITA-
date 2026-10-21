@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import { getFunctions } from 'firebase/functions';
 import { initializeFirestore, setLogLevel } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -22,6 +23,7 @@ export const db = initializeFirestore(app, {
 }, "ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5");
 
 export const auth = getAuth(app);
+export const functions = getFunctions(app);
 
 export const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
 export const secondaryAuth = getAuth(secondaryApp);
