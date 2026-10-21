@@ -637,9 +637,10 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Email:</strong> {a.email}</p>
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Tél:</strong> {a.telephone}</p>
                                     <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}><strong>Motivation:</strong> {a.motivation}</p>
+                                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: '#8a4b08' }}>Validation temporairement indisponible : elle doit déclencher un parcours sécurisé de création de compte.</p>
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Accepter</button>
-                                        <button style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Refuser</button>
+                                        <button type="button" disabled title="Flux d'invitation sécurisé requis" style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: 0.6, cursor: 'not-allowed' }}>Accepter</button>
+                                        <button type="button" disabled title="Workflow de validation requis" style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: 0.6, cursor: 'not-allowed' }}>Refuser</button>
                                     </div>
                                 </div>
                             ))
