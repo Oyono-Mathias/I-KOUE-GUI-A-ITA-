@@ -7,6 +7,8 @@ import {
   assertSucceeds,
 } from '@firebase/rules-unit-testing';
 import {
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
@@ -15,6 +17,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore';
 
 const projectId = 'demo-ikoue-rules';
@@ -50,6 +53,8 @@ beforeEach(async () => {
       role: 'membre',
       statut: 'suspendu',
     });
+    await setDoc(doc(db, 'tasks', 'task-1'), { title: 'Coordination', completed: false, assignedTo: 'secretaire' });
+    await setDoc(doc(db, 'missions_benevolat', 'mission-1'), { title: 'Nettoyage', participants: ['other-member'], status: 'ouverte' });
     await setDoc(doc(db, 'ag_events', pollId), {
       status: 'ouvert_au_vote',
     });
@@ -144,5 +149,59 @@ describe('règles Firestore des votes', () => {
 
   it('refuse aux membres de lister les votes', async () => {
     await assertFails(getDocs(query(collection(memberDb(), 'votes'))));
+  });
+});
+
+
+describe('règles Firestore des tâches et missions', () => {
+  it('refuse à un membre ordinaire de modifier une tâche', async () => {
+    await assertFails(updateDoc(doc(memberDb(), 'tasks', 'task-1'), {
+      completed: true,
+      completedAt: new Date(),
+    }));
+  });
+
+  it('autorise un membre du bureau à clôturer une tâche', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'users', 'secretary'), {
+        role: 'secretaire',
+        statut: 'actif',
+      });
+    });
+    const db = testEnv.authenticatedContext('secretary').firestore();
+    await assertSucceeds(updateDoc(doc(db, 'tasks', 'task-1'), {
+      completed: true,
+      completedAt: serverTimestamp(),
+    }));
+  });
+
+  it('autorise un membre à s’inscrire à une mission en ajoutant son UID', async () => {
+    await assertSucceeds(updateDoc(doc(memberDb(), 'missions_benevolat', 'mission-1'), {
+      participants: arrayUnion('member-ok'),
+    }));
+  });
+
+  it('autorise un membre à se désinscrire de sa mission', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), 'missions_benevolat', 'mission-1'), {
+        participants: ['other-member', 'member-ok'],
+      });
+    });
+    await assertSucceeds(updateDoc(doc(memberDb(), 'missions_benevolat', 'mission-1'), {
+      participants: arrayRemove('member-ok'),
+    }));
+  });
+
+  it('refuse à un membre d’inscrire un autre UID', async () => {
+    await assertFails(updateDoc(doc(memberDb(), 'missions_benevolat', 'mission-1'), {
+      participants: arrayUnion('another-user'),
+    }));
+  });
+
+  it('refuse à un membre de modifier le titre en même temps que les participants', async () => {
+    await assertFails(updateDoc(doc(memberDb(), 'missions_benevolat', 'mission-1'), {
+      title: 'Mission détournée',
+      participants: arrayUnion('member-ok'),
+    }));
   });
 });
