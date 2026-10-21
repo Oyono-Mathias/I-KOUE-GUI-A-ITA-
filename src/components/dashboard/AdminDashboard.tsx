@@ -310,7 +310,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
         { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
         { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
-        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire'] },
+        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin'] },
         { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'] },
         { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin'] },
         { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'communicateur'] },
