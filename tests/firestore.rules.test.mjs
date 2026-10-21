@@ -467,6 +467,47 @@ describe('règles Firestore des formulaires publics', () => {
     }));
   });
 
+  it('refuse la modification directe du statut d’une demande, même par le bureau', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'users', 'super-admin'), {
+        role: 'super_admin',
+        statut: 'actif',
+      });
+      await setDoc(doc(context.firestore(), 'membership_requests', 'decision-protected'), {
+        nom: 'Alex Martin',
+        email: 'alex@example.com',
+        telephone: '+23670000000',
+        categorie: 'benevole',
+        motivation: 'Motivation',
+        statut: 'en_attente',
+        createdAt: new Date(),
+      });
+    });
+    const db = testEnv.authenticatedContext('super-admin').firestore();
+    await assertFails(updateDoc(doc(db, 'membership_requests', 'decision-protected'), {
+      statut: 'acceptee',
+    }));
+    await assertFails(deleteDoc(doc(db, 'membership_requests', 'decision-protected')));
+  });
+
+  it('refuse les décisions directes sur les demandes historiques', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'users', 'super-admin'), {
+        role: 'super_admin',
+        statut: 'actif',
+      });
+      await setDoc(doc(context.firestore(), 'adhesions', 'legacy-request'), {
+        nom: 'Alex Martin',
+        email: 'alex@example.com',
+        statut: 'en_attente',
+      });
+    });
+    const db = testEnv.authenticatedContext('super-admin').firestore();
+    await assertFails(updateDoc(doc(db, 'adhesions', 'legacy-request'), {
+      statut: 'acceptee',
+    }));
+  });
+
   it('accepte une inscription newsletter limitée à e-mail et horodatage serveur', async () => {
     const db = testEnv.unauthenticatedContext().firestore();
     await assertSucceeds(setDoc(doc(db, 'newsletter', 'newsletter-valid'), {
