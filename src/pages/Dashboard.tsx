@@ -16,7 +16,7 @@ export default function Dashboard() {
         if (userData) {
             if (userData.role === 'super_admin') {
                 setView('fondateur');
-            } else if (userData.role !== 'membre') {
+            } else if (!['membre', 'member'].includes(userData.role)) {
                 setView('admin');
             } else {
                 setView('member');
@@ -47,7 +47,7 @@ export default function Dashboard() {
         switch (role) {
             case 'super_admin': return 'Président Fondateur';
             case 'vice_president': return 'Vice-Président';
-            case 'admin_bureau': return 'Secrétaire Général';
+            case 'admin_bureau': return 'Administrateur du bureau';
             case 'tresorier': return 'Trésorier';
             case 'communicateur': return 'Communicateur';
             case 'conseiller': return 'Conseiller';
@@ -55,7 +55,7 @@ export default function Dashboard() {
         }
     };
 
-    const hasMultiSpaces = role !== 'membre';
+    const hasMultiSpaces = !['membre', 'member'].includes(role);
 
     return (
         <div className="page active" style={{ minHeight: '100vh', background: '#F8FAFC' }}>
