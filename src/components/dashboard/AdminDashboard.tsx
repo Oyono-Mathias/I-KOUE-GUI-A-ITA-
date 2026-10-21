@@ -10,6 +10,7 @@ import {
 export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [activeTab, setActiveTab] = useState('accueil');
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
 
     // Data states
     const [users, setUsers] = useState<UserData[]>([]);
@@ -37,6 +38,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const handleListenerError = (source: string) => (error: Error) => {
         console.error(`Erreur de lecture Firestore (${source}):`, error);
+        setLoadError(true);
         setLoading(false);
     };
 
@@ -244,7 +246,12 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '90px' }}>
-            
+            {loadError && (
+                <div role="alert" style={{ background: '#FFF3E0', color: '#8A4B08', border: '1px solid #F2C078', borderRadius: '10px', padding: '12px 14px', fontSize: '13px' }}>
+                    Certaines données n'ont pas pu être chargées en raison d'un problème de connexion ou d'autorisation. Les informations affichées peuvent être incomplètes.
+                </div>
+            )}
+
             {/* 1. ACCUEIL */}
             {activeTab === 'accueil' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.3s' }}>
