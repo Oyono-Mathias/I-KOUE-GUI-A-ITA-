@@ -173,27 +173,37 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const handleAddFinance = async (e: React.FormEvent) => {
         e.preventDefault();
-        await addDoc(collection(db, 'finances'), {
-            ...financeData,
-            amount: parseFloat(financeData.amount),
-            createdAt: serverTimestamp(),
-            createdBy: currentUser.uid
-        });
-        
-        // Also send a validation for the report if it's a big expense
-        if (financeData.type === 'depense' && parseFloat(financeData.amount) > 50000) {
-            await addDoc(collection(db, 'validations'), {
-                type: 'finance',
-                title: `Dépense majeure : ${financeData.amount} FCFA`,
-                description: `Motif : ${financeData.description}. Rapport financier nécessitant une approbation.`,
-                status: 'pending',
-                createdAt: serverTimestamp(),
-                requestedBy: currentUser.displayName || 'Trésorier',
-            });
+        const amount = Number(financeData.amount);
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            alert('Saisissez un montant valide supérieur à zéro.');
+            return;
         }
-        
-        setFinanceData({ type: 'recette', amount: '', description: '' });
-        setShowFinanceForm(false);
+
+        // Le circuit d'approbation des validations n'est pas encore disponible dans le tableau de bord.
+        // Bloquer avant toute écriture évite d'enregistrer une dépense qui n'a pas été approuvée.
+        if (financeData.type === 'depense' && amount > 50000) {
+            alert("Dépense bloquée : au-delà de 50 000 FCFA, l'approbation doit être disponible avant l'enregistrement. Contactez le Président pour validation manuelle.");
+            return;
+        }
+
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+        try {
+            await addDoc(collection(db, 'finances'), {
+                ...financeData,
+                amount,
+                createdAt: serverTimestamp(),
+                createdBy: currentUser.uid
+            });
+            setFinanceData({ type: 'recette', amount: '', description: '' });
+            setShowFinanceForm(false);
+        } catch (error) {
+            console.error("Erreur lors de l'enregistrement financier :", error);
+            alert("L'opération financière n'a pas pu être enregistrée. Vérifiez vos autorisations et réessayez.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleAddAg = async (e: React.FormEvent) => {
