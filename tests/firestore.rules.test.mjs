@@ -128,6 +128,66 @@ describe('règles Firebase Storage', () => {
   });
 });
 
+describe('protection des rôles privilégiés', () => {
+  async function seedGovernanceProfiles() {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, 'users', 'secretary'), {
+        role: 'secretaire',
+        statut: 'actif',
+      });
+      await setDoc(doc(db, 'users', 'super-admin'), {
+        role: 'super_admin',
+        statut: 'actif',
+      });
+      await setDoc(doc(db, 'users', 'target-member'), {
+        role: 'membre',
+        statut: 'en_attente',
+        displayName: 'Membre test',
+      });
+    });
+  }
+
+  it('refuse au secrétariat de promouvoir un membre en super administrateur', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('secretary').firestore();
+    await assertFails(updateDoc(doc(db, 'users', 'target-member'), {
+      role: 'super_admin',
+    }));
+  });
+
+  it('refuse au secrétariat de créer un profil privilégié', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('secretary').firestore();
+    await assertFails(setDoc(doc(db, 'users', 'new-admin'), {
+      role: 'super_admin',
+      statut: 'actif',
+    }));
+  });
+
+  it('refuse au secrétariat de supprimer un profil utilisateur', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('secretary').firestore();
+    await assertFails(deleteDoc(doc(db, 'users', 'target-member')));
+  });
+
+  it('autorise au secrétariat de modifier un champ de profil non sensible', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('secretary').firestore();
+    await assertSucceeds(updateDoc(doc(db, 'users', 'target-member'), {
+      displayName: 'Nom corrigé',
+    }));
+  });
+
+  it('autorise la haute administration à modifier un rôle', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('super-admin').firestore();
+    await assertSucceeds(updateDoc(doc(db, 'users', 'target-member'), {
+      role: 'tresorier',
+    }));
+  });
+});
+
 describe('auto-inscription et validation des membres', () => {
   it('refuse qu’un utilisateur s’attribue lui-même le statut actif', async () => {
     const db = memberDb('new-user');
