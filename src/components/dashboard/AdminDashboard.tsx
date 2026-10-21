@@ -139,8 +139,16 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     };
 
     const handleStatusChange = async (uid: string, newStatut: string, userName: string) => {
+        const canUpdateDirectly = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire'].includes(currentUser.role);
+        const canRequestValidation = ['vice_president', 'conseiller'].includes(currentUser.role);
+
+        if (!canUpdateDirectly && !canRequestValidation) {
+            alert("Votre rôle ne permet pas de modifier directement ce statut ni de soumettre une demande de validation.");
+            return;
+        }
+
         try {
-            if (currentUser.role === 'super_admin') {
+            if (canUpdateDirectly) {
                 await updateDoc(doc(db, 'users', uid), { statut: newStatut });
                 alert(`Statut de ${userName} mis à jour : ${newStatut.toUpperCase()}`);
             } else {
@@ -154,11 +162,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     targetUid: uid,
                     proposedStatus: newStatut
                 });
-                alert('Demande soumise au Président Fondateur pour validation (Art. 17).');
+                alert('Demande soumise au circuit de validation du bureau.');
             }
         } catch (error) {
             console.error("Erreur lors du changement de statut:", error);
-            alert("Erreur lors du changement de statut.");
+            alert("Le changement de statut n'a pas pu être enregistré. Vérifiez vos autorisations puis réessayez.");
         }
     };
 
