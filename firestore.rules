@@ -101,18 +101,25 @@ service cloud.firestore {
       // - La haute administration peut créer les profils nécessaires.
       // - Le secrétariat ne peut créer que des profils membres non privilégiés et en attente.
       // - L'auto-inscription reste limitée aux membres en attente.
+      function isSafeMemberProfileCreate() {
+        return request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'photoURL', 'role', 'statut', 'status',
+          'createdAt', 'updatedAt', 'nom', 'telephone', 'phone', 'adresse',
+          'address', 'profession', 'dateNaissance', 'isAdmin'
+        ]) &&
+        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
+        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
+        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
+        (!('uid' in request.resource.data) || request.resource.data.uid == userId);
+      }
+
       allow create: if isSuperAdmin() || (
         getUserRole() == 'secretaire' && isNotSuspended() &&
-        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
-        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
-        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
-        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        isSafeMemberProfileCreate()
       ) || (
         isOwner(userId) &&
-        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
-        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
-        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
-        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        isSafeMemberProfileCreate()
       );
 
       // Modification :
