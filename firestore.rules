@@ -133,7 +133,7 @@ service cloud.firestore {
       }
 
       allow create: if isSuperAdmin() || (
-        getUserRole() == 'secretaire' && isNotSuspended() &&
+        isSecretaire() &&
         isSafeMemberProfileCreate()
       ) || (
         isOwner(userId) &&
@@ -145,7 +145,7 @@ service cloud.firestore {
       // les autres champs de profil, mais pas les rôles, permissions, privilèges ou soldes.
       // Un propriétaire ne peut jamais modifier son rôle, statut ou données sensibles.
       allow update: if isSuperAdmin() || (
-        getUserRole() == 'secretaire' && isNotSuspended() &&
+        isSecretaire() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'permissions', 'isAdmin', 'solde', 'cotisation'
         ])
