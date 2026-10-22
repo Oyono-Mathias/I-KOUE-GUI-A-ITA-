@@ -92,6 +92,13 @@ service cloud.firestore {
       );
     }
 
+    // Vérifie le droit de gérer les missions en une seule évaluation de rôle.
+    function canManageMissions() {
+      let role = getUserRole();
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && role in ['vice_president', 'super_admin', 'president', 'president_fondateur', 'admin'];
+    }
+
     // Un compte connecté n'est pas automatiquement un membre validé.
     // Seuls les profils actifs ou à jour accèdent à l'espace membres.
     function isMember() {
@@ -443,7 +450,7 @@ service cloud.firestore {
       allow create, delete: if isVicePresident() || isSuperAdmin();
       // Un membre ne peut modifier que la liste participants, en ajoutant ou retirant
       // uniquement son propre UID. Les champs de la mission restent protégés.
-      allow update: if isVicePresident() || isSuperAdmin() || (
+      allow update: if canManageMissions() || (
         isMember()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
         && resource.data.participants is list
