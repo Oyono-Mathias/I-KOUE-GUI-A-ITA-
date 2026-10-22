@@ -1,0 +1,36 @@
+name: Firestore rules tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  firestore-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install application dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run lint
+      - name: Validate Cloud Functions
+        run: npm install --prefix functions --no-audit --no-fund && npm --prefix functions run lint
+      - name: Production build
+        run: npm run build
+      - name: Install Firestore test dependencies
+        run: npm install --no-save --package-lock=false @firebase/rules-unit-testing firebase-tools
+      - name: Run Firebase Emulator tests
+        run: npx firebase emulators:exec --only firestore,storage --project demo-ikoue-rules "node --test tests/firestore.rules.test.mjs"

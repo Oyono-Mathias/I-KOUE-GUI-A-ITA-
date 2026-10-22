@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Home, IdCard, CreditCard, FileText, User as UserIcon, QrCode, Download, ExternalLink, Settings, Bell } from 'lucide-react';
 import { UserData } from '../../hooks/useAuth';
-import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, limit, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 
 interface MemberDashboardProps {
@@ -23,23 +23,50 @@ export function MemberDashboard({ userData }: MemberDashboardProps) {
     }, []);
 
     useEffect(() => {
-        // Fetch Real-time Notifications
-        const qNotifs = query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(5));
-        const unsubNotifs = onSnapshot(qNotifs, (snap) => {
-            setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        // Les règles Firestore autorisent les membres à lire uniquement
+        // leurs notifications personnelles ou celles destinées à tous.
+        // Deux requêtes filtrées sont nécessaires : une requête générale serait refusée.
+        const notificationSets = new Map<string, any[]>();
+        const publishNotifications = () => {
+            const unique = new Map<string, any>();
+            notificationSets.forEach(items => items.forEach(item => unique.set(item.id, item)));
+            setNotifications(
+                Array.from(unique.values())
+                    .sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))
+                    .slice(0, 5)
+            );
+        };
+
+        const qGlobalNotifs = query(
+            collection(db, 'notifications'),
+            where('target', '==', 'all')
+        );
+        const qPersonalNotifs = query(
+            collection(db, 'notifications'),
+            where('userId', '==', userData.uid)
+        );
+        const unsubGlobalNotifs = onSnapshot(qGlobalNotifs, (snap) => {
+            notificationSets.set('global', snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            publishNotifications();
+        }, error => console.error('Erreur de lecture des notifications publiques:', error));
+
+        const unsubPersonalNotifs = onSnapshot(qPersonalNotifs, (snap) => {
+            notificationSets.set('personal', snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            publishNotifications();
+        }, error => console.error('Erreur de lecture des notifications personnelles:', error));
 
         // Fetch Real-time Documents
         const qDocs = query(collection(db, 'documents'), orderBy('createdAt', 'desc'));
         const unsubDocs = onSnapshot(qDocs, (snap) => {
             setDocuments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        }, error => console.error('Erreur de lecture des documents:', error));
 
         return () => {
-            unsubNotifs();
+            unsubGlobalNotifs();
+            unsubPersonalNotifs();
             unsubDocs();
         };
-    }, []);
+    }, [userData.uid]);
 
     const changeTab = (tab: string) => {
         setActiveTab(tab);

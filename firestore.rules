@@ -36,53 +36,76 @@ service cloud.firestore {
     }
 
     // Un utilisateur suspendu voit tous ses privilèges révoqués
+    // Refus par défaut si le profil Firestore n'existe pas.
     function isNotSuspended() {
-      let s = getUserStatus();
-      return s == null || s != 'suspendu';
+      return getUserData() != null
+        && getUserStatus() != 'suspendu'
+        && getUserStatus() != 'radie';
+    }
+
+    function hasActivePrivilegedStatus() {
+      return getUserStatus() in ['actif', 'a_jour'];
     }
 
     function isSuperAdmin() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus() && (
         r == 'super_admin' || r == 'president' || r == 'president_fondateur' || r == 'admin'
       );
     }
 
     function isVicePresident() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'vice_president' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'vice_president' || isSuperAdmin());
     }
 
     function isSecretaire() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'secretaire' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'secretaire' || isSuperAdmin());
     }
 
     function isTresorier() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'tresorier' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'tresorier' || isSuperAdmin());
     }
 
     function isCommunicateur() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'communicateur' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'communicateur' || isSuperAdmin());
     }
 
     function isConseiller() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'conseiller' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && (r == 'conseiller' || isSuperAdmin());
     }
 
     function isBureau() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
-        r in ['super_admin', 'president', 'president_fondateur', 'vice_president', 
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus() && (
+        r in ['super_admin', 'president', 'president_fondateur', 'vice_president',
               'secretaire', 'tresorier', 'communicateur', 'conseiller', 'admin_bureau', 'admin']
       );
     }
 
+    // Vérifie le droit de gérer les missions en une seule évaluation de rôle.
+    function canManageMissions() {
+      let role = getUserRole();
+      return isSignedIn() && isNotSuspended() && hasActivePrivilegedStatus()
+        && role in ['vice_president', 'super_admin', 'president', 'president_fondateur', 'admin'];
+    }
+
+    // Un compte connecté n'est pas automatiquement un membre validé.
+    // Seuls les profils actifs ou à jour accèdent à l'espace membres.
     function isMember() {
-      return isSignedIn() && isNotSuspended();
+      return isSignedIn()
+        && getUserData() != null
+        && isNotSuspended()
+        && getUserStatus() in ['actif', 'a_jour'];
     }
 
     // =========================================================================
@@ -93,20 +116,40 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isSuperAdmin() || isSecretaire() || isVicePresident();
 
       // Création :
-      // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
-      // - Auto-inscription : rôle strictement forcé à membre / member et statut non privilégié
-      allow create: if isSuperAdmin() || isSecretaire() || (
-        isOwner(userId) &&
+      // - La haute administration peut créer les profils nécessaires.
+      // - Le secrétariat ne peut créer que des profils membres non privilégiés et en attente.
+      // - L'auto-inscription reste limitée aux membres en attente.
+      function isSafeMemberProfileCreate() {
+        return request.resource.data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'photoURL', 'role', 'statut', 'status',
+          'createdAt', 'updatedAt', 'nom', 'telephone', 'phone', 'adresse',
+          'address', 'profession', 'dateNaissance', 'isAdmin'
+        ]) &&
         (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
-        (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente']) &&
-        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        (!('statut' in request.resource.data) || request.resource.data.statut == 'en_attente') &&
+        (!('status' in request.resource.data) || request.resource.data.status == 'en_attente') &&
+        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false) &&
+        (!('uid' in request.resource.data) || request.resource.data.uid == userId);
+      }
+
+      allow create: if isSuperAdmin() || (
+        isSecretaire() &&
+        isSafeMemberProfileCreate()
+      ) || (
+        isOwner(userId) &&
+        isSafeMemberProfileCreate()
       );
 
       // Modification :
-      // - Le bureau habilité peut administrer les rôles et statuts
-      // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
-      //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
-      allow update: if isSuperAdmin() || isSecretaire() || (
+      // Seule la haute administration peut modifier un rôle. Le secrétariat peut gérer
+      // les autres champs de profil, mais pas les rôles, permissions, privilèges ou soldes.
+      // Un propriétaire ne peut jamais modifier son rôle, statut ou données sensibles.
+      allow update: if isSuperAdmin() || (
+        isSecretaire() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'role', 'permissions', 'isAdmin', 'solde', 'cotisation'
+        ])
+      ) || (
         isOwner(userId) && isNotSuspended() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
@@ -114,7 +157,7 @@ service cloud.firestore {
       );
 
       // Suppression : Strictement réservée à la haute administration
-      allow delete: if isSuperAdmin() || isSecretaire();
+      allow delete: if isSuperAdmin();
     }
 
     // =========================================================================
@@ -175,25 +218,73 @@ service cloud.firestore {
       allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
     }
 
-    // Formulaire de contact public (Création ouverte, administration réservée)
+    function validEmail(value) {
+      return value is string
+        && value.size() > 3
+        && value.size() <= 254
+        && value.matches('^[^ @]+@[^ @]+\\.[^ @]+$');
+    }
+
+    function validContactMessage() {
+      return request.resource.data.keys().hasAll(['name', 'email', 'subject', 'message', 'status', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['name', 'email', 'subject', 'message', 'status', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && validEmail(request.resource.data.email)
+        && request.resource.data.subject is string
+        && request.resource.data.subject.size() > 0
+        && request.resource.data.subject.size() <= 150
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.status == 'nouveau'
+        && request.resource.data.createdAt == request.time;
+    }
+
+    function validMembershipRequest() {
+      return request.resource.data.keys().hasAll(['nom', 'email', 'telephone', 'categorie', 'motivation', 'statut', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['nom', 'email', 'telephone', 'categorie', 'motivation', 'statut', 'createdAt'])
+        && request.resource.data.nom is string
+        && request.resource.data.nom.size() > 0
+        && request.resource.data.nom.size() <= 150
+        && validEmail(request.resource.data.email)
+        && request.resource.data.telephone is string
+        && request.resource.data.telephone.size() >= 6
+        && request.resource.data.telephone.size() <= 30
+        && request.resource.data.categorie is string
+        && request.resource.data.categorie.size() > 0
+        && request.resource.data.categorie.size() <= 80
+        && request.resource.data.motivation is string
+        && request.resource.data.motivation.size() <= 3000
+        && request.resource.data.statut == 'en_attente'
+        && request.resource.data.createdAt == request.time;
+    }
+
     match /contact_messages/{docId} {
-      allow create: if true;
+      allow create: if validContactMessage();
       allow read, update, delete: if isSuperAdmin() || isCommunicateur() || isSecretaire();
     }
 
-    // Demandes d'adhésion publiques
     match /membership_requests/{docId} {
-      allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow create: if validMembershipRequest();
+      allow read: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      // Les décisions passent par Cloud Functions (Admin SDK); aucune modification
+      // directe du statut n'est autorisée depuis un client.
+      allow update, delete: if false;
     }
 
     match /adhesions/{docId} {
-      allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow create: if validMembershipRequest();
+      allow read: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow update, delete: if false;
     }
 
     match /newsletter/{docId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasAll(['email', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['email', 'createdAt'])
+        && validEmail(request.resource.data.email)
+        && request.resource.data.createdAt == request.time;
       allow read, update, delete: if isSuperAdmin() || isCommunicateur();
     }
 
@@ -306,10 +397,9 @@ service cloud.firestore {
     match /tasks/{docId} {
       allow read: if isBureau() || isMember();
       allow create, delete: if isBureau();
-      // Un membre assigné peut cocher l'accomplissement d'une tâche
-      allow update: if isBureau() || (
-        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'completedAt'])
-      );
+      // Les tâches sont créées, modifiées et clôturées par le bureau uniquement.
+      // L'interface assigne les tâches à des fonctions du bureau, pas à des membres ordinaires.
+      allow update: if isBureau();
     }
 
     match /system/{docId} {
@@ -358,25 +448,77 @@ service cloud.firestore {
     match /missions_benevolat/{docId} {
       allow read: if isMember();
       allow create, delete: if isVicePresident() || isSuperAdmin();
-      // Les membres peuvent s'inscrire / se désinscrire des missions de bénévolat
-      allow update: if isVicePresident() || isSuperAdmin() || (
-        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['inscrits', 'volunteers', 'participants'])
+      // Un membre ne peut modifier que la liste participants, en ajoutant ou retirant
+      // uniquement son propre UID. Les champs de la mission restent protégés.
+      allow update: if canManageMissions() || (
+        isMember()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['participants'])
+        && resource.data.participants is list
+        && request.resource.data.participants is list
+        && (
+          (
+            request.resource.data.participants.size() == resource.data.participants.size() + 1
+            && request.resource.data.participants.hasAll(resource.data.participants)
+            && request.resource.data.participants.hasAny([request.auth.uid])
+            && !resource.data.participants.hasAny([request.auth.uid])
+          )
+          ||
+          (
+            resource.data.participants.size() == request.resource.data.participants.size() + 1
+            && resource.data.participants.hasAll(request.resource.data.participants)
+            && resource.data.participants.hasAny([request.auth.uid])
+            && !request.resource.data.participants.hasAny([request.auth.uid])
+          )
+        )
       );
     }
 
     match /forum/{docId} {
       allow read: if isMember();
-      allow create: if isMember();
-      allow update, delete: if isSuperAdmin() || (
-        isMember() && resource.data.authorId == request.auth.uid
-      );
+      allow create: if isMember()
+        && request.resource.data.keys().hasAll(['authorId', 'authorName', 'content', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['authorId', 'authorName', 'content', 'createdAt', 'title'])
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.authorName is string
+        && request.resource.data.authorName.size() > 0
+        && request.resource.data.authorName.size() <= 100
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
+        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200))
+        && request.resource.data.createdAt == request.time;
+      allow update: if isMember()
+        && (isSuperAdmin() || resource.data.authorId == request.auth.uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'title'])
+        && (!('content' in request.resource.data) || (request.resource.data.content is string && request.resource.data.content.size() > 0 && request.resource.data.content.size() <= 5000))
+        && (!('title' in request.resource.data) || (request.resource.data.title is string && request.resource.data.title.size() <= 200));
+      allow delete: if isSuperAdmin() || (isMember() && resource.data.authorId == request.auth.uid);
     }
 
     match /votes/{docId} {
-      allow read: if isMember();
-      allow create, delete: if isSuperAdmin() || isSecretaire();
-      // Un membre peut participer en enregistrant son vote sans modifier la structure de la session
-      allow update: if isSuperAdmin() || isSecretaire() || isMember();
+      // get autorise aussi la vérification d'un vote absent, sans exposer les votes des autres.
+      allow get: if isSuperAdmin() || isSecretaire() || (
+        isMember() && docId.matches('.*_' + request.auth.uid)
+      );
+      // Les listes de votes sont réservées au bureau habilité pour protéger le secret du scrutin.
+      allow list: if isSuperAdmin() || isSecretaire();
+
+      // Un vote est immuable et son identifiant déterministe (pollId_uid) empêche
+      // un même compte de créer plusieurs votes pour la même résolution.
+      allow create: if isMember()
+        && getUserStatus() in ['a_jour', 'actif']
+        && request.resource.data.keys().hasAll(['pollId', 'choice', 'memberId', 'timestamp'])
+        && request.resource.data.keys().hasOnly(['pollId', 'choice', 'memberId', 'timestamp'])
+        && request.resource.data.pollId is string
+        && request.resource.data.memberId == request.auth.uid
+        && docId == request.resource.data.pollId + '_' + request.auth.uid
+        && request.resource.data.choice in ['pour', 'contre', 'abstention']
+        && request.resource.data.timestamp == request.time
+        && exists(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId))
+        && get(/databases/$(database)/documents/ag_events/$(request.resource.data.pollId)).data.status == 'ouvert_au_vote';
+
+      // Aucun vote ne peut être modifié ou supprimé depuis le client.
+      allow update, delete: if false;
     }
 
     match /notifications/{docId} {
@@ -390,10 +532,27 @@ service cloud.firestore {
       allow read: if isMember() && (
         resource.data.recipientId == request.auth.uid || resource.data.senderId == request.auth.uid || isBureau()
       );
-      allow create: if isMember();
-      allow update, delete: if isBureau() || (
-        isMember() && resource.data.senderId == request.auth.uid
+      allow create: if isMember()
+        && request.resource.data.keys().hasAll(['senderId', 'recipientId', 'content', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['senderId', 'recipientId', 'content', 'createdAt', 'subject'])
+        && request.resource.data.senderId == request.auth.uid
+        && request.resource.data.recipientId is string
+        && request.resource.data.recipientId.size() > 0
+        && request.resource.data.recipientId.size() <= 128
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
+        && (!('subject' in request.resource.data) || (request.resource.data.subject is string && request.resource.data.subject.size() <= 200))
+        && request.resource.data.createdAt == request.time;
+      allow update: if isBureau() || (
+        isMember()
+        && resource.data.senderId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content'])
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 5000
       );
+      allow delete: if isBureau() || (isMember() && resource.data.senderId == request.auth.uid);
     }
 
     match /ag_events/{docId} {

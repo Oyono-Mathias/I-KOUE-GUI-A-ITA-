@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc, writeBatch } from 'firebase/firestore';
+import { db, functions } from '../../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { UserData } from '../../hooks/useAuth';
 import { 
     Home, Users, Banknote, CalendarDays, Newspaper, FileText, 
@@ -10,6 +11,8 @@ import {
 export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [activeTab, setActiveTab] = useState('accueil');
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
+    const [membershipDecisionId, setMembershipDecisionId] = useState<string | null>(null);
 
     // Data states
     const [users, setUsers] = useState<UserData[]>([]);
@@ -35,44 +38,101 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [showNewsForm, setShowNewsForm] = useState(false);
     const [newsData, setNewsData] = useState({ title: '', content: '' });
 
+    const handleMembershipDecision = async (requestId: string, sourceCollection: string, decision: 'acceptee' | 'refusee') => {
+        if (!window.confirm(decision === 'acceptee'
+            ? 'Confirmer l’acceptation de cette demande ? Le profil sera activé si le candidat possède déjà un compte, sinon à sa prochaine connexion.'
+            : 'Confirmer le refus de cette demande ?')) return;
+
+        setMembershipDecisionId(requestId);
+        try {
+            const decide = httpsCallable(functions, 'decideMembershipRequest');
+            await decide({ requestId, sourceCollection, decision });
+            alert(decision === 'acceptee'
+                ? 'Demande acceptée. Si le candidat n’a pas encore de compte, son profil sera activé à sa prochaine connexion Google.'
+                : 'Demande refusée.');
+        } catch (error) {
+            console.error('Erreur de décision d’adhésion:', error);
+            alert('La décision n’a pas pu être enregistrée. Vérifiez vos autorisations et le déploiement des fonctions Firebase.');
+        } finally {
+            setMembershipDecisionId(null);
+        }
+    };
+
+    const handleListenerError = (source: string) => (error: Error) => {
+        console.error(`Erreur de lecture Firestore (${source}):`, error);
+        setLoadError(true);
+        setLoading(false);
+    };
+
     useEffect(() => {
-        // Real-time listeners for all modules
-        const unsubUsers = onSnapshot(query(collection(db, 'users'), orderBy('displayName')), snap => {
-            setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserData)));
-        });
+        const role = currentUser.role;
+        const canReadUsers = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'].includes(role);
+        const canReadFinances = ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'].includes(role);
+        const canReadMembership = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'].includes(role);
+        const unsubscribers: Array<() => void> = [];
 
-        const unsubFinances = onSnapshot(query(collection(db, 'finances'), orderBy('createdAt', 'desc')), snap => {
-            setFinances(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
+        // Les abonnements sont créés uniquement si les règles Firestore autorisent la lecture.
+        if (canReadUsers) {
+            unsubscribers.push(onSnapshot(query(collection(db, 'users'), orderBy('displayName')), snap => {
+                setUsers(snap.docs.map(d => ({ uid: d.id, ...d.data() } as UserData)));
+            }, handleListenerError('users')));
+        }
 
-        const unsubAg = onSnapshot(query(collection(db, 'ag_events'), orderBy('createdAt', 'desc')), snap => {
+        if (canReadFinances) {
+            unsubscribers.push(onSnapshot(query(collection(db, 'finances'), orderBy('createdAt', 'desc')), snap => {
+                setFinances(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+            }, handleListenerError('finances')));
+        }
+
+        unsubscribers.push(onSnapshot(query(collection(db, 'ag_events'), orderBy('createdAt', 'desc')), snap => {
             setAgEvents(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
-
-        const unsubNews = onSnapshot(query(collection(db, 'actualites'), orderBy('createdAt', 'desc')), snap => {
-            setNews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
-
-        const unsubReports = onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
-            setReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
-
-        const unsubMessages = onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
-            setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-        });
-
-        const unsubAdhesions = onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
-            setAdhesions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
             setLoading(false);
-        });
+        }, handleListenerError('ag_events')));
 
-        return () => {
-            unsubUsers(); unsubFinances(); unsubAg(); unsubNews(); unsubReports(); unsubMessages(); unsubAdhesions();
-        };
-    }, []);
+        unsubscribers.push(onSnapshot(query(collection(db, 'actualites'), orderBy('createdAt', 'desc')), snap => {
+            setNews(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, handleListenerError('actualites')));
+
+        unsubscribers.push(onSnapshot(query(collection(db, 'rapports_delegues'), orderBy('createdAt', 'desc')), snap => {
+            setReports(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, handleListenerError('rapports_delegues')));
+
+        unsubscribers.push(onSnapshot(query(collection(db, 'messages'), orderBy('createdAt', 'desc')), snap => {
+            setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        }, handleListenerError('messages')));
+
+        if (canReadMembership) {
+            // Le formulaire public écrit dans membership_requests; adhesions contient l'historique.
+            unsubscribers.push(onSnapshot(query(collection(db, 'membership_requests'), orderBy('createdAt', 'desc')), snap => {
+                const current = snap.docs.map(d => ({ id: d.id, sourceCollection: 'membership_requests', ...d.data() }));
+                setAdhesions(previous => [
+                    ...previous.filter(item => item.sourceCollection !== 'membership_requests'),
+                    ...current
+                ]);
+                setLoading(false);
+            }, handleListenerError('membership_requests')));
+
+            unsubscribers.push(onSnapshot(query(collection(db, 'adhesions'), orderBy('createdAt', 'desc')), snap => {
+                const legacy = snap.docs.map(d => ({ id: d.id, sourceCollection: 'adhesions', ...d.data() }));
+                setAdhesions(previous => [
+                    ...previous.filter(item => item.sourceCollection !== 'adhesions'),
+                    ...legacy
+                ]);
+                setLoading(false);
+            }, handleListenerError('adhesions')));
+        } else {
+            setLoading(false);
+        }
+
+        return () => unsubscribers.forEach(unsubscribe => unsubscribe());
+    }, [currentUser.role]);
 
     // ACTIONS
     const handleRoleChange = async (uid: string, newRole: string) => {
+        if (!['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentUser.role)) {
+            alert("Seule la haute administration peut modifier les rôles.");
+            return;
+        }
         try {
             await updateDoc(doc(db, 'users', uid), { role: newRole });
             alert('Rôle mis à jour avec succès !');
@@ -83,8 +143,16 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     };
 
     const handleStatusChange = async (uid: string, newStatut: string, userName: string) => {
+        const canUpdateDirectly = ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire'].includes(currentUser.role);
+        const canRequestValidation = ['vice_president', 'conseiller'].includes(currentUser.role);
+
+        if (!canUpdateDirectly && !canRequestValidation) {
+            alert("Votre rôle ne permet pas de modifier directement ce statut ni de soumettre une demande de validation.");
+            return;
+        }
+
         try {
-            if (currentUser.role === 'super_admin') {
+            if (canUpdateDirectly) {
                 await updateDoc(doc(db, 'users', uid), { statut: newStatut });
                 alert(`Statut de ${userName} mis à jour : ${newStatut.toUpperCase()}`);
             } else {
@@ -98,11 +166,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     targetUid: uid,
                     proposedStatus: newStatut
                 });
-                alert('Demande soumise au Président Fondateur pour validation (Art. 17).');
+                alert('Demande soumise au circuit de validation du bureau.');
             }
         } catch (error) {
             console.error("Erreur lors du changement de statut:", error);
-            alert("Erreur lors du changement de statut.");
+            alert("Le changement de statut n'a pas pu être enregistré. Vérifiez vos autorisations puis réessayez.");
         }
     };
 
@@ -110,83 +178,89 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Un document Firestore seul ne crée pas de compte Firebase Authentication.
+        // Ne pas créer de faux profils tant qu'un flux d'invitation sécurisé côté serveur n'existe pas.
+        alert("Ajout manuel indisponible : le système doit d'abord créer un compte d'authentification et son profil de manière sécurisée. Utilisez le formulaire public d'adhésion en attendant.");
+    };
+
+    const handleAddFinance = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const amount = Number(financeData.amount);
+
+        if (!Number.isFinite(amount) || amount <= 0) {
+            alert('Saisissez un montant valide supérieur à zéro.');
+            return;
+        }
+
+        // Le circuit d'approbation des validations n'est pas encore disponible dans le tableau de bord.
+        // Bloquer avant toute écriture évite d'enregistrer une dépense qui n'a pas été approuvée.
+        if (financeData.type === 'depense' && amount > 50000) {
+            alert("Dépense bloquée : au-delà de 50 000 FCFA, l'approbation doit être disponible avant l'enregistrement. Contactez le Président pour validation manuelle.");
+            return;
+        }
+
         if (isSubmitting) return;
-        
         setIsSubmitting(true);
         try {
-            // Empêcher les doublons par email côté client (en attendant les règles Firestore)
-            const existingUser = users.find(u => u.email.toLowerCase() === newMember.email.toLowerCase());
-            if (existingUser) {
-                alert('Un membre avec cet email existe déjà !');
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Création d'un document utilisateur (simulant l'ajout)
-            await addDoc(collection(db, 'users'), {
-                displayName: newMember.displayName,
-                email: newMember.email,
-                role: newMember.role,
-                phone: newMember.phone,
-                statut: 'actif',
-                createdAt: serverTimestamp()
+            await addDoc(collection(db, 'finances'), {
+                ...financeData,
+                amount,
+                createdAt: serverTimestamp(),
+                createdBy: currentUser.uid
             });
-            alert('Membre ajouté avec succès !');
-            setNewMember({ displayName: '', email: '', role: 'membre', phone: '' });
-            setShowAddMember(false);
+            setFinanceData({ type: 'recette', amount: '', description: '' });
+            setShowFinanceForm(false);
         } catch (error) {
-            console.error("Erreur d'ajout :", error);
-            alert("Erreur lors de l'ajout du membre.");
+            console.error("Erreur lors de l'enregistrement financier :", error);
+            alert("L'opération financière n'a pas pu être enregistrée. Vérifiez vos autorisations et réessayez.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleAddFinance = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await addDoc(collection(db, 'finances'), {
-            ...financeData,
-            amount: parseFloat(financeData.amount),
-            createdAt: serverTimestamp(),
-            createdBy: currentUser.uid
-        });
-        
-        // Also send a validation for the report if it's a big expense
-        if (financeData.type === 'depense' && parseFloat(financeData.amount) > 50000) {
-            await addDoc(collection(db, 'validations'), {
-                type: 'finance',
-                title: `Dépense majeure : ${financeData.amount} FCFA`,
-                description: `Motif : ${financeData.description}. Rapport financier nécessitant une approbation.`,
-                status: 'pending',
-                createdAt: serverTimestamp(),
-                requestedBy: currentUser.displayName || 'Trésorier',
-            });
-        }
-        
-        setFinanceData({ type: 'recette', amount: '', description: '' });
-        setShowFinanceForm(false);
-    };
-
     const handleAddAg = async (e: React.FormEvent) => {
         e.preventDefault();
-        await addDoc(collection(db, 'ag_events'), {
-            ...agData,
-            pvText: '',
-            createdAt: serverTimestamp()
-        });
-        
-        // Request validation for the Convocation
-        await addDoc(collection(db, 'validations'), {
-            type: 'ag',
-            title: `Convocation : ${agData.title}`,
-            description: `Ordre du jour : ${agData.agenda}. Date prévue : ${agData.date}`,
-            status: 'pending',
-            createdAt: serverTimestamp(),
-            requestedBy: currentUser.displayName || 'Secrétariat',
-        });
-        
-        setAgData({ title: '', date: '', agenda: '' });
-        setShowAgForm(false);
+        if (!agData.title.trim() || !agData.date.trim() || !agData.agenda.trim()) {
+            alert("Renseignez le titre, la date et l'ordre du jour de l'AG.");
+            return;
+        }
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+        try {
+            // Enregistrer l'AG et sa demande de validation dans une seule transaction atomique.
+            // Ainsi, aucune AG ne reste créée si la demande de validation échoue.
+            const batch = writeBatch(db);
+            const agRef = doc(collection(db, 'ag_events'));
+            const validationRef = doc(collection(db, 'validations'));
+            const createdAt = serverTimestamp();
+
+            batch.set(agRef, {
+                ...agData,
+                title: agData.title.trim(),
+                agenda: agData.agenda.trim(),
+                pvText: '',
+                createdAt
+            });
+            batch.set(validationRef, {
+                type: 'ag',
+                targetId: agRef.id,
+                title: `Convocation : ${agData.title.trim()}`,
+                description: `Ordre du jour : ${agData.agenda.trim()}. Date prévue : ${agData.date}`,
+                status: 'pending',
+                createdAt,
+                requestedBy: currentUser.displayName || 'Secrétariat',
+            });
+
+            await batch.commit();
+            setAgData({ title: '', date: '', agenda: '' });
+            setShowAgForm(false);
+        } catch (error) {
+            console.error("Erreur lors de la création de l'AG :", error);
+            alert("L'AG et sa demande de validation n'ont pas pu être enregistrées. Vérifiez vos autorisations puis réessayez.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleAddNews = async (e: React.FormEvent) => {
@@ -238,19 +312,24 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
     const tabs = [
         { id: 'accueil', label: 'Accueil', icon: <Home size={18} />, roles: ['all'] },
-        { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'conseiller'] },
-        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'vice_president', 'tresorier', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
-        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'vice_president', 'communicateur', 'admin_bureau', 'admin'] },
+        { id: 'adhesions', label: 'Nouvelles Adhésions', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
+        { id: 'membres', label: 'Membres', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'secretaire', 'vice_president'] },
+        { id: 'roles', label: 'Répartition Rôles', icon: <Users size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin'] },
+        { id: 'finances', label: 'Finances', icon: <Banknote size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'tresorier'] },
+        { id: 'ag', label: 'AG & Réunions', icon: <CalendarDays size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin'] },
+        { id: 'actualites', label: 'Actualités', icon: <Newspaper size={18} />, roles: ['super_admin', 'president', 'president_fondateur', 'admin', 'communicateur'] },
         { id: 'messages', label: 'Messages Publics', icon: <Send size={18} />, roles: ['super_admin', 'communicateur', 'admin_bureau'] },
         { id: 'delegues', label: 'Délégués', icon: <FileText size={18} />, roles: ['super_admin', 'vice_president', 'admin_bureau', 'admin', 'conseiller'] },
     ].filter(t => t.roles.includes('all') || t.roles.includes(currentUser.role));
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '90px' }}>
-            
+            {loadError && (
+                <div role="alert" style={{ background: '#FFF3E0', color: '#8A4B08', border: '1px solid #F2C078', borderRadius: '10px', padding: '12px 14px', fontSize: '13px' }}>
+                    Certaines données n'ont pas pu être chargées en raison d'un problème de connexion ou d'autorisation. Les informations affichées peuvent être incomplètes.
+                </div>
+            )}
+
             {/* 1. ACCUEIL */}
             {activeTab === 'accueil' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.3s' }}>
@@ -308,7 +387,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             <option value="conseiller">Conseillers</option>
                             <option value="communicateur">Communicateurs</option>
                             <option value="tresorier">Trésoriers</option>
-                            <option value="admin_bureau">Secrétaires Généraux</option>
+                            <option value="admin_bureau">Administrateurs du bureau</option>
                             <option value="vice_president">Vice-Présidents</option>
                             <option value="super_admin">Président</option>
                         </select>
@@ -324,7 +403,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
 
                     {showAddMember && (
                         <form onSubmit={handleAddMember} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <h4 style={{ margin: '0 0 8px 0', color: 'var(--bleu-rca)' }}>Créer / Ajouter un membre</h4>
+                            <h4 style={{ margin: '0 0 8px 0', color: 'var(--bleu-rca)' }}>Ajout manuel temporairement désactivé</h4>
+                            <p style={{ margin: 0, color: '#8a4b08', fontSize: '14px' }}>La création d'un profil Firestore seule ne crée pas de compte de connexion. Un flux d'invitation sécurisé côté serveur est nécessaire avant de réactiver cette fonction. En attendant, utilisez le formulaire public d'adhésion.</p>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <div>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Nom complet</label>
@@ -345,13 +425,13 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                         <option value="conseiller">Conseiller</option>
                                         <option value="communicateur">Communicateur</option>
                                         <option value="tresorier">Trésorier</option>
-                                        <option value="admin_bureau">Secrétaire Général</option>
+                                        <option value="admin_bureau">Administrateur du bureau</option>
                                         <option value="vice_president">Vice-Président</option>
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" style={{ padding: '14px', background: 'var(--bleu-rca)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', marginTop: '8px', cursor: 'pointer' }}>
-                                Enregistrer le membre
+                            <button type="submit" disabled style={{ padding: '14px', background: '#999', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', fontSize: '16px', marginTop: '8px', cursor: 'not-allowed' }}>
+                                Fonction temporairement désactivée
                             </button>
                         </form>
                     )}
@@ -363,7 +443,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <div>
                                         <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{user.displayName || 'Sans nom'}</h4>
                                         <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{user.email}</p>
-                                        {currentUser.role === 'super_admin' ? (
+                                        {['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentUser.role) ? (
                                             <select 
                                                 value={user.role} 
                                                 onChange={(e) => handleRoleChange(user.uid, e.target.value)}
@@ -373,7 +453,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                                 <option value="conseiller">CONSEILLER</option>
                                                 <option value="communicateur">COMMUNICATEUR</option>
                                                 <option value="tresorier">TRÉSORIER</option>
-                                                <option value="admin_bureau">SECRÉTAIRE GÉNÉRAL</option>
+                                                <option value="admin_bureau">ADMINISTRATEUR DU BUREAU</option>
                                                 <option value="vice_president">VICE-PRÉSIDENT</option>
                                                 <option value="super_admin">PRÉSIDENT FONDATEUR</option>
                                             </select>
@@ -426,7 +506,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                         {[
                             { role: 'Président Fondateur', desc: 'Représente l’association. Veille à l\'application des statuts (Art. 17).', color: 'var(--or-solaire)', count: users.filter(u => u.role === 'super_admin').length },
                             { role: 'Vice-Président', desc: 'Assiste le Président et le remplace en cas d\'empêchement.', color: '#9C27B0', count: users.filter(u => u.role === 'vice_president').length },
-                            { role: 'Secrétaire Général', desc: 'Rédige les PV, gère les archives et coordonne l\'administration.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
+                            { role: 'Administrateur du bureau', desc: 'Accès aux espaces du bureau selon les autorisations Firestore attribuées à ce rôle.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
                             { role: 'Trésorier', desc: 'Responsable des fonds, recouvre les cotisations et prépare le bilan.', color: 'var(--vert-espoir)', count: users.filter(u => u.role === 'tresorier').length },
                             { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length },
                             { role: 'Conseillers', desc: 'Assiste le bureau par ses conseils et son expertise.', color: '#607D8B', count: users.filter(u => u.role === 'conseiller').length }
@@ -639,7 +719,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             <p style={{ color: '#666', fontStyle: 'italic' }}>Aucune demande en attente.</p>
                         ) : (
                             adhesions.map(a => (
-                                <div key={a.id} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
+                                <div key={`${a.sourceCollection}-${a.id}`} style={{ borderBottom: '1px solid var(--bordure)', paddingBottom: '16px', marginBottom: '16px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <h5 style={{ margin: '0 0 4px 0' }}>{a.nom}</h5>
                                         <span style={{ fontSize: '12px', color: '#666' }}>{a.createdAt ? new Date(a.createdAt.toDate()).toLocaleDateString('fr-FR') : ''}</span>
@@ -647,10 +727,20 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Email:</strong> {a.email}</p>
                                     <p style={{ margin: '0 0 4px 0', fontSize: '14px' }}><strong>Tél:</strong> {a.telephone}</p>
                                     <p style={{ margin: '0 0 12px 0', fontSize: '14px' }}><strong>Motivation:</strong> {a.motivation}</p>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Accepter</button>
-                                        <button style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold' }}>Refuser</button>
-                                    </div>
+                                    <p style={{ margin: '0 0 8px 0', fontSize: '12px', color: a.statut === 'en_attente' ? '#8a4b08' : '#2E7D32' }}>
+                                        Statut : <strong>{a.statut || 'historique'}</strong>
+                                        {a.statut === 'acceptee' ? ' — le candidat sera activé lors de sa connexion Google si nécessaire.' : ''}
+                                    </p>
+                                    {a.statut === 'en_attente' && (
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button type="button" disabled={membershipDecisionId === a.id} onClick={() => handleMembershipDecision(a.id, a.sourceCollection, 'acceptee')} style={{ flex: 1, padding: '8px', background: '#E8F5E9', color: '#2E7D32', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: membershipDecisionId === a.id ? 0.6 : 1, cursor: membershipDecisionId === a.id ? 'wait' : 'pointer' }}>
+                                                {membershipDecisionId === a.id ? 'Traitement…' : 'Accepter'}
+                                            </button>
+                                            <button type="button" disabled={membershipDecisionId === a.id} onClick={() => handleMembershipDecision(a.id, a.sourceCollection, 'refusee')} style={{ flex: 1, padding: '8px', background: '#FFEBEE', color: '#C62828', border: 'none', borderRadius: '6px', fontWeight: 'bold', opacity: membershipDecisionId === a.id ? 0.6 : 1, cursor: membershipDecisionId === a.id ? 'wait' : 'pointer' }}>
+                                                Refuser
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))
                         )}

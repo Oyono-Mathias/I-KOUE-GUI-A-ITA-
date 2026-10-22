@@ -5,7 +5,7 @@ import { useRealTimeCollection } from '../../hooks/useRealTime';
 import { SkeletonLoader } from '../../components/ui/SkeletonLoader';
 import { useAuth } from '../../hooks/useAuth';
 import { db } from '../../firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 
 export const MemberVoting = () => {
   const { userData, loading: userLoading } = useAuth();
@@ -15,32 +15,34 @@ export const MemberVoting = () => {
   // Check if member is up to date (Art 8 RI)
   const isUpToDate = userData?.statut === 'a_jour' || userData?.statut === 'actif';
 
-  const handleVote = async (pollId: string, choice: string) => {
-    if (!isUpToDate) {
+  const handleVote = async (pollId: string, choice: 'pour' | 'contre' | 'abstention') => {
+    if (!userData?.uid || !isUpToDate) {
       alert("Votre cotisation n'est pas à jour. Vous ne pouvez pas voter (Art. 8 du Règlement Intérieur).");
       return;
     }
-    
-    // Check if already voted (simplified logic, ideally done via cloud function or complex rules)
-    const existingVotes = await getDocs(query(collection(db, 'votes'), where('pollId', '==', pollId), where('memberId', '==', userData?.uid)));
-    if (!existingVotes.empty) {
-      alert("Vous avez déjà voté pour cette résolution.");
-      setVotedPolls({...votedPolls, [pollId]: true});
-      return;
-    }
+
+    // Identifiant stable : une seule création possible par membre et résolution.
+    const voteRef = doc(db, 'votes', `${pollId}_${userData.uid}`);
 
     try {
-      await addDoc(collection(db, 'votes'), {
+      const existingVote = await getDoc(voteRef);
+      if (existingVote.exists()) {
+        alert("Vous avez déjà voté pour cette résolution.");
+        setVotedPolls(previous => ({ ...previous, [pollId]: true }));
+        return;
+      }
+
+      await setDoc(voteRef, {
         pollId,
         choice,
-        memberId: userData?.uid, // Handled securely by firestore.rules
+        memberId: userData.uid,
         timestamp: serverTimestamp()
       });
-      setVotedPolls({...votedPolls, [pollId]: true});
-      alert("Votre vote a été pris en compte en toute confidentialité.");
+      setVotedPolls(previous => ({ ...previous, [pollId]: true }));
+      alert("Votre vote a été enregistré.");
     } catch (err) {
-      console.error(err);
-      alert("Erreur lors de l'enregistrement du vote. Êtes-vous à jour de vos cotisations ?");
+      console.error("Échec de l'enregistrement du vote :", err);
+      alert("Le vote n'a pas pu être enregistré. Vérifiez votre droit de vote ou réessayez.");
     }
   };
 

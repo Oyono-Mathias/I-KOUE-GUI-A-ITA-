@@ -1,6 +1,5 @@
-import { collection, getDocs, addDoc, setDoc, doc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth } from '../firebase';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 
 // ---------------------------------------------------------
 // VRAIES DONNÉES EXTRAITES DE VOS FICHIERS HTML
@@ -225,43 +224,13 @@ const SEED_DATA: Record<string, any[]> = {
 // FONCTION D'AUTOMATISATION
 // ---------------------------------------------------------
 
+// Le compte administrateur initial doit être créé manuellement et sécurisé dans Firebase
+// Authentication + Firestore. Aucun identifiant privilégié par défaut ne doit être codé ici.
 export const seedUsers = async () => {
-    const logs: string[] = [];
-    let superAdminUid = "";
-    
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, "superadmin@ikoueguiaita.org", "Admin123!");
-        superAdminUid = userCredential.user.uid;
-        logs.push(`✅ Utilisateur superadmin créé dans Auth (${superAdminUid})`);
-    } catch (e: any) {
-        if (e.code === 'auth/email-already-in-use') {
-            logs.push(`⏭️ L'utilisateur superadmin existe déjà dans Auth.`);
-        } else {
-            logs.push(`❌ Erreur Auth: ${e.message}`);
-            return logs;
-        }
-    }
-
-    // Le compte existe probablement, donc on crée ou met à jour le document Firestore pour forcer le rôle
-    try {
-        // Comme on ne connait pas le UID si 'email-already-in-use' sans se connecter, 
-        // on va supposer que dans notre script d'init on veut au moins s'assurer que c'est fait
-        // Si superAdminUid est vide, cela signifie qu'il existait déjà.
-        if (superAdminUid) {
-            await setDoc(doc(db, "users", superAdminUid), {
-                email: "superadmin@ikoueguiaita.org",
-                displayName: "Président Fondateur",
-                role: "super_admin",
-                statut: "actif",
-                photoURL: ""
-            });
-            logs.push(`✅ Document Firestore 'users' créé pour superadmin`);
-        }
-    } catch (e: any) {
-        logs.push(`❌ Erreur Document Firestore: ${e.message}`);
-    }
-    
-    return logs;
+    return [
+        "⛔ Création automatique du super-administrateur désactivée pour éviter un compte privilégié avec mot de passe public.",
+        "Créez le compte dans Firebase Authentication, puis attribuez le rôle via un processus d'administration sécurisé."
+    ];
 };
 
 export const seedAll = async () => {

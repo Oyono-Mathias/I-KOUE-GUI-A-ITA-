@@ -21,7 +21,7 @@ service firebase.storage {
 
     function getUserRole() {
       let data = getFirestoreUser();
-      return data != null ? data.role : (request.auth.token.role != null ? request.auth.token.role : null);
+      return data != null ? data.role : null;
     }
 
     function getUserStatus() {
@@ -29,9 +29,22 @@ service firebase.storage {
       return data != null ? (data.statut != null ? data.statut : data.status) : null;
     }
 
+    // Aucun accès interne si le profil Firestore est absent ou suspendu.
     function isNotSuspended() {
-      let s = getUserStatus();
-      return s == null || s != 'suspendu';
+      return getFirestoreUser() != null && getUserStatus() != 'suspendu';
+    }
+
+    function isApprovedMember() {
+      return isSignedIn()
+        && getFirestoreUser() != null
+        && isNotSuspended()
+        && getUserStatus() in ['actif', 'a_jour'];
+    }
+
+    function canManageMedia() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended()
+        && r in ['communicateur', 'super_admin', 'president', 'president_fondateur', 'admin'];
     }
 
     // Seuls le Secrétaire Général et la Présidence / Super Admin sont habilités pour les documents officiels
@@ -44,8 +57,8 @@ service firebase.storage {
 
     // 2. DOCUMENTS ADMINISTRATIFS OFFICIELS (SEC-4C-02)
     match /documents/{fileName} {
-      // Les membres authentifiés peuvent consulter et télécharger les documents officiels
-      allow read: if isSignedIn();
+      // Lecture réservée aux membres officiellement validés et non suspendus.
+      allow read: if isApprovedMember();
 
       // Téléversement strictement réservé aux rôles administratifs habilités (Secrétaire & Présidence)
       allow write: if canManageDocuments()
@@ -65,10 +78,11 @@ service firebase.storage {
     // 3. MÉDIAS DE COMMUNICATION ET IMAGES PUBLIQUES
     match /media/{fileName} {
       allow read: if true;
-      allow write: if isSignedIn()
+      // Le dépôt de médias est réservé aux rôles de communication autorisés.
+      allow write: if canManageMedia()
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType.matches('image/.*');
-      allow delete: if canManageDocuments();
+      allow delete: if canManageMedia();
     }
   }
 }
