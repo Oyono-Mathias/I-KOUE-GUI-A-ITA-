@@ -161,6 +161,10 @@ describe('protection des rôles privilégiés', () => {
         role: 'secretaire',
         statut: 'actif',
       });
+      await setDoc(doc(db, 'users', 'pending-secretary'), {
+        role: 'secretaire',
+        statut: 'en_attente',
+      });
       await setDoc(doc(db, 'users', 'super-admin'), {
         role: 'super_admin',
         statut: 'actif',
@@ -201,6 +205,23 @@ describe('protection des rôles privilégiés', () => {
     const db = testEnv.authenticatedContext('secretary').firestore();
     await assertSucceeds(updateDoc(doc(db, 'users', 'target-member'), {
       displayName: 'Nom corrigé',
+    }));
+  });
+
+  it('refuse à un secrétaire en attente de créer un profil membre', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('pending-secretary').firestore();
+    await assertFails(setDoc(doc(db, 'users', 'new-member'), {
+      role: 'membre',
+      statut: 'en_attente',
+    }));
+  });
+
+  it('refuse à un secrétaire en attente de modifier un profil', async () => {
+    await seedGovernanceProfiles();
+    const db = testEnv.authenticatedContext('pending-secretary').firestore();
+    await assertFails(updateDoc(doc(db, 'users', 'target-member'), {
+      displayName: 'Modification non autorisée',
     }));
   });
 
