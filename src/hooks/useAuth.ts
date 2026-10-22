@@ -18,30 +18,40 @@ export const useAuth = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let unsubscribeDoc: (() => void) | undefined;
+
         const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+            // Nettoie l'écoute du profil précédent lors d'un changement de compte.
+            unsubscribeDoc?.();
+            unsubscribeDoc = undefined;
             setUser(firebaseUser);
-            if (firebaseUser) {
-                // Écoute en temps réel du document utilisateur dans Firestore
-                const unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
-                    if (docSnap.exists()) {
-                        setUserData({ uid: firebaseUser.uid, ...docSnap.data() } as UserData);
-                    } else {
-                        setUserData(null);
-                    }
-                    setLoading(false);
-                }, (error) => {
-                    console.error("Erreur de lecture du rôle:", error);
-                    setLoading(false);
-                });
-                
-                return () => unsubscribeDoc();
-            } else {
+            setUserData(null);
+            setLoading(true);
+
+            if (!firebaseUser) {
+                setLoading(false);
+                return;
+            }
+
+            // Écoute en temps réel du document utilisateur dans Firestore.
+            unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+                if (docSnap.exists()) {
+                    setUserData({ uid: firebaseUser.uid, ...docSnap.data() } as UserData);
+                } else {
+                    setUserData(null);
+                }
+                setLoading(false);
+            }, (error) => {
+                console.error("Erreur de lecture du rôle:", error);
                 setUserData(null);
                 setLoading(false);
-            }
+            });
         });
 
-        return () => unsubscribeAuth();
+        return () => {
+            unsubscribeAuth();
+            unsubscribeDoc?.();
+        };
     }, []);
 
     return { user, userData, loading };
