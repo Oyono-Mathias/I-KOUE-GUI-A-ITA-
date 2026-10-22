@@ -9,7 +9,7 @@ export interface UserData {
     displayName: string | null;
     role: 'super_admin' | 'president_fondateur' | 'president' | 'vice_president' | 'admin_bureau' | 'secretaire' | 'tresorier' | 'communicateur' | 'conseiller' | 'admin' | 'membre' | 'member';
     photoURL: string | null;
-    statut: 'en_attente' | 'actif' | 'suspendu' | 'a_jour';
+    statut: 'en_attente' | 'actif' | 'suspendu' | 'radie' | 'a_jour';
 }
 
 export const useAuth = () => {
