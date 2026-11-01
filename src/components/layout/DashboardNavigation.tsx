@@ -13,111 +13,115 @@ type NavItem = { tab: string; label: string; icon: React.ComponentType<{ size?: 
 type RoleNavigation = { primary: NavItem[]; secondary: NavItem[] };
 
 const navigationByRole: Record<string, RoleNavigation> = {
-  tresorier: {
-    primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'income', label: 'Recettes', icon: Wallet },
-      { tab: 'expenses', label: 'Dépenses', icon: ArrowLeftRight },
-      { tab: 'dues', label: 'Cotisations', icon: Users }
-    ],
-    secondary: [
-      { tab: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
-      { tab: 'budget', label: 'Budget', icon: PieChart },
-      { tab: 'factures', label: 'Factures', icon: Receipt },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
-    ]
-  },
-  membre: {
-    primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'carte', label: 'Ma carte', icon: CreditCard },
-      { tab: 'cotisations', label: 'Cotisations', icon: Wallet },
-      { tab: 'benevolat', label: 'Bénévolat', icon: HeartHandshake }
-    ],
-    secondary: [
-      { tab: 'commissions', label: 'Commissions', icon: Users },
-      { tab: 'tasks', label: 'Mes tâches', icon: ClipboardList },
-      { tab: 'documents', label: 'Documents', icon: FolderOpen },
-      { tab: 'droits', label: 'Mes droits', icon: Scale }
-    ]
-  },
   president: {
+    // Priorités reprises dans l'ordre de la barre inférieure de main.
     primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
+      { tab: 'dashboard', label: 'Dash', icon: Home },
       { tab: 'members', label: 'Membres', icon: Users },
       { tab: 'meetings', label: 'Réunions', icon: CalendarDays },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+      { tab: 'expenses', label: 'Dépenses', icon: Wallet }
     ],
     secondary: [
-      { tab: 'expenses', label: 'Dépenses', icon: Wallet },
-      { tab: 'content', label: 'Communication', icon: Newspaper },
-      { tab: 'notifications', label: 'Notifications', icon: Megaphone },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'reports', label: 'Rapports', icon: BarChart3 }
-    ]
-  },
-  vice_president: {
-    primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'meetings', label: 'Réunions', icon: CalendarDays },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
-    ],
-    secondary: [
-      { tab: 'commissions', label: 'Commissions', icon: BriefcaseBusiness },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'objectives', label: 'Objectifs', icon: ChartNoAxesCombined },
-      { tab: 'partenaires', label: 'Partenaires', icon: Users },
-      { tab: 'reports', label: 'Rapports', icon: FileText },
-      { tab: 'expenses', label: 'Dépenses', icon: Wallet },
-      { tab: 'suppleance', label: 'Suppléance', icon: Scale }
+      { tab: 'content', label: 'Contenu', icon: Newspaper },
+      { tab: 'notifications', label: 'Notifs', icon: Megaphone },
+      { tab: 'tasks', label: 'Délégation', icon: ClipboardList },
+      { tab: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
+      { tab: 'messages', label: 'Chat Bureau', icon: MessageSquare }
     ]
   },
   secretaire: {
     primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'pv', label: 'Procès-verbaux', icon: FileText },
-      { tab: 'convocations', label: 'Réunions', icon: CalendarDays },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+      { tab: 'dashboard', label: 'Dash', icon: Home },
+      { tab: 'courriers', label: 'Courriers', icon: Receipt },
+      { tab: 'commissions', label: 'Comm.', icon: Users },
+      { tab: 'tasks', label: 'Tâches', icon: ClipboardList }
     ],
     secondary: [
       { tab: 'archives', label: 'Archives', icon: FolderOpen },
-      { tab: 'courriers', label: 'Courriers', icon: Receipt },
-      { tab: 'commissions', label: 'Commissions', icon: Users },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
+      { tab: 'pv', label: 'PV & CR', icon: FileText },
+      { tab: 'convocations', label: 'Convocations', icon: CalendarDays },
+      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
+      { tab: 'messages', label: 'Messages', icon: MessageSquare },
       { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'moderation', label: 'Modération', icon: Scale },
-      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness }
+      { tab: 'moderation', label: 'Modération', icon: Scale }
     ]
   },
   conseiller: {
     primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'commission', label: 'Commission', icon: BriefcaseBusiness },
+      { tab: 'dashboard', label: 'Dash', icon: Home },
+      { tab: 'commission', label: 'Com.', icon: BriefcaseBusiness },
       { tab: 'avis', label: 'Avis', icon: Scale },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+      { tab: 'projets', label: 'Projets', icon: ChartNoAxesCombined }
     ],
     secondary: [
       { tab: 'rapports', label: 'Rapports', icon: FileText },
       { tab: 'partenaires', label: 'Partenaires', icon: Users },
       { tab: 'veille', label: 'Veille', icon: Newspaper },
       { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'projets', label: 'Projets', icon: BriefcaseBusiness },
-      { tab: 'suppleance', label: 'Suppléance', icon: Scale }
+      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
+      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+    ]
+  },
+  vice_president: {
+    primary: [
+      { tab: 'dashboard', label: 'Dash', icon: Home },
+      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
+      { tab: 'members', label: 'Membres', icon: Users },
+      { tab: 'meetings', label: 'Réunions', icon: CalendarDays }
+    ],
+    secondary: [
+      { tab: 'commissions', label: 'Commissions', icon: BriefcaseBusiness },
+      { tab: 'objectives', label: 'Objectifs', icon: ChartNoAxesCombined },
+      { tab: 'partenaires', label: 'Partenaires', icon: Users },
+      { tab: 'conflits', label: 'Conflits', icon: Scale },
+      { tab: 'messages', label: 'Messages', icon: MessageSquare },
+      { tab: 'content', label: 'Contenu', icon: Newspaper },
+      { tab: 'reports', label: 'Rapports', icon: FileText },
+      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
+      { tab: 'expenses', label: 'Dépenses (Suppléance)', icon: Wallet }
     ]
   },
   communicateur: {
     primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'news', label: 'Actualités', icon: Newspaper },
-      { tab: 'calendrier', label: 'Agenda', icon: CalendarDays },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+      { tab: 'dashboard', label: 'Dashboard', icon: Home },
+      { tab: 'news', label: 'Actus', icon: Newspaper },
+      { tab: 'board_messages', label: 'Bureau', icon: MessageSquare },
+      { tab: 'calendrier', label: 'Calendrier', icon: CalendarDays }
     ],
     secondary: [
-      { tab: 'board_messages', label: 'Bureau', icon: Users },
       { tab: 'domains', label: 'Domaines', icon: BriefcaseBusiness },
+      { tab: 'landing', label: 'Landing', icon: Home },
       { tab: 'media', label: 'Médias', icon: FolderOpen },
-      { tab: 'analytics', label: 'Statistiques', icon: BarChart3 }
+      { tab: 'messages', label: 'Public', icon: Megaphone },
+      { tab: 'analytics', label: 'Analytics', icon: BarChart3 }
+    ]
+  },
+  membre: {
+    primary: [
+      { tab: 'dashboard', label: 'Accueil', icon: Home },
+      { tab: 'carte', label: 'Carte', icon: CreditCard },
+      { tab: 'cotisations', label: 'Cotisations', icon: Wallet },
+      { tab: 'benevolat', label: 'Bénévolat', icon: HeartHandshake }
+    ],
+    secondary: [
+      { tab: 'commissions', label: 'Commissions', icon: Users },
+      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
+      { tab: 'documents', label: 'Documents', icon: FolderOpen },
+      { tab: 'droits', label: 'Vote', icon: Scale }
+    ]
+  },
+  tresorier: {
+    primary: [
+      { tab: 'dashboard', label: 'Dash', icon: Home },
+      { tab: 'income', label: 'Recettes', icon: Wallet },
+      { tab: 'expenses', label: 'Dépenses', icon: ArrowLeftRight },
+      { tab: 'dues', label: 'Cotisations', icon: Users }
+    ],
+    secondary: [
+      { tab: 'factures', label: 'Factures', icon: Receipt },
+      { tab: 'messages', label: 'Messages', icon: MessageSquare },
+      { tab: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
+      { tab: 'budget', label: 'Budget', icon: PieChart }
     ]
   }
 };
