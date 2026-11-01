@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
 import './TresorierDashboard.css';
@@ -21,6 +21,8 @@ export const TresorierDashboard = () => {
   const [boardMessages, setBoardMessages] = useState<any[]>([]);
   const [factures, setFactures] = useState<any[]>([]);
   const [dues, setDues] = useState<any[]>([]);
+  const [pendingDuesPayments, setPendingDuesPayments] = useState<any[]>([]);
+  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
   const [budget, setBudget] = useState<any>({
     total: 3500000,
     byDomain: {
@@ -47,7 +49,7 @@ export const TresorierDashboard = () => {
   // Modals
   const [incomeModalOpen, setIncomeModalOpen] = useState(false);
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
-  const [duesModalOpen, setDuesModalOpen] = useState<{ isOpen: boolean, memberId: string, memberName: string, amount: number }>({ isOpen: false, memberId: '', memberName: '', amount: 0 });
+  const [duesModalOpen, setDuesModalOpen] = useState<{ isOpen: boolean, memberId: string, memberDocId: string, memberName: string, amount: number }>({ isOpen: false, memberId: '', memberDocId: '', memberName: '', amount: 0 });
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
 
   // Form State Handlers
@@ -58,19 +60,25 @@ export const TresorierDashboard = () => {
   useEffect(() => {
     const unsubMembers = onSnapshot(collection(db, 'members'), (snap) => setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubIncome = onSnapshot(query(collection(db, 'income'), orderBy('date', 'desc')), (snap) => setIncome(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubContributionRequests = onSnapshot(collection(db, 'finances'), (snap) => {
+      setPendingDuesPayments(snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .filter((p: any) => p.type === 'cotisation_demande' && p.status === 'en_attente')
+        .sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+    });
     const unsubBoardMessages = onSnapshot(query(collection(db, 'board_messages'), orderBy('timestamp', 'asc')), (snap) => setBoardMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubFactures = onSnapshot(query(collection(db, 'factures'), orderBy('date', 'desc')), (snap) => setFactures(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubExpenses = onSnapshot(query(collection(db, 'expenses'), orderBy('date', 'desc')), (snap) => setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     // Dues can be derived from members or custom collection, here we derive for simplicity
     
-    return () => { unsubMembers(); unsubIncome(); unsubExpenses(); unsubBoardMessages(); unsubFactures(); };
+    return () => { unsubMembers(); unsubIncome(); unsubContributionRequests(); unsubExpenses(); unsubBoardMessages(); unsubFactures(); };
   }, []);
 
   // Update Dues List based on members
   useEffect(() => {
       const derivedDues = members.map(m => ({
-          memberId: m.id,
-          memberName: m.nom,
+          memberId: m.userId || m.uid || '',
+          memberDocId: m.id,
+          memberName: m.nom || m.displayName || m.email || 'Membre',
           category: m.categorie,
           status: m.statut,
           amount: m.cotisationAnnuelle || 5000,
@@ -183,13 +191,64 @@ export const TresorierDashboard = () => {
       });
 
       // Update member status
-      await updateDoc(doc(db, 'members', duesModalOpen.memberId), {
+      await updateDoc(doc(db, 'members', duesModalOpen.memberDocId), {
           statut: 'a_jour',
           dernierPaiement: serverTimestamp()
       });
 
-      setDuesModalOpen({ isOpen: false, memberId: '', memberName: '', amount: 0 });
+      setDuesModalOpen({ isOpen: false, memberId: '', memberDocId: '', memberName: '', amount: 0 });
       alert('✅ Cotisation enregistrée et statut du membre mis à jour !');
+  };
+
+  const processContributionRequest = async (request: any, decision: 'valide' | 'rejete') => {
+    if (!userData?.uid || processingPaymentId) return;
+    setProcessingPaymentId(request.id);
+    try {
+      const requestRef = doc(db, 'finances', request.id);
+      if (decision === 'valide') {
+        const linkedMember = members.find((m: any) => m.userId === request.memberId || m.uid === request.memberId);
+        if (!linkedMember) throw new Error('Aucun profil members ne correspond à cet UID (userId/uid).');
+        const memberRef = doc(db, 'members', linkedMember.id);
+        const incomeRef = doc(collection(db, 'income'));
+        await runTransaction(db, async transaction => {
+          const requestSnap = await transaction.get(requestRef);
+          const memberSnap = await transaction.get(memberRef);
+          if (!requestSnap.exists() || requestSnap.data().status !== 'en_attente') {
+            throw new Error('Cette demande a déjà été traitée.');
+          }
+          if (!memberSnap.exists() || (memberSnap.data().userId !== request.memberId && memberSnap.data().uid !== request.memberId)) {
+            throw new Error('La liaison du profil membre ne correspond plus à cet UID.');
+          }
+          const payment = requestSnap.data();
+          transaction.set(incomeRef, {
+            type: 'cotisation', category: 'cotisation', montant: Number(payment.montant),
+            date: new Date(), memberId: payment.memberId, membre: payment.memberName,
+            memberName: payment.memberName, period: payment.period, payment: payment.payment,
+            reference: payment.reference, titre: `Cotisation ${payment.memberName} ${payment.period}`,
+            recordedBy: userData.uid, recordedAt: serverTimestamp(), sourceRequestId: request.id
+          });
+          transaction.update(requestRef, {
+            status: 'valide', validatedAt: serverTimestamp(), validatedBy: userData.uid,
+            receiptNumber: `IKG-${request.id.slice(0, 8).toUpperCase()}`
+          });
+          transaction.update(memberRef, { statut: 'a_jour', dernierPaiement: serverTimestamp() });
+        });
+        alert('Cotisation validée. Le reçu est maintenant disponible dans l’historique du membre.');
+      } else {
+        await runTransaction(db, async transaction => {
+          const requestSnap = await transaction.get(requestRef);
+          if (!requestSnap.exists() || requestSnap.data().status !== 'en_attente') {
+            throw new Error('Cette demande a déjà été traitée.');
+          }
+          transaction.update(requestRef, { status: 'rejete', rejectedAt: serverTimestamp(), rejectedBy: userData.uid });
+        });
+      }
+    } catch (error: any) {
+      console.error('Traitement cotisation:', error);
+      alert(error.message || 'Impossible de traiter cette demande.');
+    } finally {
+      setProcessingPaymentId(null);
+    }
   };
 
   // Charts data calculation
@@ -490,6 +549,23 @@ export const TresorierDashboard = () => {
       {/* TAB: DUES */}
       <div className={`tab-content ${activeTab === 'dues' ? 'active' : ''}`}>
           <div className="section-header"><h2>👥 Suivi des Cotisations</h2></div>
+          <div className="card" style={{ marginBottom: '16px' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Demandes à vérifier ({pendingDuesPayments.length})</h3>
+            {pendingDuesPayments.length === 0 ? <p style={{ color: 'var(--texte-secondaire)' }}>Aucune déclaration en attente.</p> : pendingDuesPayments.map((p: any) => (
+              <div key={p.id} className="transaction-item" style={{ alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
+                <div className="transaction-info" style={{ flex: 1, minWidth: '180px' }}>
+                  <strong>{p.memberName || p.memberId}</strong>
+                  <div className="transaction-meta">{Number(p.montant).toLocaleString()} FCFA • {p.period} • {p.payment}</div>
+                  <div className="transaction-meta">Référence : {p.reference}</div>
+                  <span className="badge badge-warning">En attente</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn btn-primary btn-small" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'valide')}>Valider</button>
+                  <button className="btn btn-outline btn-small" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'rejete')}>Rejeter</button>
+                </div>
+              </div>
+            ))}
+          </div>
           
           <div className="stats-grid">
               <div className="stat-card success"><div className="stat-icon">✅</div><div className="stat-value">{dues.filter(d => d.status === 'a_jour' || d.exonere).length}</div><div className="stat-label">À jour</div></div>
@@ -528,7 +604,7 @@ export const TresorierDashboard = () => {
                           </div>
                           <div className="dues-status">
                               <div className={`dues-amount ${isPaid ? 'paid' : 'unpaid'}`}>{isPaid ? '✓' : `${Number(d.amount).toLocaleString()} F`}</div>
-                              {!isPaid && <button className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
+                              {!isPaid && <button className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberDocId: d.memberDocId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
                           </div>
                       </div>
                   );
