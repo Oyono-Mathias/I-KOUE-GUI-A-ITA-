@@ -1,127 +1,124 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
-  Home, Wallet, ArrowLeftRight, Users, CreditCard, HeartHandshake,
-  CalendarDays, MessageSquare, FileText, ClipboardList, FolderOpen,
-  BriefcaseBusiness, Scale, ChartNoAxesCombined, PieChart, Receipt,
-  Newspaper, Megaphone, BarChart3, X, Menu, ChevronRight, UserRound
+  X, Menu, ChevronRight, UserRound
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import './DashboardNavigation.css';
 
-type NavItem = { tab: string; label: string; icon: React.ComponentType<{ size?: number }> };
+type NavItem = { tab: string; label: string; icon: string };
 type RoleNavigation = { primary: NavItem[]; secondary: NavItem[] };
 
 const navigationByRole: Record<string, RoleNavigation> = {
   president: {
     // Priorités reprises dans l'ordre de la barre inférieure de main.
     primary: [
-      { tab: 'dashboard', label: 'Dash', icon: Home },
-      { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'meetings', label: 'Réunions', icon: CalendarDays },
-      { tab: 'expenses', label: 'Dépenses', icon: Wallet }
+      { tab: 'dashboard', label: 'Dash', icon: '🏠' },
+      { tab: 'members', label: 'Membres', icon: '👥' },
+      { tab: 'meetings', label: 'Réunions', icon: '📋' },
+      { tab: 'expenses', label: 'Dépenses', icon: '💰' }
     ],
     secondary: [
-      { tab: 'content', label: 'Contenu', icon: Newspaper },
-      { tab: 'notifications', label: 'Notifs', icon: Megaphone },
-      { tab: 'tasks', label: 'Délégation', icon: ClipboardList },
-      { tab: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
-      { tab: 'messages', label: 'Chat Bureau', icon: MessageSquare }
+      { tab: 'content', label: 'Contenu', icon: '📝' },
+      { tab: 'notifications', label: 'Notifs', icon: '📢' },
+      { tab: 'tasks', label: 'Délégation', icon: '📋' },
+      { tab: 'reports', label: 'Rapports', icon: '📊' },
+      { tab: 'messages', label: 'Chat Bureau', icon: '💬' }
     ]
   },
   secretaire: {
     primary: [
-      { tab: 'dashboard', label: 'Dash', icon: Home },
-      { tab: 'courriers', label: 'Courriers', icon: Receipt },
-      { tab: 'commissions', label: 'Comm.', icon: Users },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList }
+      { tab: 'dashboard', label: 'Dash', icon: '📊' },
+      { tab: 'courriers', label: 'Courriers', icon: '📬' },
+      { tab: 'commissions', label: 'Comm.', icon: '🏛️' },
+      { tab: 'tasks', label: 'Tâches', icon: '📋' }
     ],
     secondary: [
-      { tab: 'archives', label: 'Archives', icon: FolderOpen },
-      { tab: 'pv', label: 'PV & CR', icon: FileText },
-      { tab: 'convocations', label: 'Convocations', icon: CalendarDays },
-      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare },
-      { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'moderation', label: 'Modération', icon: Scale }
+      { tab: 'archives', label: 'Archives', icon: '🗂️' },
+      { tab: 'pv', label: 'PV & CR', icon: '📝' },
+      { tab: 'convocations', label: 'Convocations', icon: '📬' },
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
+      { tab: 'messages', label: 'Messages', icon: '💬' },
+      { tab: 'members', label: 'Membres', icon: '👥' },
+      { tab: 'moderation', label: 'Modération', icon: '🛡️' }
     ]
   },
   conseiller: {
     primary: [
-      { tab: 'dashboard', label: 'Dash', icon: Home },
-      { tab: 'commission', label: 'Com.', icon: BriefcaseBusiness },
-      { tab: 'avis', label: 'Avis', icon: Scale },
-      { tab: 'projets', label: 'Projets', icon: ChartNoAxesCombined }
+      { tab: 'dashboard', label: 'Dash', icon: '📊' },
+      { tab: 'commission', label: 'Com.', icon: '🏛️' },
+      { tab: 'avis', label: 'Avis', icon: '💡' },
+      { tab: 'projets', label: 'Projets', icon: '📈' }
     ],
     secondary: [
-      { tab: 'rapports', label: 'Rapports', icon: FileText },
-      { tab: 'partenaires', label: 'Partenaires', icon: Users },
-      { tab: 'veille', label: 'Veille', icon: Newspaper },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare }
+      { tab: 'rapports', label: 'Rapports', icon: '📄' },
+      { tab: 'partenaires', label: 'Partenaires', icon: '🤝' },
+      { tab: 'veille', label: 'Veille', icon: '📚' },
+      { tab: 'tasks', label: 'Tâches', icon: '📋' },
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
+      { tab: 'messages', label: 'Messages', icon: '💬' }
     ]
   },
   vice_president: {
     primary: [
-      { tab: 'dashboard', label: 'Dash', icon: Home },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'meetings', label: 'Réunions', icon: CalendarDays }
+      { tab: 'dashboard', label: 'Dash', icon: '🏠' },
+      { tab: 'tasks', label: 'Tâches', icon: '📋' },
+      { tab: 'members', label: 'Membres', icon: '👥' },
+      { tab: 'meetings', label: 'Réunions', icon: '📅' }
     ],
     secondary: [
-      { tab: 'commissions', label: 'Commissions', icon: BriefcaseBusiness },
-      { tab: 'objectives', label: 'Objectifs', icon: ChartNoAxesCombined },
-      { tab: 'partenaires', label: 'Partenaires', icon: Users },
-      { tab: 'conflits', label: 'Conflits', icon: Scale },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare },
-      { tab: 'content', label: 'Contenu', icon: Newspaper },
-      { tab: 'reports', label: 'Rapports', icon: FileText },
-      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness },
-      { tab: 'expenses', label: 'Dépenses (Suppléance)', icon: Wallet }
+      { tab: 'commissions', label: 'Commissions', icon: '🏛️' },
+      { tab: 'objectives', label: 'Objectifs', icon: '🎯' },
+      { tab: 'partenaires', label: 'Partenaires', icon: '🤝' },
+      { tab: 'conflits', label: 'Conflits', icon: '⚖️' },
+      { tab: 'messages', label: 'Messages', icon: '💬' },
+      { tab: 'content', label: 'Contenu', icon: '📝' },
+      { tab: 'reports', label: 'Rapports', icon: '📊' },
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
+      { tab: 'expenses', label: 'Dépenses (Suppléance)', icon: '💰' }
     ]
   },
   communicateur: {
     primary: [
-      { tab: 'dashboard', label: 'Dashboard', icon: Home },
-      { tab: 'news', label: 'Actus', icon: Newspaper },
-      { tab: 'board_messages', label: 'Bureau', icon: MessageSquare },
-      { tab: 'calendrier', label: 'Calendrier', icon: CalendarDays }
+      { tab: 'dashboard', label: 'Dashboard', icon: '📊' },
+      { tab: 'news', label: 'Actus', icon: '📰' },
+      { tab: 'board_messages', label: 'Bureau', icon: '💬' },
+      { tab: 'calendrier', label: 'Calendrier', icon: '📅' }
     ],
     secondary: [
-      { tab: 'domains', label: 'Domaines', icon: BriefcaseBusiness },
-      { tab: 'landing', label: 'Landing', icon: Home },
-      { tab: 'media', label: 'Médias', icon: FolderOpen },
-      { tab: 'messages', label: 'Public', icon: Megaphone },
-      { tab: 'analytics', label: 'Analytics', icon: BarChart3 }
+      { tab: 'domains', label: 'Domaines', icon: '🌍' },
+      { tab: 'landing', label: 'Landing', icon: '🏠' },
+      { tab: 'media', label: 'Médias', icon: '🖼️' },
+      { tab: 'messages', label: 'Public', icon: '🌍' },
+      { tab: 'analytics', label: 'Analytics', icon: '📈' }
     ]
   },
   membre: {
     primary: [
-      { tab: 'dashboard', label: 'Accueil', icon: Home },
-      { tab: 'carte', label: 'Carte', icon: CreditCard },
-      { tab: 'cotisations', label: 'Cotisations', icon: Wallet },
-      { tab: 'benevolat', label: 'Bénévolat', icon: HeartHandshake }
+      { tab: 'dashboard', label: 'Accueil', icon: '🏠' },
+      { tab: 'carte', label: 'Carte', icon: '🎫' },
+      { tab: 'cotisations', label: 'Cotisations', icon: '💰' },
+      { tab: 'benevolat', label: 'Bénévolat', icon: '🤝' }
     ],
     secondary: [
-      { tab: 'commissions', label: 'Commissions', icon: Users },
-      { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'documents', label: 'Documents', icon: FolderOpen },
-      { tab: 'droits', label: 'Vote', icon: Scale }
+      { tab: 'commissions', label: 'Commissions', icon: '🏛️' },
+      { tab: 'tasks', label: 'Tâches', icon: '📋' },
+      { tab: 'documents', label: 'Documents', icon: '📄' },
+      { tab: 'droits', label: 'Vote', icon: '🗳️' }
     ]
   },
   tresorier: {
     primary: [
-      { tab: 'dashboard', label: 'Dash', icon: Home },
-      { tab: 'income', label: 'Recettes', icon: Wallet },
-      { tab: 'expenses', label: 'Dépenses', icon: ArrowLeftRight },
-      { tab: 'dues', label: 'Cotisations', icon: Users }
+      { tab: 'dashboard', label: 'Dash', icon: '📊' },
+      { tab: 'income', label: 'Recettes', icon: '💵' },
+      { tab: 'expenses', label: 'Dépenses', icon: '💸' },
+      { tab: 'dues', label: 'Cotisations', icon: '👥' }
     ],
     secondary: [
-      { tab: 'factures', label: 'Factures', icon: Receipt },
-      { tab: 'messages', label: 'Messages', icon: MessageSquare },
-      { tab: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
-      { tab: 'budget', label: 'Budget', icon: PieChart }
+      { tab: 'factures', label: 'Factures', icon: '🧾' },
+      { tab: 'messages', label: 'Messages', icon: '💬' },
+      { tab: 'reports', label: 'Rapports', icon: '📊' },
+      { tab: 'budget', label: 'Budget', icon: '📋' }
     ]
   }
 };
@@ -212,10 +209,9 @@ export const DashboardNavigation = () => {
             <p className="global-nav-section-label">VOTRE ESPACE · {role.replace('_', ' ').toUpperCase()}</p>
             <nav className="global-nav-links">
               {[...config.primary, ...config.secondary].map(item => {
-                const Icon = item.icon;
                 return (
                   <button type="button" key={item.tab} className={activeTab === item.tab ? 'active' : ''} onClick={() => navigateToTab(item.tab)}>
-                    <Icon size={18} /><span>{item.label}</span>{activeTab === item.tab && <ChevronRight size={16} />}
+                    <span className="global-nav-item-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>{activeTab === item.tab && <ChevronRight size={16} />}
                   </button>
                 );
               })}
@@ -227,10 +223,9 @@ export const DashboardNavigation = () => {
 
       <nav className="global-bottom-nav" aria-label="Navigation principale">
         {config.primary.map(item => {
-          const Icon = item.icon;
           return (
             <button type="button" key={item.tab} className={activeTab === item.tab ? 'active' : ''} aria-current={activeTab === item.tab ? 'page' : undefined} onClick={() => navigateToTab(item.tab)}>
-              <Icon size={19} /><span>{item.label}</span>
+              <span className="global-nav-item-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
             </button>
           );
         })}
