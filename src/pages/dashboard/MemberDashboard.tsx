@@ -41,8 +41,12 @@ export const MemberDashboard = () => {
       setMissionsBenevolat(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     
-    const unsubPayments = onSnapshot(query(collection(db, 'finances'), where('type', '==', 'recette'), where('memberId', '==', userData.uid), orderBy('date', 'desc')), (snap) => {
-      setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsubPayments = onSnapshot(query(collection(db, 'finances'), where('memberId', '==', userData.uid)), (snap) => {
+      setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => {
+        const da = a.createdAt?.toDate?.() || a.date?.toDate?.() || new Date(a.createdAt || a.date || 0);
+        const dbDate = b.createdAt?.toDate?.() || b.date?.toDate?.() || new Date(b.createdAt || b.date || 0);
+        return dbDate.getTime() - da.getTime();
+      }));
     });
 
     const unsubForum = onSnapshot(query(collection(db, 'forum'), orderBy('createdAt', 'desc')), (snap) => setForumPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -65,8 +69,34 @@ export const MemberDashboard = () => {
     };
   }, [userData?.uid]);
 
-  const isUpToDate = userData?.statut === 'a_jour' || userData?.statut === 'actif';
-  const totalPaid = payments.reduce((acc, curr) => acc + (Number(curr.montant) || 0), 0);
+  const validatedPayments = payments.filter((p: any) => p.status === 'valide' || p.status === 'validated' || p.type === 'recette');
+  const isUpToDate = userData?.statut === 'a_jour' || userData?.statut === 'actif' || validatedPayments.some((p: any) => String(p.period || '').includes(String(new Date().getFullYear())));
+  const totalPaid = validatedPayments.reduce((acc, curr) => acc + (Number(curr.montant) || 0), 0);
+
+  const submitContribution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userData?.uid || paymentSubmitting) return;
+    const amount = Number(paymentForm.montant);
+    if (!Number.isFinite(amount) || amount <= 0 || !paymentForm.period.trim() || !paymentForm.reference.trim()) {
+      setPaymentMessage('Veuillez renseigner un montant valide, une période et la référence de transaction.');
+      return;
+    }
+    setPaymentSubmitting(true);
+    setPaymentMessage('');
+    try {
+      await addDoc(collection(db, 'finances'), {
+        type: 'cotisation_demande', category: 'cotisation', memberId: userData.uid,
+        memberName: userData.displayName || userData.email || 'Membre', montant: amount,
+        period: paymentForm.period.trim(), payment: paymentForm.payment, reference: paymentForm.reference.trim(),
+        status: 'en_attente', createdAt: serverTimestamp()
+      });
+      setPaymentForm(current => ({ ...current, reference: '' }));
+      setPaymentMessage('Votre déclaration a été envoyée. Elle sera vérifiée par le trésorier.');
+    } catch (error) {
+      console.error('Erreur de déclaration de cotisation:', error);
+      setPaymentMessage('Impossible d’envoyer la déclaration. Vérifiez votre connexion et réessayez.');
+    } finally { setPaymentSubmitting(false); }
+  };
   const memberSinceYear = userData?.createdAt ? new Date(userData.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
   const yearsMember = new Date().getFullYear() - memberSinceYear + 1;
 
