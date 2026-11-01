@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, ArrowLeftRight, Menu, X, FileDown } from 'lucide-react';
+import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, ArrowLeftRight, Menu, X, FileDown, CheckCircle2, Home } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
@@ -598,49 +598,56 @@ export const TresorierDashboard = () => {
       {/* TAB: DUES */}
       <div className={`tab-content ${activeTab === 'dues' ? 'active' : ''}`}>
           <div className="section-header"><h2>👥 Suivi des Cotisations</h2></div>
-          <div className="card" style={{ marginBottom: '16px' }}>
-            <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Demandes à vérifier ({pendingDuesPayments.length})</h3>
+          <section className="dues-review-panel">
+            <div className="dues-panel-heading">
+              <div><span className="dues-eyebrow">VALIDATION DES PAIEMENTS</span><h3>Demandes à vérifier</h3><p>Contrôlez les déclarations avant de confirmer leur enregistrement.</p></div>
+              <span className="dues-pending-count">{pendingDuesPayments.length} en attente</span>
+            </div>
             {duesListenerError && <div className="alert-box danger" role="alert"><div className="alert-icon">⚠️</div><div className="alert-content"><h4>Chargement impossible</h4><p>{duesListenerError}</p></div></div>}
-            {pendingDuesPayments.length === 0 ? <p style={{ color: 'var(--texte-secondaire)' }}>Aucune déclaration en attente.</p> : pendingDuesPayments.map((p: any) => (
-              <div key={p.id} className="transaction-item" style={{ alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
-                <div className="transaction-info" style={{ flex: 1, minWidth: '180px' }}>
-                  <strong>{p.memberName || p.memberId}</strong>
-                  <div className="transaction-meta">{Number(p.montant).toLocaleString()} FCFA • {p.period} • {p.payment}</div>
-                  <div className="transaction-meta">Référence : {p.reference}</div>
-                  <span className="badge badge-warning">En attente</span>
+            {pendingDuesPayments.length === 0 ? <div className="dues-empty"><CheckCircle2 size={25} /><strong>Tout est à jour</strong><span>Aucune déclaration de cotisation en attente.</span></div> : pendingDuesPayments.map((p: any) => (
+              <article key={p.id} className="contribution-request-card">
+                <div className="contribution-card-top">
+                  <div className="contribution-member">
+                    <div className="contribution-avatar">{String(p.memberName || 'Membre').trim().split(/\\s+/).slice(0,2).map((part: string) => part.charAt(0)).join('').toUpperCase()}</div>
+                    <div className="contribution-member-copy"><strong>{p.memberName || p.memberId || 'Membre'}</strong><span>Déclaration de cotisation</span></div>
+                  </div>
+                  <span className="contribution-status"><i /> EN ATTENTE</span>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="btn btn-primary btn-small" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'valide')}>Valider</button>
-                  <button className="btn btn-outline btn-small" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'rejete')}>Rejeter</button>
+                <div className="contribution-amount-block"><span>Montant déclaré</span><strong>{Number(p.montant || 0).toLocaleString('fr-FR')} <small>FCFA</small></strong></div>
+                <div className="contribution-details">
+                  <div><span>Période</span><strong>{p.period || '—'}</strong></div>
+                  <div><span>Mode de paiement</span><strong>{String(p.payment || '—').replace(/_/g, ' ')}</strong></div>
+                  <div><span>Référence</span><strong>{p.reference || 'Non renseignée'}</strong></div>
+                  <div><span>Déclaré le</span><strong>{formatDate(p.createdAt)}</strong></div>
                 </div>
-              </div>
+                <div className="contribution-actions">
+                  <button className="contribution-approve" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'valide')}><CheckCircle2 size={17} />{processingPaymentId === p.id ? 'Traitement…' : 'Valider le paiement'}</button>
+                  <button className="contribution-reject" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'rejete')}>Rejeter</button>
+                </div>
+              </article>
             ))}
+          </section>
+
+          <div className="dues-metrics-grid">
+              <div className="dues-metric-card dues-metric-paid"><span className="dues-metric-icon"><CheckCircle2 size={18} /></span><span className="dues-metric-label">Membres à jour</span><strong>{dues.filter(d => d.status === 'a_jour' || d.exonere).length}</strong><small>sur {dues.length} membres</small></div>
+              <div className="dues-metric-card dues-metric-late"><span className="dues-metric-icon">!</span><span className="dues-metric-label">En retard</span><strong>{dues.filter(d => d.status === 'en_retard' && !d.exonere).length}</strong><small>cotisations à régulariser</small></div>
           </div>
           
-          <div className="stats-grid">
-              <div className="stat-card success"><div className="stat-icon">✅</div><div className="stat-value">{dues.filter(d => d.status === 'a_jour' || d.exonere).length}</div><div className="stat-label">À jour</div></div>
-              <div className="stat-card alert"><div className="stat-icon">⚠️</div><div className="stat-value">{dues.filter(d => d.status === 'en_retard' && !d.exonere).length}</div><div className="stat-label">En retard</div></div>
-          </div>
-          
-          <div className="card">
-              <h4 style={{ fontSize: '14px', color: 'var(--bleu-rca)', marginBottom: '12px' }}>📊 Taux de recouvrement</h4>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--texte-secondaire)' }}>Objectif annuel</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--bleu-rca)' }}>{dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%</span>
-              </div>
-              <div className="progress-bar">
-                  <div className="progress-bar-fill" style={{ width: `${dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%` }}></div>
-              </div>
+          <div className="dues-recovery-card">
+              <div className="dues-recovery-heading"><div><span className="dues-eyebrow">PERFORMANCE ANNUELLE</span><h3>Objectif de recouvrement</h3></div><strong>{dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%</strong></div>
+              <p>{dues.filter(d => d.status === 'a_jour' || d.exonere).length} membres régularisés sur {dues.length}</p>
+              <div className="dues-recovery-track"><div className="dues-recovery-fill" style={{ width: `${dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%` }} /></div>
           </div>
 
-          <div className="sub-tabs">
+          <div className="dues-directory-toolbar">
+            <div className="dues-filter-tabs">
               <button className={`sub-tab ${duesFilter === 'all' ? 'active' : ''}`} onClick={() => setDuesFilter('all')}>Tous</button>
-              <button className={`sub-tab ${duesFilter === 'a_jour' ? 'active' : ''}`} onClick={() => setDuesFilter('a_jour')}>✅ À jour</button>
-              <button className={`sub-tab ${duesFilter === 'en_retard' ? 'active' : ''}`} onClick={() => setDuesFilter('en_retard')}>⚠️ En retard</button>
-              <button className={`sub-tab ${duesFilter === 'exonere' ? 'active' : ''}`} onClick={() => setDuesFilter('exonere')}>⭐ Exonérés</button>
+              <button className={`sub-tab ${duesFilter === 'a_jour' ? 'active' : ''}`} onClick={() => setDuesFilter('a_jour')}>À jour</button>
+              <button className={`sub-tab ${duesFilter === 'en_retard' ? 'active' : ''}`} onClick={() => setDuesFilter('en_retard')}>En retard</button>
+              <button className={`sub-tab ${duesFilter === 'exonere' ? 'active' : ''}`} onClick={() => setDuesFilter('exonere')}>Exonérés</button>
+            </div>
+            <div className="dues-search-wrap"><input type="text" className="search-input" placeholder="Rechercher un membre…" aria-label="Rechercher un membre" value={duesSearch} onChange={(e) => setDuesSearch(e.target.value)} /></div>
           </div>
-
-          <div className="filters-bar"><input type="text" className="search-input" placeholder="Rechercher..." value={duesSearch} onChange={(e) => setDuesSearch(e.target.value)} /></div>
 
           <div>
               {dues.filter(d => (duesFilter === 'all' || d.status === duesFilter || (duesFilter === 'exonere' && d.exonere)) && d.memberName.toLowerCase().includes(duesSearch.toLowerCase())).map(d => {
@@ -958,6 +965,13 @@ export const TresorierDashboard = () => {
               </div>
           </div>
       )}
+
+      <nav className="treasury-bottom-nav" aria-label="Navigation principale">
+        <button className={activeTab === 'dashboard' ? 'active' : ''} aria-current={activeTab === 'dashboard' ? 'page' : undefined} onClick={() => setActiveTab('dashboard')}><Home size={20} /><span>Accueil</span></button>
+        <button className={activeTab === 'income' ? 'active' : ''} aria-current={activeTab === 'income' ? 'page' : undefined} onClick={() => setActiveTab('income')}><Wallet size={20} /><span>Recettes</span></button>
+        <button className={activeTab === 'expenses' ? 'active' : ''} aria-current={activeTab === 'expenses' ? 'page' : undefined} onClick={() => setActiveTab('expenses')}><ArrowLeftRight size={20} /><span>Dépenses</span></button>
+        <button className={activeTab === 'dues' ? 'active' : ''} aria-current={activeTab === 'dues' ? 'page' : undefined} onClick={() => setActiveTab('dues')}><Users size={20} /><span>Cotisations</span>{pendingDuesPayments.length > 0 && <i>{pendingDuesPayments.length}</i>}</button>
+      </nav>
     </div>
   );
 };
