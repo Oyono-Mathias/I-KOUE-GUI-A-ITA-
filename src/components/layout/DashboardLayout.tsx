@@ -18,7 +18,9 @@ export const DashboardLayout = () => {
 
   if (!userData) return <Navigate to="/login" replace />;
 
-  const userRole = userData.role || 'membre';
+  const rawRole = (userData as typeof userData & { userRole?: string }).role || (userData as typeof userData & { userRole?: string }).userRole || '';
+  const userRole = rawRole === 'treasurer' ? 'tresorier' : ['member', 'adherent'].includes(rawRole) ? 'membre' : rawRole;
+  const isMember = userRole === 'membre';
   const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(userRole);
   const path = location.pathname;
 
@@ -36,6 +38,9 @@ export const DashboardLayout = () => {
     return <Navigate to="/dashboard" replace />;
   }
   if (path.includes('/admin_conseiller') && !isSuper && userRole !== 'conseiller') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  if (path.includes('/dashboard/membre') && !isSuper && !isMember) {
     return <Navigate to="/dashboard" replace />;
   }
   if ((path.includes('/dashboard/communicateur') || path.includes('/dashboard/news')) && !isSuper && userRole !== 'communicateur') {
