@@ -18,35 +18,38 @@ const DashboardLoadingFallback = () => (
 
 export const DashboardHome = () => {
   const { userData } = useAuth();
+  const rawRole = (userData as (typeof userData & { userRole?: string }) | null)?.role || (userData as (typeof userData & { userRole?: string }) | null)?.userRole || '';
+  const role = rawRole === 'treasurer' ? 'tresorier' : ['member', 'adherent'].includes(rawRole) ? 'membre' : ['president', 'president_fondateur', 'admin', 'admin_bureau'].includes(rawRole) ? 'super_admin' : rawRole;
   
   return (
     <Suspense fallback={<DashboardLoadingFallback />}>
       {(() => {
-        if (userData?.role === 'communicateur') {
+        if (role === 'communicateur') {
           return <CommunicateurDashboard />;
         }
 
-        if (userData?.role === 'tresorier') {
+        if (role === 'tresorier') {
           return <TresorierDashboard />;
         }
 
-        if (userData?.role === 'conseiller') {
+        if (role === 'conseiller') {
           return <ConseillerDashboard />;
         }
 
-        if (userData?.role === 'super_admin') {
+        if (role === 'super_admin') {
           return <PresidentDashboard />;
         }
 
-        if (userData?.role === 'vice_president') {
+        if (role === 'vice_president') {
           return <VicePresidentDashboard />;
         }
 
-        if (userData?.role === 'secretaire') {
+        if (role === 'secretaire') {
           return <SecretaireDashboard />;
         }
         
-        return <MemberDashboard />;
+        if (role === 'membre') return <MemberDashboard />;
+        return <div role="alert" className="p-8 text-center text-gray-600">Aucun tableau de bord n’est associé à ce rôle. Contactez un administrateur.</div>;
       })()}
     </Suspense>
   );
