@@ -90,6 +90,39 @@ service cloud.firestore {
       return isSignedIn() && isNotSuspended() && r in ['membre', 'member'];
     }
 
+    // Gestion des rôles : seuls Président, Président fondateur,
+    // Super administrateur et Administrateur peuvent attribuer des rôles.
+    function canChangeUserRole(userId) {
+      let actorRole = getUserRole();
+      let targetRole = resource.data.role;
+      let nextRole = request.resource.data.role;
+      return isSignedIn()
+        && isNotSuspended()
+        && actorRole in ['super_admin', 'president', 'president_fondateur', 'admin']
+        && userId != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'role', 'roleUpdatedAt', 'roleUpdatedBy'
+        ])
+        && nextRole in [
+          'super_admin', 'president_fondateur', 'president', 'admin',
+          'admin_bureau', 'vice_president', 'secretaire', 'tresorier',
+          'conseiller', 'communicateur', 'membre'
+        ]
+        && request.resource.data.roleUpdatedAt == request.time
+        && request.resource.data.roleUpdatedBy == request.auth.uid
+        && (actorRole == 'super_admin' || nextRole != 'super_admin')
+        && (actorRole == 'super_admin' || targetRole != 'super_admin')
+        && (actorRole in ['super_admin', 'president', 'president_fondateur']
+            || (actorRole == 'admin'
+                && targetRole != 'president'
+                && targetRole != 'president_fondateur'
+                && targetRole != 'admin'
+                && nextRole != 'president'
+                && nextRole != 'president_fondateur'
+                && nextRole != 'admin'));
+    }
+
     // =========================================================================
     // 3. PROTECTION CRITIQUE DES PROFILS UTILISATEURS (/users/{userId})
     // =========================================================================
@@ -111,10 +144,17 @@ service cloud.firestore {
       // - Le bureau habilité peut administrer les rôles et statuts
       // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
       //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
-      allow update: if isSuperAdmin() || isSecretaire() || (
+      allow update: if (
+        (isSuperAdmin() || isSecretaire()) &&
+        (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) ||
+          canChangeUserRole(userId)
+        )
+      ) || (
         isOwner(userId) && isNotSuspended() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-          'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
+          'role', 'roleUpdatedAt', 'roleUpdatedBy',
+          'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
         ])
       );
 
