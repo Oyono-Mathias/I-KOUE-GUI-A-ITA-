@@ -608,7 +608,7 @@ export const TresorierDashboard = () => {
               <article key={p.id} className="contribution-request-card">
                 <div className="contribution-card-top">
                   <div className="contribution-member">
-                    <div className="contribution-avatar">{String(p.memberName || 'Membre').trim().split(/\\s+/).slice(0,2).map((part: string) => part.charAt(0)).join('').toUpperCase()}</div>
+                    <div className="contribution-avatar">{String(p.memberName || 'Membre').trim().split(/\s+/).slice(0,2).map((part: string) => part.charAt(0)).join('').toUpperCase()}</div>
                     <div className="contribution-member-copy"><strong>{p.memberName || p.memberId || 'Membre'}</strong><span>Déclaration de cotisation</span></div>
                   </div>
                   <span className="contribution-status"><i /> EN ATTENTE</span>
