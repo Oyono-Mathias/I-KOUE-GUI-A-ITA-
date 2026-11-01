@@ -11,7 +11,6 @@ type RoleNavigation = { primary: NavItem[]; secondary: NavItem[] };
 
 const navigationByRole: Record<string, RoleNavigation> = {
   president: {
-    // Priorités reprises dans l'ordre de la barre inférieure de main.
     primary: [
       { tab: 'dashboard', label: 'Dash', icon: '🏠' },
       { tab: 'members', label: 'Membres', icon: '👥' },
@@ -34,11 +33,11 @@ const navigationByRole: Record<string, RoleNavigation> = {
       { tab: 'tasks', label: 'Tâches', icon: '📋' }
     ],
     secondary: [
-      { tab: 'archives', label: 'Archives', icon: '🗂️' },
-      { tab: 'pv', label: 'PV & CR', icon: '📝' },
-      { tab: 'convocations', label: 'Convocations', icon: '📬' },
-      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
       { tab: 'messages', label: 'Messages', icon: '💬' },
+      { tab: 'archives', label: 'Archives', icon: '🗂️' },
+      { tab: 'pv', label: 'PV', icon: '📝' },
+      { tab: 'convocations', label: 'Convoc.', icon: '📬' },
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
       { tab: 'members', label: 'Membres', icon: '👥' },
       { tab: 'moderation', label: 'Modération', icon: '🛡️' }
     ]
@@ -51,12 +50,12 @@ const navigationByRole: Record<string, RoleNavigation> = {
       { tab: 'projets', label: 'Projets', icon: '📈' }
     ],
     secondary: [
+      { tab: 'messages', label: 'Messages', icon: '💬' },
       { tab: 'rapports', label: 'Rapports', icon: '📄' },
       { tab: 'partenaires', label: 'Partenaires', icon: '🤝' },
       { tab: 'veille', label: 'Veille', icon: '📚' },
       { tab: 'tasks', label: 'Tâches', icon: '📋' },
-      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
-      { tab: 'messages', label: 'Messages', icon: '💬' }
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' }
     ]
   },
   vice_president: {
@@ -67,15 +66,15 @@ const navigationByRole: Record<string, RoleNavigation> = {
       { tab: 'meetings', label: 'Réunions', icon: '📅' }
     ],
     secondary: [
+      { tab: 'content', label: 'Contenu', icon: '📝' },
+      { tab: 'expenses', label: 'Dépenses', icon: '💰' },
       { tab: 'commissions', label: 'Commissions', icon: '🏛️' },
       { tab: 'objectives', label: 'Objectifs', icon: '🎯' },
       { tab: 'partenaires', label: 'Partenaires', icon: '🤝' },
       { tab: 'conflits', label: 'Conflits', icon: '⚖️' },
       { tab: 'messages', label: 'Messages', icon: '💬' },
-      { tab: 'content', label: 'Contenu', icon: '📝' },
       { tab: 'reports', label: 'Rapports', icon: '📊' },
-      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' },
-      { tab: 'expenses', label: 'Dépenses (Suppléance)', icon: '💰' }
+      { tab: 'suppleance', label: 'Suppléance', icon: '⚡' }
     ]
   },
   communicateur: {
@@ -89,14 +88,14 @@ const navigationByRole: Record<string, RoleNavigation> = {
       { tab: 'domains', label: 'Domaines', icon: '🌍' },
       { tab: 'landing', label: 'Landing', icon: '🏠' },
       { tab: 'media', label: 'Médias', icon: '🖼️' },
-      { tab: 'messages', label: 'Public', icon: '🌍' },
-      { tab: 'analytics', label: 'Analytics', icon: '📈' }
+      { tab: 'messages', label: 'Messages', icon: '💬' },
+      { tab: 'analytics', label: 'Stats', icon: '📈' }
     ]
   },
   membre: {
     primary: [
       { tab: 'dashboard', label: 'Accueil', icon: '🏠' },
-      { tab: 'carte', label: 'Carte', icon: '🎫' },
+      { tab: 'carte', label: 'Ma Carte', icon: '🎫' },
       { tab: 'cotisations', label: 'Cotisations', icon: '💰' },
       { tab: 'benevolat', label: 'Bénévolat', icon: '🤝' }
     ],
@@ -104,7 +103,7 @@ const navigationByRole: Record<string, RoleNavigation> = {
       { tab: 'commissions', label: 'Commissions', icon: '🏛️' },
       { tab: 'tasks', label: 'Tâches', icon: '📋' },
       { tab: 'documents', label: 'Documents', icon: '📄' },
-      { tab: 'droits', label: 'Vote', icon: '🗳️' }
+      { tab: 'droits', label: 'Mes Droits', icon: '⚖️' }
     ]
   },
   tresorier: {
