@@ -60,7 +60,7 @@ service cloud.firestore {
 
     function isTresorier() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'tresorier' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && (r in ['tresorier', 'treasurer'] || isSuperAdmin());
     }
 
     function isCommunicateur() {
@@ -83,6 +83,11 @@ service cloud.firestore {
 
     function isMember() {
       return isSignedIn() && isNotSuspended();
+    }
+
+    function isRegularMember() {
+      let r = getUserRole();
+      return isSignedIn() && isNotSuspended() && r in ['membre', 'member'];
     }
 
     // =========================================================================
@@ -201,12 +206,53 @@ service cloud.firestore {
     // 5. COLLECTIONS FINANCIÈRES (CLOISONNEMENT STRICT — TRÉSORIER / PRÉSIDENT)
     // =========================================================================
     match /finances/{docId} {
-      // Lecture : Le Trésorier, le Président, ou le membre pour ses propres cotisations (reçu)
+      // Le membre consulte uniquement ses propres déclarations et reçus.
       allow read: if isTresorier() || isSuperAdmin() || (
-        isMember() && resource.data.memberId == request.auth.uid
+        isRegularMember() && (
+          (resource.data.keys().hasAny(['memberId']) && resource.data.memberId == request.auth.uid) ||
+          (resource.data.keys().hasAny(['userId']) && resource.data.userId == request.auth.uid) ||
+          (resource.data.keys().hasAny(['uid']) && resource.data.uid == request.auth.uid)
+        )
       );
-      // Écriture, modification, suppression : Exclusivement Trésorier et Président
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
+
+      // Un membre peut uniquement déclarer une cotisation pour son UID.
+      // Il ne peut ni créer une recette validée, ni choisir le statut du paiement.
+      allow create: if isTresorier() || isSuperAdmin() || (
+        isRegularMember()
+        && request.resource.data.keys().hasOnly([
+          'type', 'category', 'memberId', 'memberName', 'montant',
+          'period', 'payment', 'reference', 'status', 'createdAt'
+        ])
+        && request.resource.data.type == 'cotisation_demande'
+        && request.resource.data.category == 'cotisation'
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() <= 120
+        && request.resource.data.montant is number
+        && request.resource.data.montant > 0
+        && request.resource.data.period is string
+        && request.resource.data.period.size() <= 20
+        && request.resource.data.payment in ['orange_money', 'moov_money', 'airtel_money', 'especes', 'virement']
+        && request.resource.data.reference is string
+        && request.resource.data.reference.size() > 0
+        && request.resource.data.reference.size() <= 100
+        && request.resource.data.status == 'en_attente'
+        && request.resource.data.createdAt == request.time
+      );
+
+      // Seuls trésorier et administration habilitée peuvent traiter une demande.
+      allow update: if (isTresorier() || isSuperAdmin()) && (
+        resource.data.type != 'cotisation_demande' ||
+        request.resource.data.status != 'rejete' ||
+        (
+          request.resource.data.rejectionReason is string
+          && request.resource.data.rejectionReason.size() >= 5
+          && request.resource.data.rejectionReason.size() <= 500
+          && request.resource.data.rejectedBy == request.auth.uid
+          && request.resource.data.rejectedAt == request.time
+        )
+      );
+      allow delete: if isTresorier() || isSuperAdmin();
     }
 
     match /expenses/{docId} {
