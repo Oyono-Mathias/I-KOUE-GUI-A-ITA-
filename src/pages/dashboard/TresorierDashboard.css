@@ -796,3 +796,55 @@
   .tres-dashboard-container .contribution-actions button,
   .tres-dashboard-container .dues-recovery-fill { transition: none; }
 }
+
+/* Modale de rejet — motif obligatoire et traçable */
+.contribution-rejection-backdrop {
+  position:fixed; z-index:1600; inset:0; display:grid; place-items:center;
+  padding:18px; background:rgba(16,24,40,.58); backdrop-filter:blur(5px);
+}
+.contribution-rejection-modal {
+  position:relative; width:min(100%,480px); padding:28px; border:1px solid rgba(255,255,255,.7);
+  border-radius:22px; background:#fff; box-shadow:0 24px 80px rgba(16,24,40,.28);
+  animation:rejectionModalIn .18s ease-out;
+}
+@keyframes rejectionModalIn { from { opacity:0; transform:translateY(10px) scale(.985); } to { opacity:1; transform:translateY(0) scale(1); } }
+.rejection-modal-icon {
+  display:grid; place-items:center; width:48px; height:48px; margin-bottom:18px;
+  border-radius:15px; background:#fff1f0; color:#d92d20;
+}
+.rejection-modal-close {
+  position:absolute; top:18px; right:18px; display:grid; place-items:center;
+  width:36px; height:36px; border:0; border-radius:10px; background:#f2f4f7; color:#475467; cursor:pointer;
+}
+.rejection-modal-close:disabled { opacity:.5; cursor:not-allowed; }
+.rejection-modal-eyebrow { color:#b42318; font-size:10px; font-weight:850; letter-spacing:.1em; }
+.contribution-rejection-modal h2 { margin:7px 0 8px; color:#101828; font-size:22px; font-weight:800; letter-spacing:-.03em; }
+.contribution-rejection-modal > p { margin:0 0 17px; color:#667085; font-size:13px; line-height:1.6; }
+.rejection-request-summary { display:grid; gap:5px; margin-bottom:19px; padding:13px 15px; border:1px solid #eaecf0; border-radius:12px; background:#f9fafb; }
+.rejection-request-summary strong { color:#344054; font-size:13px; }
+.rejection-request-summary span { color:#667085; font-size:12px; }
+.rejection-reason-label { display:block; margin-bottom:7px; color:#344054; font-size:12px; font-weight:750; }
+.rejection-reason-label span { color:#d92d20; }
+.contribution-rejection-modal textarea {
+  display:block; width:100%; min-height:112px; padding:12px 13px; resize:vertical;
+  border:1px solid #d0d5dd; border-radius:12px; outline:none; background:#fff;
+  color:#101828; font:inherit; font-size:13px; line-height:1.5;
+}
+.contribution-rejection-modal textarea:focus { border-color:#f04438; box-shadow:0 0 0 3px rgba(240,68,56,.12); }
+.contribution-rejection-modal textarea[aria-invalid="true"] { border-color:#d92d20; }
+.rejection-reason-meta { display:flex; justify-content:space-between; gap:12px; min-height:22px; margin-top:6px; color:#667085; font-size:10px; }
+.rejection-reason-meta [role="alert"] { color:#b42318; font-weight:650; }
+.rejection-reason-meta small { flex:0 0 auto; color:#98a2b3; }
+.rejection-modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
+.rejection-modal-actions button { min-height:42px; padding:0 15px; border-radius:10px; font:inherit; font-size:12px; font-weight:750; cursor:pointer; }
+.rejection-modal-actions button:disabled { opacity:.5; cursor:not-allowed; }
+.rejection-cancel { border:1px solid #d0d5dd; background:#fff; color:#344054; }
+.rejection-confirm { border:1px solid #d92d20; background:#d92d20; color:#fff; }
+.rejection-confirm:hover:not(:disabled) { background:#b42318; }
+@media (max-width:480px) {
+  .contribution-rejection-modal { padding:23px 19px; border-radius:19px; }
+  .contribution-rejection-modal h2 { font-size:20px; }
+  .rejection-modal-actions { flex-direction:column-reverse; }
+  .rejection-modal-actions button { width:100%; }
+}
+@media (prefers-reduced-motion:reduce) { .contribution-rejection-modal { animation:none; } }
