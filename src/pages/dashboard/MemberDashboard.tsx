@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AlertCircle, ArrowRight, CalendarDays, Check, Clipboard, CreditCard, Hash, Wallet } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, where, addDoc, serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
@@ -16,6 +17,11 @@ export const MemberDashboard = () => {
   
   const [news, setNews] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [paymentMessage, setPaymentMessage] = useState('');
+  const [copiedNumber, setCopiedNumber] = useState('');
+  const [paymentForm, setPaymentForm] = useState({ montant: '5000', period: String(new Date().getFullYear()), payment: 'orange_money', reference: '' });
   const [documents, setDocuments] = useState<any[]>([]);
   const [forumPosts, setForumPosts] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
@@ -38,9 +44,34 @@ export const MemberDashboard = () => {
       setMissionsBenevolat(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     
-    const unsubPayments = onSnapshot(query(collection(db, 'finances'), where('type', '==', 'recette'), where('memberId', '==', userData.uid), orderBy('date', 'desc')), (snap) => {
-      setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
+    // Les anciens documents peuvent utiliser memberId, userId ou uid.
+    // Les trois requêtes restent cloisonnées sur l'UID authentifié par les règles Firestore.
+    const paymentResults: Record<string, any[]> = { memberId: [], userId: [], uid: [] };
+    const updatePaymentHistory = (field: string, docs: any[]) => {
+      paymentResults[field] = docs;
+      const unique = new Map<string, any>();
+      Object.values(paymentResults).flat().forEach((payment: any) => unique.set(payment.id, payment));
+      setPayments(Array.from(unique.values()).sort((a: any, b: any) => {
+        const da = a.createdAt?.toDate?.() || a.date?.toDate?.() || new Date(a.createdAt || a.date || 0);
+        const dbDate = b.createdAt?.toDate?.() || b.date?.toDate?.() || new Date(b.createdAt || b.date || 0);
+        return dbDate.getTime() - da.getTime();
+      }));
+    };
+    const unsubPaymentsByMemberId = onSnapshot(
+      query(collection(db, 'finances'), where('memberId', '==', userData.uid)),
+      snap => updatePaymentHistory('memberId', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (memberId):', error)
+    );
+    const unsubPaymentsByUserId = onSnapshot(
+      query(collection(db, 'finances'), where('userId', '==', userData.uid)),
+      snap => updatePaymentHistory('userId', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (userId):', error)
+    );
+    const unsubPaymentsByUid = onSnapshot(
+      query(collection(db, 'finances'), where('uid', '==', userData.uid)),
+      snap => updatePaymentHistory('uid', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (uid):', error)
+    );
 
     const unsubForum = onSnapshot(query(collection(db, 'forum'), orderBy('createdAt', 'desc')), (snap) => setForumPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubEvents = onSnapshot(query(collection(db, 'ag_events'), orderBy('date', 'desc')), (snap) => setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -57,13 +88,41 @@ export const MemberDashboard = () => {
 
     return () => {
       unsubNews();
-      unsubPayments();
+      unsubPaymentsByMemberId();
+      unsubPaymentsByUserId();
+      unsubPaymentsByUid();
       unsubDocs(); unsubForum(); unsubEvents();
     };
   }, [userData?.uid]);
 
-  const isUpToDate = userData?.statut === 'a_jour' || userData?.statut === 'actif';
-  const totalPaid = payments.reduce((acc, curr) => acc + (Number(curr.montant) || 0), 0);
+  const validatedPayments = payments.filter((p: any) => p.status === 'valide' || p.status === 'validated' || p.type === 'recette');
+  const isUpToDate = userData?.statut === 'a_jour' || validatedPayments.some((p: any) => String(p.period || '').includes(String(new Date().getFullYear())));
+  const totalPaid = validatedPayments.reduce((acc, curr) => acc + (Number(curr.montant) || 0), 0);
+
+  const submitContribution = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userData?.uid || paymentSubmitting) return;
+    const amount = Number(paymentForm.montant);
+    if (!Number.isFinite(amount) || amount <= 0 || !paymentForm.period.trim() || !paymentForm.reference.trim()) {
+      setPaymentMessage('Veuillez renseigner un montant valide, une période et la référence de transaction.');
+      return;
+    }
+    setPaymentSubmitting(true);
+    setPaymentMessage('');
+    try {
+      await addDoc(collection(db, 'finances'), {
+        type: 'cotisation_demande', category: 'cotisation', memberId: userData.uid,
+        memberName: userData.displayName || userData.email || 'Membre', montant: amount,
+        period: paymentForm.period.trim(), payment: paymentForm.payment, reference: paymentForm.reference.trim(),
+        status: 'en_attente', createdAt: serverTimestamp()
+      });
+      setPaymentForm(current => ({ ...current, reference: '' }));
+      setPaymentMessage('Votre déclaration a été envoyée. Elle sera vérifiée par le trésorier.');
+    } catch (error) {
+      console.error('Erreur de déclaration de cotisation:', error);
+      setPaymentMessage('Impossible d’envoyer la déclaration. Vérifiez votre connexion et réessayez.');
+    } finally { setPaymentSubmitting(false); }
+  };
   const memberSinceYear = userData?.createdAt ? new Date(userData.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
   const yearsMember = new Date().getFullYear() - memberSinceYear + 1;
 
@@ -288,31 +347,68 @@ export const MemberDashboard = () => {
         </div>
 
         <div className={`cotisation-status ${isUpToDate ? 'a_jour' : 'en_retard'}`}>
-          <div className="status-icon">{isUpToDate ? '✅' : '⚠️'}</div>
-          <div className="status-text">{isUpToDate ? 'Cotisation à jour' : 'Cotisation en retard'}</div>
-          <div className="status-sub">{isUpToDate ? `Prochaine échéance : Janvier ${new Date().getFullYear() + 1}` : 'Veuillez régulariser votre situation'}</div>
+          <div className="status-icon">{isUpToDate ? <Check size={22} /> : <AlertCircle size={22} />}</div>
+          <div className="status-copy">
+            <div className="status-text">{isUpToDate ? 'Cotisation à jour' : 'Cotisation en retard'}</div>
+            <div className="status-sub">{isUpToDate ? `Prochaine échéance : Janvier ${new Date().getFullYear() + 1}` : 'Votre cotisation annuelle reste à régulariser.'}</div>
+          </div>
+          {!isUpToDate && <button type="button" className="dues-alert-action" onClick={() => document.getElementById('dues-payment-form')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>Régulariser <ArrowRight size={16} /></button>}
         </div>
 
-        <div className="card">
+        <div className="card dues-payment-card">
           <div className="card-header">
-            <h3 className="card-title">💳 Payer par Mobile Money</h3>
+            <h3 className="card-title">Payer par Mobile Money</h3>
+            <span className="dues-secure-label"><Wallet size={14} /> Paiement sécurisé</span>
           </div>
-          <p style={{ fontSize: '14px', color: 'var(--texte-secondaire)', marginBottom: '16px' }}>
-            Effectuez votre paiement directement depuis votre téléphone :
-          </p>
-          <div style={{ background: 'var(--fond-alterne)', padding: '14px', borderRadius: '10px', marginBottom: '10px' }}>
-            <strong style={{ color: 'var(--bleu-rca)' }}>🟠 Orange Money</strong><br/>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--or-solaire)' }}>+236 75 03 08 57</span><br/>
-            <small>Association I KOUE GUI A ITA</small>
+          <p className="dues-intro">Effectuez votre transfert, puis renseignez les informations ci-dessous pour faire vérifier votre paiement.</p>
+          <div className="dues-wallet-list">
+            {[
+              { name: 'Orange Money', number: '+236 75 03 08 57', brand: 'orange' },
+              { name: 'Moov Money', number: '+236 72 06 12 02', brand: 'moov' }
+            ].map(wallet => (
+              <div className="dues-wallet" key={wallet.brand}>
+                <div className={`dues-wallet-mark ${wallet.brand}`}>{wallet.brand === 'orange' ? 'O' : 'M'}</div>
+                <div className="dues-wallet-details">
+                  <strong>{wallet.name}</strong>
+                  <span>{wallet.number}</span>
+                  <small>Association I KOUE GUI A ITA</small>
+                </div>
+                <button type="button" className="dues-copy-button" onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(wallet.number.replace(/\\s/g, ''));
+                    setCopiedNumber(wallet.brand);
+                    window.setTimeout(() => setCopiedNumber(''), 2200);
+                  } catch {
+                    setPaymentMessage('La copie automatique n’est pas disponible sur cet appareil.');
+                  }
+                }} aria-label={copiedNumber === wallet.brand ? 'Numéro copié' : `Copier le numéro ${wallet.name}`}>
+                  {copiedNumber === wallet.brand ? <Check size={17} /> : <Clipboard size={17} />}
+                  <span>{copiedNumber === wallet.brand ? 'Copié' : 'Copier'}</span>
+                </button>
+              </div>
+            ))}
           </div>
-          <div style={{ background: 'var(--fond-alterne)', padding: '14px', borderRadius: '10px', marginBottom: '16px' }}>
-            <strong style={{ color: 'var(--bleu-rca)' }}>🔵 Moov Money</strong><br/>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--or-solaire)' }}>+236 72 06 12 02</span><br/>
-            <small>Association I KOUE GUI A ITA</small>
-          </div>
-          <button className="btn-gold btn-block" onClick={() => alert("Après votre transfert, veuillez contacter le Trésorier Général avec la référence de transaction pour valider votre reçu.")}>
-            💰 J'ai effectué le paiement
-          </button>
+          <form id="dues-payment-form" onSubmit={submitContribution} className="dues-form">
+            <label className="dues-field">
+              <span><Wallet size={15} /> Montant à déclarer</span>
+              <div className="dues-input-wrap"><input type="number" min="1" required value={paymentForm.montant} onChange={e => setPaymentForm({ ...paymentForm, montant: e.target.value })} /><small>FCFA</small></div>
+            </label>
+            <label className="dues-field">
+              <span><CalendarDays size={15} /> Période concernée</span>
+              <select value={paymentForm.period} onChange={e => setPaymentForm({ ...paymentForm, period: e.target.value })}><option value={String(new Date().getFullYear())}>{new Date().getFullYear()}</option><option value={String(new Date().getFullYear()+1)}>{new Date().getFullYear()+1}</option></select>
+            </label>
+            <label className="dues-field">
+              <span><CreditCard size={15} /> Mode de paiement</span>
+              <select value={paymentForm.payment} onChange={e => setPaymentForm({ ...paymentForm, payment: e.target.value })}><option value="orange_money">Orange Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="especes">Espèces</option><option value="virement">Virement</option></select>
+            </label>
+            <label className="dues-field">
+              <span><Hash size={15} /> Référence de transaction</span>
+              <input type="text" required maxLength={100} value={paymentForm.reference} onChange={e => setPaymentForm({ ...paymentForm, reference: e.target.value })} placeholder="Ex. : référence reçue après transfert" />
+            </label>
+            <button type="submit" className="dues-submit-button" disabled={paymentSubmitting}>{paymentSubmitting ? 'Envoi en cours…' : 'Déclarer mon paiement'} <ArrowRight size={17} /></button>
+            {paymentMessage && <p role="status" className="dues-form-message">{paymentMessage}</p>}
+            <p className="dues-form-note">Votre déclaration reste en attente jusqu’à sa vérification par le trésorier.</p>
+          </form>
         </div>
 
         <div className="card">
@@ -323,19 +419,33 @@ export const MemberDashboard = () => {
             {payments.length === 0 ? (
               <p style={{ textAlign: 'center', color: 'var(--texte-secondaire)' }}>Aucun paiement enregistré</p>
             ) : (
-              payments.map(p => (
-                <div key={p.id} className="transaction-item">
-                  <div className="transaction-icon">💰</div>
-                  <div className="transaction-info">
-                    <div className="transaction-title">{p.motif || 'Cotisation'}</div>
-                    <div className="transaction-meta">Ref: {p.id.substring(0,8).toUpperCase()}</div>
+              payments.map(p => {
+                const paymentStatus = p.status === 'en_attente'
+                  ? { label: 'En attente', className: 'pending' }
+                  : p.status === 'rejete'
+                    ? { label: 'Rejeté', className: 'rejected' }
+                    : p.status === 'valide' || p.status === 'validated' || p.type === 'recette'
+                      ? { label: 'Validé', className: 'validated' }
+                      : { label: 'À vérifier', className: 'unknown' };
+                return (
+                  <div key={p.id} className="transaction-item dues-history-item">
+                    <div className="transaction-icon">💰</div>
+                    <div className="transaction-info">
+                      <div className="transaction-title">{p.motif || (p.type === 'cotisation_demande' ? 'Déclaration de cotisation' : 'Cotisation')}</div>
+                      <div className="transaction-meta">{p.period ? `Période : ${p.period} • ` : ''}Réf. : {p.reference || p.id.substring(0,8).toUpperCase()}</div>
+                      {p.status === 'rejete' && <div className="transaction-meta dues-rejection-reason">Motif : {p.rejectionReason || 'non précisé'}</div>}
+                      {(p.status === 'valide' || p.status === 'validated') && <button type="button" className="btn btn-outline btn-small" style={{ marginTop: '8px' }} onClick={() => setSelectedReceipt(p)}>Voir / imprimer le reçu</button>}
+                    </div>
+                    <div className="dues-history-side">
+                      <span className={`dues-status-badge ${paymentStatus.className}`}>{paymentStatus.label}</span>
+                      <div className="transaction-amount">
+                        <div className="amount">+{Number(p.montant).toLocaleString()} F</div>
+                        <div className="date">{formatDate(p.validatedAt || p.date || p.createdAt)}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="transaction-amount">
-                    <div className="amount">+{Number(p.montant).toLocaleString()} F</div>
-                    <div className="date">{formatDate(p.date)}</div>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -551,6 +661,29 @@ export const MemberDashboard = () => {
           <span>Vote</span>
         </a>
       </nav>
+
+      {selectedReceipt && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }}>
+          <div style={{ background: '#fff', color: '#222', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '520px' }}>
+            <div style={{ textAlign: 'center', borderBottom: '2px solid #d5ad45', paddingBottom: '14px', marginBottom: '16px' }}>
+              <h2 style={{ margin: 0 }}>I KOUE GUI A ITA</h2><p style={{ margin: '6px 0 0' }}>REÇU OFFICIEL DE COTISATION</p>
+            </div>
+            <p><strong>N° du reçu :</strong> {selectedReceipt.receiptNumber || selectedReceipt.id}</p>
+            <p><strong>Membre :</strong> {selectedReceipt.memberName || userData?.displayName || userData?.email}</p>
+            <p><strong>Montant :</strong> {Number(selectedReceipt.montant).toLocaleString('fr-FR')} FCFA</p>
+            <p><strong>Période :</strong> {selectedReceipt.period || '—'}</p>
+            <p><strong>Mode :</strong> {selectedReceipt.payment || '—'}</p>
+            <p><strong>Référence :</strong> {selectedReceipt.reference || '—'}</p>
+            <p><strong>Date de validation :</strong> {formatDate(selectedReceipt.validatedAt)}</p>
+            <p><strong>Validé par (UID) :</strong> {selectedReceipt.validatedByName || selectedReceipt.validatedBy || 'Trésorerie'}</p>
+            <p style={{ textAlign: 'center', marginTop: '22px', fontWeight: 700, color: '#18794e' }}>PAIEMENT VALIDÉ</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button type="button" className="btn btn-outline" onClick={() => setSelectedReceipt(null)}>Fermer</button>
+              <button type="button" className="btn btn-primary" onClick={() => window.print()}>Imprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* WHATSAPP FAB */}
       <a href="https://wa.me/23675030857?text=Bonjour,%20message%20depuis%20mon%20espace%20membre" className="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">💬</a>

@@ -1,17 +1,17 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { NetworkStatusIndicator } from './components/layout/NetworkStatusIndicator';
+import Login from './pages/Login';
 
 // Chargement dynamique (lazy loading) des pages publiques et layouts
 const LandingPage = lazy(() => import('./pages/public/LandingPage').then(m => ({ default: m.LandingPage })));
-const Login = lazy(() => import('./pages/Login'));
 const PublicLayout = lazy(() => import('./components/layout/PublicLayout').then(m => ({ default: m.PublicLayout })));
 const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout').then(m => ({ default: m.DashboardLayout })));
 
-// Chargement dynamique (lazy loading) de la garde communicateur
+// Chargement dynamique de la garde communicateur
 const ProtectedCommunicateur = lazy(() => import('./pages/communication/ProtectedCommunicateur'));
 
-// Chargement dynamique (lazy loading) des dashboards et pages lourdes
+// Chargement dynamique des dashboards et pages lourdes
 const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome').then(m => ({ default: m.DashboardHome })));
 const MemberVoting = lazy(() => import('./pages/member/MemberVoting').then(m => ({ default: m.MemberVoting })));
 const CommunicateurDashboard = lazy(() => import('./pages/communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
@@ -34,21 +34,20 @@ export const App = () => {
       <NetworkStatusIndicator />
       <Suspense fallback={<PageLoading />}>
         <Routes>
-          {/* ESPACE PUBLIC (Rendu immédiat sans blocage Auth) */}
+          {/* ESPACE PUBLIC */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
-          
+
           <Route element={<PublicLayout />}>
-            {/* Placeholders for public routes */}
             <Route path="/domaines" element={<div className="p-8 text-center text-gray-500">Page Domaines en cours de migration...</div>} />
             <Route path="/a-propos" element={<div className="p-8 text-center text-gray-500">Page À Propos en cours de migration...</div>} />
             <Route path="/contact" element={<div className="p-8 text-center text-gray-500">Page Contact en cours de migration...</div>} />
           </Route>
-          
+
           {/* PAGE DIRECTE COMMUNICATEUR (Protégée) */}
           <Route path="/communicateur" element={<ProtectedCommunicateur />} />
-          
-          {/* ESPACE MEMBRES & ADMIN (DASHBOARD) - Protection stricte via DashboardLayout */}
+
+          {/* ESPACE MEMBRES & ADMIN */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
             <Route path="news" element={<CommunicateurDashboard />} />
@@ -61,10 +60,9 @@ export const App = () => {
             <Route path="admin_tresorier" element={<TresorierDashboard />} />
             <Route path="admin_conseiller" element={<ConseillerDashboard />} />
             <Route path="membre" element={<MemberDashboard />} />
-            {/* Placeholder for members */}
             <Route path="members" element={<div className="p-8 text-center text-gray-500">Gestion des membres en cours de migration...</div>} />
           </Route>
-          
+
           {/* FALLBACK */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -72,4 +70,3 @@ export const App = () => {
     </>
   );
 };
-

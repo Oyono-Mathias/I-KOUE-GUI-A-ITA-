@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { FileDown, CheckCircle2, X, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
 import './TresorierDashboard.css';
@@ -13,6 +14,7 @@ export const TresorierDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [duesListenerError, setDuesListenerError] = useState('');
 
   // Data State
   const [members, setMembers] = useState<any[]>([]);
@@ -21,6 +23,11 @@ export const TresorierDashboard = () => {
   const [boardMessages, setBoardMessages] = useState<any[]>([]);
   const [factures, setFactures] = useState<any[]>([]);
   const [dues, setDues] = useState<any[]>([]);
+  const [pendingDuesPayments, setPendingDuesPayments] = useState<any[]>([]);
+  const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
+  const [rejectionRequest, setRejectionRequest] = useState<any>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionError, setRejectionError] = useState('');
   const [budget, setBudget] = useState<any>({
     total: 3500000,
     byDomain: {
@@ -47,7 +54,7 @@ export const TresorierDashboard = () => {
   // Modals
   const [incomeModalOpen, setIncomeModalOpen] = useState(false);
   const [expenseModalOpen, setExpenseModalOpen] = useState(false);
-  const [duesModalOpen, setDuesModalOpen] = useState<{ isOpen: boolean, memberId: string, memberName: string, amount: number }>({ isOpen: false, memberId: '', memberName: '', amount: 0 });
+  const [duesModalOpen, setDuesModalOpen] = useState<{ isOpen: boolean, memberId: string, memberDocId: string, memberName: string, amount: number }>({ isOpen: false, memberId: '', memberDocId: '', memberName: '', amount: 0 });
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
 
   // Form State Handlers
@@ -58,19 +65,41 @@ export const TresorierDashboard = () => {
   useEffect(() => {
     const unsubMembers = onSnapshot(collection(db, 'members'), (snap) => setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubIncome = onSnapshot(query(collection(db, 'income'), orderBy('date', 'desc')), (snap) => setIncome(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    // Écoute ciblée des déclarations de cotisation : les demandes sont écrites
+    // dans finances avec type=cotisation_demande et status=en_attente.
+    const contributionRequestsQuery = query(
+      collection(db, 'finances'),
+      where('type', '==', 'cotisation_demande'),
+      where('status', '==', 'en_attente')
+    );
+    const unsubContributionRequests = onSnapshot(contributionRequestsQuery, (snap) => {
+      setDuesListenerError('');
+      setPendingDuesPayments(snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a: any, b: any) => {
+          const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+          const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+          return dateB.getTime() - dateA.getTime();
+        }));
+    }, (error) => {
+      console.error('Impossible de charger les demandes de cotisation :', error);
+      setDuesListenerError(error.code === 'permission-denied'
+        ? 'Accès refusé : vérifiez que le rôle du compte est trésorier et que les règles Firestore sont publiées.'
+        : 'Les demandes de cotisation ne peuvent pas être chargées. Vérifiez la connexion et les index Firestore.');
+    });
     const unsubBoardMessages = onSnapshot(query(collection(db, 'board_messages'), orderBy('timestamp', 'asc')), (snap) => setBoardMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubFactures = onSnapshot(query(collection(db, 'factures'), orderBy('date', 'desc')), (snap) => setFactures(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubExpenses = onSnapshot(query(collection(db, 'expenses'), orderBy('date', 'desc')), (snap) => setExpenses(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     // Dues can be derived from members or custom collection, here we derive for simplicity
     
-    return () => { unsubMembers(); unsubIncome(); unsubExpenses(); unsubBoardMessages(); unsubFactures(); };
+    return () => { unsubMembers(); unsubIncome(); unsubContributionRequests(); unsubExpenses(); unsubBoardMessages(); unsubFactures(); };
   }, []);
 
   // Update Dues List based on members
   useEffect(() => {
       const derivedDues = members.map(m => ({
-          memberId: m.id,
-          memberName: m.nom,
+          memberId: m.userId || m.uid || '',
+          memberDocId: m.id,
+          memberName: m.nom || m.displayName || m.email || 'Membre',
           category: m.categorie,
           status: m.statut,
           amount: m.cotisationAnnuelle || 5000,
@@ -103,6 +132,24 @@ export const TresorierDashboard = () => {
     confirmAction('🚪 Êtes-vous sûr de vouloir vous déconnecter ?', async () => {
       try { await signOut(auth); navigate('/'); } catch (err) { console.error('Logout error', err); }
     });
+  };
+
+  // Export CSV des données visibles par le trésorier.
+  const exportTreasuryData = () => {
+    const rows = [
+      ['Type', 'Libellé', 'Montant FCFA', 'Date', 'Statut', 'Membre / Bénéficiaire'],
+      ...income.map((item: any) => ['Recette', item.titre || item.type || '', item.montant || 0, formatDate(item.date), item.status || 'enregistrée', item.membre || item.memberName || '']),
+      ...expenses.map((item: any) => ['Dépense', item.titre || '', item.montant || 0, formatDate(item.date), item.status || '', item.beneficiary || '']),
+      ...pendingDuesPayments.map((item: any) => ['Demande de cotisation', item.period || '', item.montant || 0, formatDate(item.createdAt), item.status || 'en_attente', item.memberName || item.memberId || ''])
+    ];
+    const csv = rows.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tresorerie-i-koue-gui-a-ita.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   // Computed Stats
@@ -183,13 +230,73 @@ export const TresorierDashboard = () => {
       });
 
       // Update member status
-      await updateDoc(doc(db, 'members', duesModalOpen.memberId), {
+      await updateDoc(doc(db, 'members', duesModalOpen.memberDocId), {
           statut: 'a_jour',
           dernierPaiement: serverTimestamp()
       });
 
-      setDuesModalOpen({ isOpen: false, memberId: '', memberName: '', amount: 0 });
+      setDuesModalOpen({ isOpen: false, memberId: '', memberDocId: '', memberName: '', amount: 0 });
       alert('✅ Cotisation enregistrée et statut du membre mis à jour !');
+  };
+
+  const processContributionRequest = async (request: any, decision: 'valide' | 'rejete', reason = '') => {
+    if (!userData?.uid || processingPaymentId) return;
+    if (decision === 'rejete' && (reason.trim().length < 5 || reason.trim().length > 500)) {
+      setRejectionError('Le motif doit contenir entre 5 et 500 caractères.');
+      return;
+    }
+    setProcessingPaymentId(request.id);
+    try {
+      const requestRef = doc(db, 'finances', request.id);
+      if (decision === 'valide') {
+        const linkedMembers = members.filter((m: any) => m.userId === request.memberId || m.uid === request.memberId);
+        if (linkedMembers.length !== 1) throw new Error(linkedMembers.length === 0 ? 'Aucun profil members ne correspond à cet UID (userId/uid).' : 'Plusieurs profils members correspondent à cet UID : validation bloquée.');
+        const linkedMember = linkedMembers[0];
+        const memberRef = doc(db, 'members', linkedMember.id);
+        const incomeRef = doc(collection(db, 'income'));
+        await runTransaction(db, async transaction => {
+          const requestSnap = await transaction.get(requestRef);
+          const memberSnap = await transaction.get(memberRef);
+          if (!requestSnap.exists() || requestSnap.data().status !== 'en_attente') {
+            throw new Error('Cette demande a déjà été traitée.');
+          }
+          if (!memberSnap.exists() || (memberSnap.data().userId !== request.memberId && memberSnap.data().uid !== request.memberId)) {
+            throw new Error('La liaison du profil membre ne correspond plus à cet UID.');
+          }
+          const payment = requestSnap.data();
+          transaction.set(incomeRef, {
+            type: 'cotisation', category: 'cotisation', montant: Number(payment.montant),
+            date: new Date(), memberId: payment.memberId, membre: payment.memberName,
+            memberName: payment.memberName, period: payment.period, payment: payment.payment,
+            reference: payment.reference, titre: `Cotisation ${payment.memberName} ${payment.period}`,
+            recordedBy: userData.uid, recordedAt: serverTimestamp(), sourceRequestId: request.id
+          });
+          transaction.update(requestRef, {
+            status: 'valide', validatedAt: serverTimestamp(), validatedBy: userData.uid, validatedByName: userData.displayName || userData.email || 'Trésorerie',
+            receiptNumber: `IKG-${request.id.slice(0, 8).toUpperCase()}`
+          });
+          transaction.update(memberRef, { statut: 'a_jour', dernierPaiement: serverTimestamp() });
+        });
+        alert('Cotisation validée. Le reçu est maintenant disponible dans l’historique du membre.');
+      } else {
+        await runTransaction(db, async transaction => {
+          const requestSnap = await transaction.get(requestRef);
+          if (!requestSnap.exists() || requestSnap.data().status !== 'en_attente') {
+            throw new Error('Cette demande a déjà été traitée.');
+          }
+          transaction.update(requestRef, { status: 'rejete', rejectionReason: reason.trim(), rejectedAt: serverTimestamp(), rejectedBy: userData.uid, rejectedByName: userData.displayName || userData.email || 'Trésorerie' });
+        });
+        setRejectionRequest(null);
+        setRejectionReason('');
+        setRejectionError('');
+        alert('Demande rejetée. Le motif a été enregistré dans son historique.');
+      }
+    } catch (error: any) {
+      console.error('Traitement cotisation:', error);
+      alert(error.message || 'Impossible de traiter cette demande.');
+    } finally {
+      setProcessingPaymentId(null);
+    }
   };
 
   // Charts data calculation
@@ -245,6 +352,7 @@ export const TresorierDashboard = () => {
       <header className="dashboard-header">
           <div className="header-top">
               <div className="logo-container">
+                  
                   <div className="logo">IK</div>
                   <div className="logo-text">
                       <h1>I KOUE GUI A ITA</h1>
@@ -329,7 +437,7 @@ export const TresorierDashboard = () => {
                   <div className="quick-action" onClick={() => setActiveTab('dues')}><div className="qa-icon">👥</div><div className="qa-title">Cotisations</div></div>
                   <div className="quick-action" onClick={() => setActiveTab('reports')}><div className="qa-icon">📊</div><div className="qa-title">Rapport financier</div></div>
                   <div className="quick-action" onClick={() => setActiveTab('budget')}><div className="qa-icon">📋</div><div className="qa-title">Budget</div></div>
-                  <div className="quick-action" onClick={() => alert('Export non implémenté')}><div className="qa-icon">⬇️</div><div className="qa-title">Exporter</div></div>
+                  <div className="quick-action" role="button" tabIndex={0} onClick={exportTreasuryData} onKeyDown={e => e.key === 'Enter' && exportTreasuryData()}><div className="qa-icon">⬇️</div><div className="qa-title">Exporter</div></div>
               </div>
           </div>
 
@@ -490,31 +598,56 @@ export const TresorierDashboard = () => {
       {/* TAB: DUES */}
       <div className={`tab-content ${activeTab === 'dues' ? 'active' : ''}`}>
           <div className="section-header"><h2>👥 Suivi des Cotisations</h2></div>
-          
-          <div className="stats-grid">
-              <div className="stat-card success"><div className="stat-icon">✅</div><div className="stat-value">{dues.filter(d => d.status === 'a_jour' || d.exonere).length}</div><div className="stat-label">À jour</div></div>
-              <div className="stat-card alert"><div className="stat-icon">⚠️</div><div className="stat-value">{dues.filter(d => d.status === 'en_retard' && !d.exonere).length}</div><div className="stat-label">En retard</div></div>
+          <section className="dues-review-panel">
+            <div className="dues-panel-heading">
+              <div><span className="dues-eyebrow">VALIDATION DES PAIEMENTS</span><h3>Demandes à vérifier</h3><p>Contrôlez les déclarations avant de confirmer leur enregistrement.</p></div>
+              <span className="dues-pending-count">{pendingDuesPayments.length} en attente</span>
+            </div>
+            {duesListenerError && <div className="alert-box danger" role="alert"><div className="alert-icon">⚠️</div><div className="alert-content"><h4>Chargement impossible</h4><p>{duesListenerError}</p></div></div>}
+            {pendingDuesPayments.length === 0 ? <div className="dues-empty"><CheckCircle2 size={25} /><strong>Tout est à jour</strong><span>Aucune déclaration de cotisation en attente.</span></div> : pendingDuesPayments.map((p: any) => (
+              <article key={p.id} className="contribution-request-card">
+                <div className="contribution-card-top">
+                  <div className="contribution-member">
+                    <div className="contribution-avatar">{String(p.memberName || 'Membre').trim().split(/\s+/).slice(0,2).map((part: string) => part.charAt(0)).join('').toUpperCase()}</div>
+                    <div className="contribution-member-copy"><strong>{p.memberName || p.memberId || 'Membre'}</strong><span>Déclaration de cotisation</span></div>
+                  </div>
+                  <span className="contribution-status"><i /> EN ATTENTE</span>
+                </div>
+                <div className="contribution-amount-block"><span>Montant déclaré</span><strong>{Number(p.montant || 0).toLocaleString('fr-FR')} <small>FCFA</small></strong></div>
+                <div className="contribution-details">
+                  <div><span>Période</span><strong>{p.period || '—'}</strong></div>
+                  <div><span>Mode de paiement</span><strong>{String(p.payment || '—').replace(/_/g, ' ')}</strong></div>
+                  <div><span>Référence</span><strong>{p.reference || 'Non renseignée'}</strong></div>
+                  <div><span>Déclaré le</span><strong>{formatDate(p.createdAt)}</strong></div>
+                </div>
+                <div className="contribution-actions">
+                  <button className="contribution-approve" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'valide')}><CheckCircle2 size={17} />{processingPaymentId === p.id ? 'Traitement…' : 'Valider le paiement'}</button>
+                  <button className="contribution-reject" disabled={processingPaymentId === p.id} onClick={() => { setRejectionRequest(p); setRejectionReason(''); setRejectionError(''); }}>Rejeter</button>
+                </div>
+              </article>
+            ))}
+          </section>
+
+          <div className="dues-metrics-grid">
+              <div className="dues-metric-card dues-metric-paid"><span className="dues-metric-icon"><CheckCircle2 size={18} /></span><span className="dues-metric-label">Membres à jour</span><strong>{dues.filter(d => d.status === 'a_jour' || d.exonere).length}</strong><small>sur {dues.length} membres</small></div>
+              <div className="dues-metric-card dues-metric-late"><span className="dues-metric-icon">!</span><span className="dues-metric-label">En retard</span><strong>{dues.filter(d => d.status === 'en_retard' && !d.exonere).length}</strong><small>cotisations à régulariser</small></div>
           </div>
           
-          <div className="card">
-              <h4 style={{ fontSize: '14px', color: 'var(--bleu-rca)', marginBottom: '12px' }}>📊 Taux de recouvrement</h4>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '13px', color: 'var(--texte-secondaire)' }}>Objectif annuel</span>
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--bleu-rca)' }}>{dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%</span>
-              </div>
-              <div className="progress-bar">
-                  <div className="progress-bar-fill" style={{ width: `${dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%` }}></div>
-              </div>
+          <div className="dues-recovery-card">
+              <div className="dues-recovery-heading"><div><span className="dues-eyebrow">PERFORMANCE ANNUELLE</span><h3>Objectif de recouvrement</h3></div><strong>{dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%</strong></div>
+              <p>{dues.filter(d => d.status === 'a_jour' || d.exonere).length} membres régularisés sur {dues.length}</p>
+              <div className="dues-recovery-track"><div className="dues-recovery-fill" style={{ width: `${dues.length > 0 ? Math.round((dues.filter(d => d.status === 'a_jour' || d.exonere).length / dues.length) * 100) : 0}%` }} /></div>
           </div>
 
-          <div className="sub-tabs">
+          <div className="dues-directory-toolbar">
+            <div className="dues-filter-tabs">
               <button className={`sub-tab ${duesFilter === 'all' ? 'active' : ''}`} onClick={() => setDuesFilter('all')}>Tous</button>
-              <button className={`sub-tab ${duesFilter === 'a_jour' ? 'active' : ''}`} onClick={() => setDuesFilter('a_jour')}>✅ À jour</button>
-              <button className={`sub-tab ${duesFilter === 'en_retard' ? 'active' : ''}`} onClick={() => setDuesFilter('en_retard')}>⚠️ En retard</button>
-              <button className={`sub-tab ${duesFilter === 'exonere' ? 'active' : ''}`} onClick={() => setDuesFilter('exonere')}>⭐ Exonérés</button>
+              <button className={`sub-tab ${duesFilter === 'a_jour' ? 'active' : ''}`} onClick={() => setDuesFilter('a_jour')}>À jour</button>
+              <button className={`sub-tab ${duesFilter === 'en_retard' ? 'active' : ''}`} onClick={() => setDuesFilter('en_retard')}>En retard</button>
+              <button className={`sub-tab ${duesFilter === 'exonere' ? 'active' : ''}`} onClick={() => setDuesFilter('exonere')}>Exonérés</button>
+            </div>
+            <div className="dues-search-wrap"><input type="text" className="search-input" placeholder="Rechercher un membre…" aria-label="Rechercher un membre" value={duesSearch} onChange={(e) => setDuesSearch(e.target.value)} /></div>
           </div>
-
-          <div className="filters-bar"><input type="text" className="search-input" placeholder="Rechercher..." value={duesSearch} onChange={(e) => setDuesSearch(e.target.value)} /></div>
 
           <div>
               {dues.filter(d => (duesFilter === 'all' || d.status === duesFilter || (duesFilter === 'exonere' && d.exonere)) && d.memberName.toLowerCase().includes(duesSearch.toLowerCase())).map(d => {
@@ -528,7 +661,7 @@ export const TresorierDashboard = () => {
                           </div>
                           <div className="dues-status">
                               <div className={`dues-amount ${isPaid ? 'paid' : 'unpaid'}`}>{isPaid ? '✓' : `${Number(d.amount).toLocaleString()} F`}</div>
-                              {!isPaid && <button className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
+                              {!isPaid && <button disabled={!d.memberId} className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberDocId: d.memberDocId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
                           </div>
                       </div>
                   );
@@ -729,16 +862,6 @@ export const TresorierDashboard = () => {
         </div>
       </div>
 
-      {/* BOTTOM NAV */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'income' ? 'active' : ''} onClick={() => setActiveTab('income')}><span className="nav-icon">💵</span><span>Recettes</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon">💸</span><span>Dépenses</span></button>
-          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => setActiveTab('dues')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">👥</span><span>Cotisations</span></button>
-          <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => setActiveTab('factures')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🧾</span><span>Factures</span></button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
-      </nav>
-
       {/* MODALS */}
       {incomeModalOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
@@ -809,6 +932,16 @@ export const TresorierDashboard = () => {
           </div>
       )}
 
+      {/* BOTTOM NAV */}
+      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'income' ? 'active' : ''} onClick={() => setActiveTab('income')}><span className="nav-icon">💵</span><span>Recettes</span></button>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon">💸</span><span>Dépenses</span></button>
+          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => setActiveTab('dues')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">👥</span><span>Cotisations</span></button>
+          <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => setActiveTab('factures')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🧾</span><span>Factures</span></button>
+          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
+      </nav>
+
       {duesModalOpen.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
               <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '400px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
@@ -841,6 +974,46 @@ export const TresorierDashboard = () => {
                   </div>
               </div>
           </div>
+      )}
+
+
+
+      {rejectionRequest && (
+        <div className="contribution-rejection-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !processingPaymentId) setRejectionRequest(null); }}>
+          <section className="contribution-rejection-modal" role="dialog" aria-modal="true" aria-labelledby="rejection-modal-title" aria-describedby="rejection-modal-description">
+            <div className="rejection-modal-icon"><AlertCircle size={25} /></div>
+            <button type="button" className="rejection-modal-close" aria-label="Fermer" disabled={!!processingPaymentId} onClick={() => setRejectionRequest(null)}><X size={19} /></button>
+            <span className="rejection-modal-eyebrow">DÉCISION DE TRÉSORERIE</span>
+            <h2 id="rejection-modal-title">Rejeter cette cotisation ?</h2>
+            <p id="rejection-modal-description">Indiquez clairement au membre pourquoi sa déclaration est refusée. Ce motif sera conservé dans l'historique de la demande.</p>
+            <div className="rejection-request-summary">
+              <strong>{rejectionRequest.memberName || rejectionRequest.memberId || 'Membre'}</strong>
+              <span>{Number(rejectionRequest.montant || 0).toLocaleString('fr-FR')} FCFA · {rejectionRequest.period || 'Période non précisée'}</span>
+            </div>
+            <label className="rejection-reason-label" htmlFor="contribution-rejection-reason">Motif du rejet <span>*</span></label>
+            <textarea
+              id="contribution-rejection-reason"
+              value={rejectionReason}
+              onChange={(event) => { setRejectionReason(event.target.value); if (rejectionError) setRejectionError(''); }}
+              placeholder="Ex. : Référence de transaction introuvable, montant incorrect…"
+              rows={4}
+              maxLength={500}
+              required
+              aria-invalid={!!rejectionError}
+              aria-describedby={rejectionError ? 'rejection-reason-error' : 'rejection-reason-hint'}
+            />
+            <div className="rejection-reason-meta">
+              {rejectionError ? <span id="rejection-reason-error" role="alert">{rejectionError}</span> : <span id="rejection-reason-hint">Minimum 5 caractères, maximum 500.</span>}
+              <small>{rejectionReason.trim().length}/500</small>
+            </div>
+            <div className="rejection-modal-actions">
+              <button type="button" className="rejection-cancel" disabled={!!processingPaymentId} onClick={() => setRejectionRequest(null)}>Annuler</button>
+              <button type="button" className="rejection-confirm" disabled={!!processingPaymentId || rejectionReason.trim().length < 5} onClick={() => processContributionRequest(rejectionRequest, 'rejete', rejectionReason)}>
+                {processingPaymentId === rejectionRequest.id ? 'Enregistrement…' : 'Confirmer le rejet'}
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );

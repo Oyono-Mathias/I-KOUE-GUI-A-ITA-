@@ -418,3 +418,117 @@
     .membre-page { padding-bottom: 0; }
     .membre-page .bottom-nav { display: none; }
 }
+
+
+/* CONTRIBUTIONS — refined fintech interface */
+.membre-page .cotisation-status {
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    padding: 18px 20px; border: 1px solid transparent; color: #344054;
+    box-shadow: 0 4px 14px rgba(16,24,40,.04);
+}
+.membre-page .cotisation-status.a_jour {
+    background: #ecfdf3; border-color: #abefc6; color: #067647;
+}
+.membre-page .cotisation-status.en_retard {
+    background: #fff7e8; border-color: #fedf89; color: #93370d;
+}
+.membre-page .cotisation-status .status-icon {
+    width: 40px; height: 40px; display: grid; place-items: center;
+    flex: 0 0 40px; border-radius: 12px; background: rgba(255,255,255,.75);
+    margin: 0; font-size: 0;
+}
+.membre-page .cotisation-status .status-copy { flex: 1; min-width: 0; }
+.membre-page .cotisation-status .status-text { font-size: 15px; font-weight: 700; margin: 0 0 3px; }
+.membre-page .cotisation-status .status-sub { font-size: 13px; opacity: .85; }
+.membre-page .dues-alert-action {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 0; border-radius: 10px; padding: 10px 12px; background: #a64b12;
+    color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer;
+    transition: background .2s ease, transform .2s ease;
+}
+.membre-page .dues-alert-action:hover { background: #873b0d; transform: translateY(-1px); }
+.membre-page .dues-payment-card { padding: 22px; border-color: #e7eaf0; box-shadow: 0 8px 28px rgba(16,24,40,.045); }
+.membre-page .dues-payment-card .card-header { align-items: center; }
+.membre-page .dues-payment-card .card-title { margin: 0; }
+.membre-page .dues-secure-label { display: inline-flex; align-items: center; gap: 5px; color: #667085; font-size: 11px; font-weight: 600; }
+.membre-page .dues-intro { color: #667085; font-size: 13px; line-height: 1.6; margin: -4px 0 16px; }
+.membre-page .dues-wallet-list { display: grid; gap: 10px; margin-bottom: 22px; }
+.membre-page .dues-wallet {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    border: 1px solid #e4e7ec; border-radius: 14px; background: #fff;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+.membre-page .dues-wallet:hover { border-color: #cbd5e1; box-shadow: 0 4px 12px rgba(16,24,40,.04); }
+.membre-page .dues-wallet-mark {
+    display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px;
+    border-radius: 12px; font-size: 17px; font-weight: 800;
+}
+.membre-page .dues-wallet-mark.orange { color: #c2410c; background: #fff1e8; }
+.membre-page .dues-wallet-mark.moov { color: #4338ca; background: #eef2ff; }
+.membre-page .dues-wallet-details { display: grid; gap: 1px; flex: 1; min-width: 0; }
+.membre-page .dues-wallet-details strong { color: #344054; font-size: 13px; }
+.membre-page .dues-wallet-details span { color: #101828; font-size: 16px; font-weight: 750; letter-spacing: .2px; }
+.membre-page .dues-wallet-details small { color: #98a2b3; font-size: 11px; }
+.membre-page .dues-copy-button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 38px; padding: 0 10px; border: 1px solid #e4e7ec; border-radius: 10px;
+    background: #fff; color: #344054; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.membre-page .dues-copy-button:hover { border-color: #aab5c5; background: #f9fafb; }
+.membre-page .dues-form { display: grid; gap: 15px; }
+.membre-page .dues-field { display: grid; gap: 7px; color: #344054; font-size: 12px; font-weight: 650; }
+.membre-page .dues-field > span { display: flex; align-items: center; gap: 7px; }
+.membre-page .dues-field > span svg { color: #98a2b3; }
+.membre-page .dues-field input, .membre-page .dues-field select {
+    width: 100%; min-height: 48px; box-sizing: border-box; border: 1px solid #d0d5dd;
+    border-radius: 12px; background: #fff; color: #101828; padding: 11px 13px;
+    font: inherit; font-size: 14px; outline: none; transition: border-color .18s ease, box-shadow .18s ease;
+}
+.membre-page .dues-field input::placeholder { color: #98a2b3; font-weight: 400; }
+.membre-page .dues-field input:focus, .membre-page .dues-field select:focus {
+    border-color: #2563eb; box-shadow: 0 0 0 4px rgba(37,99,235,.10);
+}
+.membre-page .dues-input-wrap { position: relative; }
+.membre-page .dues-input-wrap input { padding-right: 70px; }
+.membre-page .dues-input-wrap small {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    color: #667085; font-size: 11px; font-weight: 700;
+}
+.membre-page .dues-submit-button {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; min-height: 50px; margin-top: 3px; padding: 12px 18px;
+    border: 0; border-radius: 12px; background: #123b63; color: #fff;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 5px 12px rgba(18,59,99,.16);
+    transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.membre-page .dues-submit-button:hover:not(:disabled) { background: #0b2e4f; box-shadow: 0 8px 18px rgba(18,59,99,.22); transform: translateY(-1px); }
+.membre-page .dues-submit-button:focus-visible, .membre-page .dues-copy-button:focus-visible, .membre-page .dues-alert-action:focus-visible {
+    outline: 3px solid rgba(37,99,235,.25); outline-offset: 2px;
+}
+.membre-page .dues-submit-button:disabled { opacity: .65; cursor: not-allowed; }
+.membre-page .dues-form-message { margin: 0; padding: 11px 13px; border-radius: 10px; background: #eff8ff; color: #175cd3; font-size: 12px; }
+.membre-page .dues-form-note { margin: -5px 0 0; color: #98a2b3; text-align: center; font-size: 11px; }
+.membre-page .dues-history-item { align-items: flex-start; }
+.membre-page .dues-history-item .transaction-info { min-width: 0; }
+.membre-page .dues-history-side { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; flex-shrink: 0; }
+.membre-page .dues-status-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px; padding: 5px 10px; font-size: 10px; font-weight: 750;
+    line-height: 1.2; white-space: nowrap;
+}
+.membre-page .dues-status-badge.pending { color: #93370d; background: #fff4e5; border: 1px solid #fedf89; }
+.membre-page .dues-status-badge.validated { color: #067647; background: #ecfdf3; border: 1px solid #abefc6; }
+.membre-page .dues-status-badge.rejected { color: #b42318; background: #fef3f2; border: 1px solid #fecdca; }
+.membre-page .dues-status-badge.unknown { color: #475467; background: #f2f4f7; border: 1px solid #e4e7ec; }
+.membre-page .dues-rejection-reason { margin-top: 5px; color: #b42318; }
+@media (max-width: 520px) {
+    .membre-page .cotisation-status { align-items: flex-start; flex-wrap: wrap; padding: 15px; }
+    .membre-page .dues-alert-action { margin-left: 54px; }
+    .membre-page .dues-payment-card { padding: 17px; }
+    .membre-page .dues-wallet { gap: 9px; padding: 11px; }
+    .membre-page .dues-wallet-details span { font-size: 14px; }
+    .membre-page .dues-copy-button { padding: 0 8px; }
+    .membre-page .dues-history-item { flex-wrap: wrap; }
+    .membre-page .dues-history-side { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; padding-left: 60px; }
+}
