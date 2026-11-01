@@ -606,7 +606,7 @@ export const MemberDashboard = () => {
             <p><strong>Mode :</strong> {selectedReceipt.payment || '—'}</p>
             <p><strong>Référence :</strong> {selectedReceipt.reference || '—'}</p>
             <p><strong>Date de validation :</strong> {formatDate(selectedReceipt.validatedAt)}</p>
-            <p><strong>Validé par (UID) :</strong> {selectedReceipt.validatedBy || 'Trésorerie'}</p>
+            <p><strong>Validé par (UID) :</strong> {selectedReceipt.validatedByName || selectedReceipt.validatedBy || 'Trésorerie'}</p>
             <p style={{ textAlign: 'center', marginTop: '22px', fontWeight: 700, color: '#18794e' }}>PAIEMENT VALIDÉ</p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
               <button type="button" className="btn btn-outline" onClick={() => setSelectedReceipt(null)}>Fermer</button>
