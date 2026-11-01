@@ -40,6 +40,23 @@ export const PresidentDashboard = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [boardMessages, setBoardMessages] = useState<any[]>([]);
   const [crisisMode, setCrisisMode] = useState(false);
+  const currentRole = userData?.role || '';
+  const canManageRoles = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentRole);
+  const isSuperAdminActor = currentRole === 'super_admin';
+  const assignableRoles = [
+    { value: 'super_admin', label: 'Super administrateur' },
+    { value: 'president_fondateur', label: 'Président fondateur' },
+    { value: 'president', label: 'Président' },
+    { value: 'admin', label: 'Administrateur' },
+    { value: 'admin_bureau', label: 'Administrateur du bureau' },
+    { value: 'vice_president', label: 'Vice-président' },
+    { value: 'secretaire', label: 'Secrétaire' },
+    { value: 'tresorier', label: 'Trésorier' },
+    { value: 'conseiller', label: 'Conseiller' },
+    { value: 'communicateur', label: 'Communicateur' },
+    { value: 'membre', label: 'Membre' }
+  ];
+
 
   // Computed Stats
   const pendingApprovals = members.filter(m => m.statut === 'en_attente').length;
@@ -214,9 +231,32 @@ export const PresidentDashboard = () => {
   };
 
   const changeMemberRole = async (id: string, newRole: string) => {
-    confirmAction(`🔄 Changer le rôle en ${newRole} ?`, async () => {
-        await updateDoc(doc(db, 'users', id), { role: newRole });
+    if (!canManageRoles || !assignableRoles.some(role => role.value === newRole)) return;
+    if (id === auth.currentUser?.uid) {
+      alert('Pour votre sécurité, vous ne pouvez pas modifier votre propre rôle.');
+      return;
+    }
+    const target = members.find(member => member.id === id);
+    if (!target || (target.role === 'super_admin' && !isSuperAdminActor)) {
+      alert('Seul le super administrateur peut modifier le rôle de ce compte.');
+      return;
+    }
+    if (currentRole === 'admin' && ['super_admin', 'president_fondateur', 'president', 'admin'].includes(newRole)) {
+      alert('Votre niveau d’administration ne permet pas d’attribuer ce rôle.');
+      return;
+    }
+    confirmAction(`Changer le rôle de ${target.displayName || target.nom || target.email || id} en « ${assignableRoles.find(role => role.value === newRole)?.label} » ?`, async () => {
+      try {
+        await updateDoc(doc(db, 'users', id), {
+          role: newRole,
+          roleUpdatedAt: serverTimestamp(),
+          roleUpdatedBy: auth.currentUser?.uid || ''
+        });
         await logDecision('CHANGEMENT_ROLE', `Rôle du membre ${id} changé en ${newRole}`);
+      } catch (error) {
+        console.error('Erreur lors du changement de rôle:', error);
+        alert('Modification refusée. Vérifiez vos autorisations ou réessayez.');
+      }
     });
   };
 
@@ -563,7 +603,7 @@ export const PresidentDashboard = () => {
                         <div className="member-item-header">
                             <div className="member-avatar-small">{m.nom?.substring(0,2).toUpperCase() || 'IK'}</div>
                             <div className="member-info">
-                                <div className="member-name-text">{m.nom || 'Sans nom'}</div>
+                                <div className="member-name-text">{m.displayName || m.nom || 'Sans nom'}</div>
                                 <div className="member-meta">{m.email || m.telephone || '-'}</div>
                                 <div style={{ marginTop: '4px', display: 'flex', gap: '4px' }}>
                                     <span className="badge badge-info">{m.categorie || 'actif'}</span>
@@ -586,14 +626,25 @@ export const PresidentDashboard = () => {
                                     <button className="btn btn-danger btn-small" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #EF4444', padding: '2px 8px' }} onClick={() => suspendMember(m.id)}>⚠️ Suspendre</button>
                                   )}
                                   <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}>🗑️ Supprimer</button>
-                                  <select className="search-input" style={{ padding: '2px 4px', fontSize: '11px', height: 'auto', backgroundImage: 'none' }} value={m.role || 'membre'} onChange={(e) => changeMemberRole(m.id, e.target.value)}>
-                                    <option value="membre">👤 Membre</option>
-                                    <option value="tresorier">💰 Trésorier</option>
-                                    <option value="secretaire">📝 Secrétaire</option>
-                                    <option value="conseiller">🧠 Conseiller</option>
-                                    <option value="vice_president">🛡️ Vice-Président</option>
-                                    <option value="communicateur">📢 Communicateur</option>
-                                  </select>
+                                  {canManageRoles && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
+                                      <label htmlFor={`role-${m.id}`} style={{ fontSize: '11px', fontWeight: 700 }}>Rôle et accès</label>
+                                      <select
+                                        id={`role-${m.id}`}
+                                        className="search-input"
+                                        style={{ padding: '8px', fontSize: '13px', height: 'auto', backgroundImage: 'none' }}
+                                        value={m.role || 'membre'}
+                                        disabled={m.id === auth.currentUser?.uid || (m.role === 'super_admin' && !isSuperAdminActor)}
+                                        onChange={(e) => changeMemberRole(m.id, e.target.value)}
+                                        aria-label={`Modifier le rôle de ${m.displayName || m.nom || m.email || 'cet utilisateur'}`}
+                                      >
+                                        {assignableRoles
+                                          .filter(role => isSuperAdminActor || !['super_admin'].includes(role.value))
+                                          .filter(role => currentRole !== 'admin' || !['super_admin', 'president_fondateur', 'president', 'admin'].includes(role.value))
+                                          .map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
+                                      </select>
+                                    </div>
+                                  )}
                                 </div>
                             )}
                         </div>
