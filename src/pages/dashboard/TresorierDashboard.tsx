@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
@@ -13,6 +14,7 @@ export const TresorierDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showMoreNav, setShowMoreNav] = useState(false);
 
   // Data State
   const [members, setMembers] = useState<any[]>([]);
@@ -330,16 +332,16 @@ export const TresorierDashboard = () => {
           </div>
           </header>
 
-      {/* TAB NAV */}
-      <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
-          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">📊</span><span>Dashboard</span></button>
-          <button className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`} onClick={() => setActiveTab('income')}><span className="tab-icon">💵</span><span>Recettes</span></button>
-          <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><span className="tab-icon">💸</span><span>Dépenses</span></button>
-          <button className={`tab-btn ${activeTab === 'dues' ? 'active' : ''}`} onClick={() => setActiveTab('dues')}><span className="tab-icon">👥</span><span>Cotisations</span></button>
-          <button className={`tab-btn ${activeTab === 'factures' ? 'active' : ''}`} onClick={() => setActiveTab('factures')}><span className="tab-icon">🧾</span><span>Factures</span></button>
-          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
-          <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><span className="tab-icon">📊</span><span>Rapports</span></button>
-          <button className={`tab-btn ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}><span className="tab-icon">📋</span><span>Budget</span></button>
+      {/* NAVIGATION DESKTOP */}
+      <nav className="tab-nav" aria-label="Navigation trésorerie">
+          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><LayoutDashboard className="tab-icon" size={19} /><span>Dashboard</span></button>
+          <button className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`} onClick={() => setActiveTab('income')}><Wallet className="tab-icon" size={19} /><span>Recettes</span></button>
+          <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><ArrowLeftRight className="tab-icon" size={19} /><span>Dépenses</span></button>
+          <button className={`tab-btn ${activeTab === 'dues' ? 'active' : ''}`} onClick={() => setActiveTab('dues')}><Users className="tab-icon" size={19} /><span>Cotisations</span></button>
+          <button className={`tab-btn ${activeTab === 'factures' ? 'active' : ''}`} onClick={() => setActiveTab('factures')}><Receipt className="tab-icon" size={19} /><span>Factures</span></button>
+          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><MessageSquare className="tab-icon" size={19} /><span>Messages</span></button>
+          <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><ChartNoAxesCombined className="tab-icon" size={19} /><span>Rapports</span></button>
+          <button className={`tab-btn ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}><PieChart className="tab-icon" size={19} /><span>Budget</span></button>
       </nav>
 
       {/* TAB: DASHBOARD */}
@@ -806,15 +808,20 @@ export const TresorierDashboard = () => {
         </div>
       </div>
 
-      {/* BOTTOM NAV */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'income' ? 'active' : ''} onClick={() => setActiveTab('income')}><span className="nav-icon">💵</span><span>Recettes</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon">💸</span><span>Dépenses</span></button>
-          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => setActiveTab('dues')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">👥</span><span>Cotisations</span></button>
-          <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => setActiveTab('factures')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🧾</span><span>Factures</span></button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
+      {/* NAVIGATION MOBILE — 4 rubriques + accès aux outils secondaires */}
+      <nav className="bottom-nav" aria-label="Navigation mobile trésorier">
+          <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setShowMoreNav(false); }}><LayoutDashboard className="nav-icon" size={20} /><span>Accueil</span></button>
+          <button className={activeTab === 'income' ? 'active' : ''} onClick={() => { setActiveTab('income'); setShowMoreNav(false); }}><Wallet className="nav-icon" size={20} /><span>Recettes</span></button>
+          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => { setActiveTab('dues'); setShowMoreNav(false); }}><Users className="nav-icon" size={20} /><span>Cotisations</span></button>
+          <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowMoreNav(false); }}><ChartNoAxesCombined className="nav-icon" size={20} /><span>Rapports</span></button>
+          <button className={['expenses', 'factures', 'messages', 'budget'].includes(activeTab) || showMoreNav ? 'active' : ''} aria-expanded={showMoreNav} onClick={() => setShowMoreNav(value => !value)}><MoreHorizontal className="nav-icon" size={20} /><span>Plus</span></button>
       </nav>
+      {showMoreNav && <div className="mobile-more-menu" role="menu">
+          <button role="menuitem" onClick={() => { setActiveTab('expenses'); setShowMoreNav(false); }}><ArrowLeftRight size={17} /> Dépenses</button>
+          <button role="menuitem" onClick={() => { setActiveTab('budget'); setShowMoreNav(false); }}><PieChart size={17} /> Budget</button>
+          <button role="menuitem" onClick={() => { setActiveTab('factures'); setShowMoreNav(false); }}><Receipt size={17} /> Factures</button>
+          <button role="menuitem" onClick={() => { setActiveTab('messages'); setShowMoreNav(false); }}><MessageSquare size={17} /> Messages</button>
+      </div>}
 
       {/* MODALS */}
       {incomeModalOpen && (
