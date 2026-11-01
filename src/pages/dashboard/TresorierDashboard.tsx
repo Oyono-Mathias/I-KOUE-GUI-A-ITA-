@@ -228,7 +228,7 @@ export const TresorierDashboard = () => {
             recordedBy: userData.uid, recordedAt: serverTimestamp(), sourceRequestId: request.id
           });
           transaction.update(requestRef, {
-            status: 'valide', validatedAt: serverTimestamp(), validatedBy: userData.uid,
+            status: 'valide', validatedAt: serverTimestamp(), validatedBy: userData.uid, validatedByName: userData.displayName || userData.email || 'Trésorerie',
             receiptNumber: `IKG-${request.id.slice(0, 8).toUpperCase()}`
           });
           transaction.update(memberRef, { statut: 'a_jour', dernierPaiement: serverTimestamp() });
@@ -604,7 +604,7 @@ export const TresorierDashboard = () => {
                           </div>
                           <div className="dues-status">
                               <div className={`dues-amount ${isPaid ? 'paid' : 'unpaid'}`}>{isPaid ? '✓' : `${Number(d.amount).toLocaleString()} F`}</div>
-                              {!isPaid && <button className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberDocId: d.memberDocId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
+                              {!isPaid && <button disabled={!d.memberId} className="btn btn-gold btn-small" onClick={() => setDuesModalOpen({ isOpen: true, memberId: d.memberId, memberDocId: d.memberDocId, memberName: d.memberName, amount: d.amount })} style={{ marginTop: '4px' }}>💵 Payer</button>}
                           </div>
                       </div>
                   );
