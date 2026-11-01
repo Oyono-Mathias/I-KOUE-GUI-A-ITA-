@@ -208,7 +208,11 @@ service cloud.firestore {
     match /finances/{docId} {
       // Le membre consulte uniquement ses propres déclarations et reçus.
       allow read: if isTresorier() || isSuperAdmin() || (
-        isRegularMember() && resource.data.memberId == request.auth.uid
+        isRegularMember() && (
+          (resource.data.keys().hasAny(['memberId']) && resource.data.memberId == request.auth.uid) ||
+          (resource.data.keys().hasAny(['userId']) && resource.data.userId == request.auth.uid) ||
+          (resource.data.keys().hasAny(['uid']) && resource.data.uid == request.auth.uid)
+        )
       );
 
       // Un membre peut uniquement déclarer une cotisation pour son UID.
