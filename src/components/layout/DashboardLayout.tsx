@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { DashboardSwitcher } from './DashboardSwitcher';
+import { DashboardNavigation } from './DashboardNavigation';
 
 export const DashboardLayout = () => {
   const { userData, loading } = useAuth();
@@ -45,6 +46,7 @@ export const DashboardLayout = () => {
   return (
     <>
       <DashboardSwitcher />
+      <DashboardNavigation />
       <Outlet />
     </>
   );
