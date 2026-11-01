@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { CommunicateurDashboard } from './CommunicateurDashboard';
+import { DashboardNavigation } from '../../components/layout/DashboardNavigation';
 
 export const ProtectedCommunicateur: React.FC = () => {
   const { userData, loading } = useAuth();
@@ -20,7 +21,7 @@ export const ProtectedCommunicateur: React.FC = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <CommunicateurDashboard />;
+  return <><DashboardNavigation /><CommunicateurDashboard /></>;
 };
 
 export default ProtectedCommunicateur;
