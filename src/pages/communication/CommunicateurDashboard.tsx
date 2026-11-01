@@ -13,7 +13,7 @@ import {
   orderBy 
 } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/communicateur.css';
 
@@ -100,8 +100,13 @@ export const CommunicateurDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { userData } = useAuth();
 
-  // Navigation tab state
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  // Navigation tab state synchronized with the shared role navigation
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<string>(() => searchParams.get('tab') || 'dashboard');
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+    if (requestedTab) setActiveTab(requestedTab);
+  }, [searchParams]);
 
   // Real-time collections state
   const [news, setNews] = useState<NewsItem[]>([]);
