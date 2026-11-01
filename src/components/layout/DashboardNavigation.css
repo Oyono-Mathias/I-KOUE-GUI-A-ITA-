@@ -1,32 +1,71 @@
+.global-dashboard-header {
+  position: relative;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 68px;
+  padding: 10px clamp(14px, 3vw, 28px);
+  border-bottom: 1px solid #e9edf3;
+  background: rgba(255,255,255,.98);
+  box-shadow: 0 3px 14px rgba(16,24,40,.045);
+}
+.global-header-brand, .global-header-account, .global-drawer-brand { display:flex; align-items:center; }
+.global-header-brand { gap:12px; min-width:0; }
+.global-brand-mark {
+  display:grid; place-items:center; flex:0 0 38px; width:38px; height:38px;
+  border-radius:12px; background:linear-gradient(145deg,#173d70,#2463a6);
+  color:#fff; font-size:12px; font-weight:900; letter-spacing:-.04em;
+}
+.global-brand-copy, .global-drawer-brand > div:last-child { display:grid; gap:3px; min-width:0; }
+.global-brand-copy strong, .global-drawer-brand strong { color:#172b4d; font-size:13px; font-weight:850; letter-spacing:.025em; }
+.global-brand-copy span, .global-drawer-brand span { color:#7a8798; font-size:10px; }
 .global-nav-trigger {
-  position: fixed; z-index: 1200; top: calc(env(safe-area-inset-top) + 76px); left: 14px;
-  display: grid; place-items: center; width: 42px; height: 42px; border: 1px solid #e4e7ec;
-  border-radius: 13px; background: rgba(255,255,255,.96); color: #344054;
-  box-shadow: 0 5px 18px rgba(16,24,40,.12); cursor: pointer; backdrop-filter: blur(12px);
+  display:grid; place-items:center; flex:0 0 40px; width:40px; height:40px;
+  border:1px solid #e3e8ef; border-radius:11px; background:#fff; color:#344054;
+  box-shadow:0 2px 7px rgba(16,24,40,.06); cursor:pointer; transition:background .18s,border-color .18s;
+}
+.global-nav-trigger:hover { background:#f5f8fc; border-color:#cbd5e1; }
+.global-header-account { gap:10px; min-width:0; }
+.global-account-name { max-width:min(28vw,220px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#475467; font-size:12px; font-weight:650; }
+.global-account-avatar {
+  display:flex; align-items:center; justify-content:center; gap:3px; width:36px; height:36px;
+  overflow:hidden; border:1px solid #e3e8ef; border-radius:50%; background:#f2f6fb; color:#31577f;
+  font-size:9px; font-weight:800;
 }
 .global-nav-backdrop {
-  position: fixed; z-index: 1400; inset: 0; display: flex; background: rgba(16,24,40,.48);
-  backdrop-filter: blur(3px);
+  position:fixed; z-index:1400; inset:0; display:flex;
+  background:rgba(15,23,42,.48); backdrop-filter:blur(4px);
+  animation:globalBackdropIn .18s ease-out;
 }
 .global-nav-drawer {
-  display: flex; flex-direction: column; width: min(310px, 88vw); height: 100%;
-  padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
-  background: #fff; box-shadow: 18px 0 50px rgba(16,24,40,.18); animation: globalDrawerIn .2s ease-out;
+  display:flex; flex-direction:column; width:min(320px,88vw); height:100%;
+  padding:calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+  background:#fff; box-shadow:18px 0 50px rgba(16,24,40,.2);
+  animation:globalDrawerIn .24s cubic-bezier(.2,.75,.25,1);
 }
-@keyframes globalDrawerIn { from { transform: translateX(-18px); opacity: .7; } to { transform: translateX(0); opacity: 1; } }
+@keyframes globalBackdropIn { from { opacity:0; } to { opacity:1; } }
+@keyframes globalDrawerIn { from { transform:translateX(-100%); } to { transform:translateX(0); } }
 .global-nav-drawer-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 2px 20px; border-bottom:1px solid #eef0f3; }
-.global-nav-drawer-head > div { display:grid; gap:5px; min-width:0; }
-.global-nav-drawer-head strong { color:#101828; font-size:14px; font-weight:800; letter-spacing:.02em; }
-.global-nav-drawer-head span { color:#667085; font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.global-drawer-brand { gap:10px; min-width:0; }
 .global-nav-drawer-head button { display:grid; place-items:center; width:36px; height:36px; border:0; border-radius:10px; background:#f2f4f7; color:#344054; cursor:pointer; }
-.global-nav-section-label { margin:20px 8px 8px; color:#98a2b3; font-size:10px; font-weight:800; letter-spacing:.1em; }
+.global-nav-section-label { margin:20px 8px 8px; color:#98a2b3; font-size:10px; font-weight:800; letter-spacing:.09em; }
 .global-nav-links { display:grid; gap:4px; overflow:auto; }
 .global-nav-links button { display:flex; align-items:center; gap:12px; min-height:46px; padding:0 11px; border:0; border-radius:11px; background:transparent; color:#475467; text-align:left; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
 .global-nav-links button span { flex:1; }
 .global-nav-links button.active { background:#eff6ff; color:#175cd3; }
 .global-nav-drawer-foot { margin-top:auto; padding:15px 4px 0; border-top:1px solid #eef0f3; color:#98a2b3; font-size:10px; }
 .global-bottom-nav { display:none; }
-@media (max-width: 767px) {
+@media (max-width:767px) {
+  .global-dashboard-header { min-height:62px; padding:8px 12px; }
+  .global-brand-mark { flex-basis:34px; width:34px; height:34px; border-radius:10px; }
+  .global-brand-copy strong { font-size:11px; }
+  .global-brand-copy span { font-size:9px; }
+  .global-header-brand { gap:8px; }
+  .global-nav-trigger { flex-basis:38px; width:38px; height:38px; }
+  .global-account-name { max-width:24vw; font-size:10px; }
+  .global-account-avatar { width:32px; height:32px; }
   .global-bottom-nav {
     position:fixed; z-index:1100; inset:auto 0 0; display:flex; align-items:stretch; justify-content:space-around; gap:3px;
     padding:7px 7px calc(7px + env(safe-area-inset-bottom)); border-top:1px solid #e7ebf0;
@@ -38,10 +77,9 @@
     font:inherit; font-size:10px; font-weight:650; cursor:pointer;
   }
   .global-bottom-nav button.active { color:#175cd3; background:#eff6ff; }
-  body:has(.global-bottom-nav) { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+  body:has(.global-bottom-nav) { padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
 }
-@media (min-width: 768px) {
-  .global-nav-trigger { top: 18px; left: 18px; }
-  .global-nav-drawer { width: 330px; }
+@media (prefers-reduced-motion:reduce) {
+  .global-nav-backdrop,.global-nav-drawer { animation:none; }
+  .global-nav-trigger { transition:none; }
 }
-@media (prefers-reduced-motion: reduce) { .global-nav-drawer { animation:none; } }
