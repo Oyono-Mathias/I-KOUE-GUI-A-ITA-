@@ -663,7 +663,7 @@ export const LandingPage = () => {
           }}>
               <p>© 2026 Association I KOUE GUI A ITA - Conforme à la Loi N° 61/233 du 27 Mai 1961</p>
               <div style={{ marginTop: '12px' }}>
-                <Link to="/login" style={{ color: 'rgba(255,255,255,0.6)' }}>🔒 Espace Membre</Link>
+                <Link to="/login" reloadDocument style={{ color: 'rgba(255,255,255,0.6)' }}>🔒 Espace Membre</Link>
                 <span style={{ margin: '0 8px' }}>|</span>
                 <a href="#mentions-legales" style={{ color: 'rgba(255,255,255,0.6)' }}>Mentions Légales</a>
               </div>
