@@ -123,7 +123,7 @@ export const DashboardNavigation = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const role = userData?.role || 'membre';
-  const normalizedRole = ['super_admin', 'president_fondateur', 'admin'].includes(role) ? 'president' : role;
+  const normalizedRole = ['super_admin', 'president_fondateur', 'admin', 'admin_bureau'].includes(role) ? 'president' : role === 'treasurer' ? 'tresorier' : role;
   const config = navigationByRole[normalizedRole] || navigationByRole.membre;
   const activeTab = searchParams.get('tab') || 'dashboard';
 
