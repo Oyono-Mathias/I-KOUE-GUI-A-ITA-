@@ -17,13 +17,13 @@ export const DashboardSwitcher = () => {
     { path: '/dashboard/membre', label: '👥 Membre', role: 'membre' }
   ];
 
-  const currentRole = userData?.role || 'membre';
+  const rawRole = (userData as (typeof userData & { userRole?: string }) | null)?.role || (userData as (typeof userData & { userRole?: string }) | null)?.userRole || '';
+  const currentRole = rawRole === 'treasurer' ? 'tresorier' : ['member', 'adherent'].includes(rawRole) ? 'membre' : rawRole;
   const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentRole);
 
   // Filtrage strict : chaque utilisateur ne voit QUE les tableaux de bord autorisés
   const authorizedDashboards = allDashboards.filter(d => {
     if (isSuper) return true;
-    if (d.role === 'membre') return true;
     return d.role === currentRole;
   });
 
