@@ -60,7 +60,7 @@ service cloud.firestore {
 
     function isTresorier() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'tresorier' || isSuperAdmin());
+      return isSignedIn() && isNotSuspended() && (r in ['tresorier', 'treasurer'] || isSuperAdmin());
     }
 
     function isCommunicateur() {
