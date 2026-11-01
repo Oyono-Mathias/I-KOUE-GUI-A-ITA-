@@ -590,3 +590,209 @@
 @media (prefers-reduced-motion: reduce) {
     .tres-dashboard-container .treasury-drawer { animation: none; }
 }
+
+
+/* NAVIGATION MOBILE — 4 accès fréquents, le tiroir garde les rubriques secondaires */
+.tres-dashboard-container .treasury-bottom-nav { display: none; }
+@media (max-width: 767px) {
+  .tres-dashboard-container { padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
+  .tres-dashboard-container .treasury-bottom-nav {
+    position: fixed; z-index: 1050; inset: auto 0 0;
+    display: flex; align-items: stretch; justify-content: space-around; gap: 4px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    background: rgba(255,255,255,.97); border-top: 1px solid #e7ebf0;
+    box-shadow: 0 -8px 28px rgba(16,24,40,.09); backdrop-filter: blur(16px);
+  }
+  .tres-dashboard-container .treasury-bottom-nav button {
+    position: relative; display: flex; flex: 1 1 0; min-width: 0;
+    min-height: 52px; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; padding: 5px 2px; border: 0; border-radius: 12px;
+    background: transparent; color: #667085; font: inherit;
+    font-size: 10px; font-weight: 650; cursor: pointer;
+  }
+  .tres-dashboard-container .treasury-bottom-nav button.active { color: #175cd3; background: #eff6ff; }
+  .tres-dashboard-container .treasury-bottom-nav button i {
+    position: absolute; top: 1px; right: calc(50% - 22px);
+    display: grid; place-items: center; min-width: 17px; height: 17px;
+    padding: 0 4px; border-radius: 20px; background: #b54708; color: white;
+    font-size: 9px; font-style: normal; font-weight: 800;
+  }
+}
+
+/* SUIVI DES COTISATIONS — cartes de validation et indicateurs */
+.tres-dashboard-container .dues-review-panel,
+.tres-dashboard-container .dues-recovery-card {
+  margin-bottom: 18px; padding: 20px; border: 1px solid #e8edf3;
+  border-radius: 18px; background: #fff;
+  box-shadow: 0 6px 22px rgba(16,24,40,.045);
+}
+.tres-dashboard-container .dues-panel-heading,
+.tres-dashboard-container .dues-recovery-heading {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 14px; margin-bottom: 16px;
+}
+.tres-dashboard-container .dues-eyebrow {
+  display: block; margin-bottom: 6px; color: #667085;
+  font-size: 10px; font-weight: 800; letter-spacing: .09em;
+}
+.tres-dashboard-container .dues-panel-heading h3,
+.tres-dashboard-container .dues-recovery-heading h3 {
+  margin: 0; color: #101828; font-size: 18px; font-weight: 750; letter-spacing: -.025em;
+}
+.tres-dashboard-container .dues-panel-heading p,
+.tres-dashboard-container .dues-recovery-card > p {
+  margin: 6px 0 0; color: #667085; font-size: 12px; line-height: 1.5;
+}
+.tres-dashboard-container .dues-pending-count {
+  flex: 0 0 auto; padding: 7px 11px; border-radius: 999px;
+  background: #fff4e5; color: #b54708; font-size: 11px; font-weight: 750;
+}
+.tres-dashboard-container .contribution-request-card {
+  margin-top: 12px; padding: 18px; border: 1px solid #e9edf2;
+  border-radius: 15px; background: #fff;
+  box-shadow: 0 4px 16px rgba(16,24,40,.055);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.tres-dashboard-container .contribution-request-card:hover {
+  border-color: #d5deea; box-shadow: 0 9px 24px rgba(16,24,40,.085);
+}
+.tres-dashboard-container .contribution-card-top,
+.tres-dashboard-container .contribution-member {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.tres-dashboard-container .contribution-member { justify-content: flex-start; min-width: 0; }
+.tres-dashboard-container .contribution-avatar {
+  display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px;
+  border-radius: 14px; background: #edf4ff; color: #175cd3;
+  font-size: 14px; font-weight: 800;
+}
+.tres-dashboard-container .contribution-member-copy { display: grid; gap: 4px; min-width: 0; }
+.tres-dashboard-container .contribution-member-copy strong {
+  overflow: hidden; color: #101828; font-size: 14px; font-weight: 750;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.tres-dashboard-container .contribution-member-copy span { color: #667085; font-size: 11px; }
+.tres-dashboard-container .contribution-status {
+  display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  padding: 6px 10px; border-radius: 999px; background: #fff4e5;
+  color: #b54708; font-size: 9px; font-weight: 850; letter-spacing: .055em;
+}
+.tres-dashboard-container .contribution-status i {
+  width: 6px; height: 6px; border-radius: 50%; background: #f79009;
+}
+.tres-dashboard-container .contribution-amount-block {
+  display: grid; gap: 4px; margin: 17px 0 14px; padding: 13px 14px;
+  border-radius: 12px; background: #f8fafc;
+}
+.tres-dashboard-container .contribution-amount-block > span { color: #667085; font-size: 11px; font-weight: 600; }
+.tres-dashboard-container .contribution-amount-block strong {
+  color: #101828; font-size: 24px; font-weight: 800;
+  letter-spacing: -.04em; font-variant-numeric: tabular-nums;
+}
+.tres-dashboard-container .contribution-amount-block small { color: #667085; font-size: 11px; letter-spacing: 0; }
+.tres-dashboard-container .contribution-details {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 16px;
+}
+.tres-dashboard-container .contribution-details > div { display: grid; gap: 4px; min-width: 0; }
+.tres-dashboard-container .contribution-details span {
+  color: #98a2b3; font-size: 10px; font-weight: 650; text-transform: uppercase; letter-spacing: .04em;
+}
+.tres-dashboard-container .contribution-details strong {
+  overflow-wrap: anywhere; color: #344054; font-size: 12px; font-weight: 650; text-transform: capitalize;
+}
+.tres-dashboard-container .contribution-actions {
+  display: flex; gap: 9px; margin-top: 17px; padding-top: 14px;
+  border-top: 1px solid #f0f2f5;
+}
+.tres-dashboard-container .contribution-actions button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 42px; padding: 0 14px; border-radius: 10px;
+  font: inherit; font-size: 12px; font-weight: 750; cursor: pointer;
+  transition: transform .15s ease, background .15s ease;
+}
+.tres-dashboard-container .contribution-actions button:active { transform: scale(.98); }
+.tres-dashboard-container .contribution-actions button:disabled { cursor: wait; opacity: .6; }
+.tres-dashboard-container .contribution-approve {
+  flex: 1; border: 1px solid #039855; background: #039855; color: #fff;
+  box-shadow: 0 3px 8px rgba(3,152,85,.16);
+}
+.tres-dashboard-container .contribution-approve:hover { background: #027a48; }
+.tres-dashboard-container .contribution-reject {
+  border: 1px solid #fecdca; background: #fff; color: #b42318;
+}
+.tres-dashboard-container .contribution-reject:hover { background: #fff5f4; }
+.tres-dashboard-container .dues-empty {
+  display: grid; justify-items: center; gap: 8px; padding: 28px 14px;
+  border: 1px dashed #d0d5dd; border-radius: 14px; color: #039855; text-align: center;
+}
+.tres-dashboard-container .dues-empty strong { color: #344054; font-size: 14px; }
+.tres-dashboard-container .dues-empty span { color: #667085; font-size: 12px; }
+.tres-dashboard-container .dues-metrics-grid {
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 18px;
+}
+.tres-dashboard-container .dues-metric-card {
+  position: relative; display: grid; gap: 5px; min-width: 0; padding: 16px;
+  border: 1px solid #e8edf3; border-radius: 15px; background: #fff;
+  box-shadow: 0 4px 16px rgba(16,24,40,.04);
+}
+.tres-dashboard-container .dues-metric-icon {
+  display: grid; place-items: center; width: 32px; height: 32px;
+  margin-bottom: 4px; border-radius: 10px; background: #ecfdf3; color: #039855;
+  font-size: 18px; font-weight: 800;
+}
+.tres-dashboard-container .dues-metric-late .dues-metric-icon { background: #fff4ed; color: #c4320a; }
+.tres-dashboard-container .dues-metric-label { color: #667085; font-size: 11px; font-weight: 650; }
+.tres-dashboard-container .dues-metric-card > strong { color: #101828; font-size: 25px; font-weight: 800; line-height: 1.15; }
+.tres-dashboard-container .dues-metric-card > small { color: #98a2b3; font-size: 10px; }
+.tres-dashboard-container .dues-recovery-heading { align-items: center; margin-bottom: 8px; }
+.tres-dashboard-container .dues-recovery-heading > strong {
+  color: #175cd3; font-size: 27px; font-weight: 850; letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+.tres-dashboard-container .dues-recovery-track {
+  height: 10px; margin-top: 14px; overflow: hidden; border-radius: 99px; background: #eef2f6;
+}
+.tres-dashboard-container .dues-recovery-fill {
+  height: 100%; border-radius: inherit; background: linear-gradient(90deg,#12b76a,#039855);
+  transition: width .35s ease;
+}
+.tres-dashboard-container .dues-directory-toolbar {
+  display: grid; gap: 12px; margin: 20px 0 14px;
+}
+.tres-dashboard-container .dues-filter-tabs {
+  display: flex; gap: 7px; overflow-x: auto; padding: 2px 0 5px;
+  scrollbar-width: none;
+}
+.tres-dashboard-container .dues-filter-tabs::-webkit-scrollbar { display: none; }
+.tres-dashboard-container .dues-filter-tabs .sub-tab {
+  border: 1px solid #e4e7ec; border-radius: 999px; background: #fff;
+  color: #475467; font-size: 11px; padding: 8px 13px;
+}
+.tres-dashboard-container .dues-filter-tabs .sub-tab.active {
+  border-color: #175cd3; background: #eff6ff; color: #175cd3;
+}
+.tres-dashboard-container .dues-search-wrap {
+  padding: 8px; border: 1px solid #e4e7ec; border-radius: 13px; background: #fff;
+  box-shadow: 0 2px 8px rgba(16,24,40,.035);
+}
+.tres-dashboard-container .dues-search-wrap .search-input {
+  min-height: 42px; border: 0; border-radius: 8px; background-color: transparent;
+}
+.tres-dashboard-container .dues-search-wrap .search-input:focus { box-shadow: none; }
+@media (min-width: 768px) {
+  .tres-dashboard-container .dues-directory-toolbar { grid-template-columns: 1fr minmax(230px,320px); align-items: center; }
+  .tres-dashboard-container .dues-metrics-grid { grid-template-columns: repeat(2,minmax(180px,1fr)); }
+}
+@media (max-width: 420px) {
+  .tres-dashboard-container .dues-review-panel,
+  .tres-dashboard-container .dues-recovery-card { padding: 15px; }
+  .tres-dashboard-container .contribution-request-card { padding: 14px; }
+  .tres-dashboard-container .contribution-card-top { align-items: flex-start; flex-direction: column; }
+  .tres-dashboard-container .contribution-status { align-self: flex-start; }
+  .tres-dashboard-container .contribution-actions button { padding: 0 10px; font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tres-dashboard-container .contribution-request-card,
+  .tres-dashboard-container .contribution-actions button,
+  .tres-dashboard-container .dues-recovery-fill { transition: none; }
+}
