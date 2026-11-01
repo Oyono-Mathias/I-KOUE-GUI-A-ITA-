@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, ArrowLeftRight, Menu, X, FileDown, CheckCircle2, Home } from 'lucide-react';
+import { FileDown, CheckCircle2, X, AlertCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
@@ -14,7 +14,6 @@ export const TresorierDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
-  const [showTreasuryDrawer, setShowTreasuryDrawer] = useState(false);
   const [duesListenerError, setDuesListenerError] = useState('');
 
   // Data State
@@ -26,6 +25,9 @@ export const TresorierDashboard = () => {
   const [dues, setDues] = useState<any[]>([]);
   const [pendingDuesPayments, setPendingDuesPayments] = useState<any[]>([]);
   const [processingPaymentId, setProcessingPaymentId] = useState<string | null>(null);
+  const [rejectionRequest, setRejectionRequest] = useState<any>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectionError, setRejectionError] = useState('');
   const [budget, setBudget] = useState<any>({
     total: 3500000,
     byDomain: {
@@ -237,8 +239,12 @@ export const TresorierDashboard = () => {
       alert('✅ Cotisation enregistrée et statut du membre mis à jour !');
   };
 
-  const processContributionRequest = async (request: any, decision: 'valide' | 'rejete') => {
+  const processContributionRequest = async (request: any, decision: 'valide' | 'rejete', reason = '') => {
     if (!userData?.uid || processingPaymentId) return;
+    if (decision === 'rejete' && !reason.trim()) {
+      setRejectionError('Veuillez saisir un motif précis avant de rejeter cette demande.');
+      return;
+    }
     setProcessingPaymentId(request.id);
     try {
       const requestRef = doc(db, 'finances', request.id);
@@ -278,8 +284,12 @@ export const TresorierDashboard = () => {
           if (!requestSnap.exists() || requestSnap.data().status !== 'en_attente') {
             throw new Error('Cette demande a déjà été traitée.');
           }
-          transaction.update(requestRef, { status: 'rejete', rejectedAt: serverTimestamp(), rejectedBy: userData.uid });
+          transaction.update(requestRef, { status: 'rejete', rejectionReason: reason.trim(), rejectedAt: serverTimestamp(), rejectedBy: userData.uid, rejectedByName: userData.displayName || userData.email || 'Trésorerie' });
         });
+        setRejectionRequest(null);
+        setRejectionReason('');
+        setRejectionError('');
+        alert('Demande rejetée. Le motif a été enregistré dans son historique.');
       }
     } catch (error: any) {
       console.error('Traitement cotisation:', error);
@@ -342,7 +352,7 @@ export const TresorierDashboard = () => {
       <header className="dashboard-header">
           <div className="header-top">
               <div className="logo-container">
-                  <button type="button" className="header-btn treasury-menu-trigger" aria-label="Ouvrir le menu de navigation" aria-expanded={showTreasuryDrawer} aria-controls="treasury-drawer" onClick={() => setShowTreasuryDrawer(true)}><Menu size={21} /></button>
+                  
                   <div className="logo">IK</div>
                   <div className="logo-text">
                       <h1>I KOUE GUI A ITA</h1>
@@ -367,28 +377,6 @@ export const TresorierDashboard = () => {
               </div>
           </div>
           </header>
-
-      {/* TIROIR DE NAVIGATION — commun desktop et mobile */}
-      {showTreasuryDrawer && <div className="treasury-drawer-backdrop" onClick={() => setShowTreasuryDrawer(false)}>
-        <aside id="treasury-drawer" className="treasury-drawer" role="dialog" aria-modal="true" aria-label="Menu du trésorier" onClick={event => event.stopPropagation()}>
-          <div className="treasury-drawer-header">
-            <div><strong>I KOUE GUI A ITA</strong><span>Espace trésorerie</span></div>
-            <button type="button" className="drawer-close" aria-label="Fermer le menu" onClick={() => setShowTreasuryDrawer(false)}><X size={21} /></button>
-          </div>
-          <nav className="treasury-drawer-nav" aria-label="Rubriques trésorerie">
-            <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setShowTreasuryDrawer(false); }}><LayoutDashboard size={19} /> Tableau de bord</button>
-            <button className={activeTab === 'income' ? 'active' : ''} onClick={() => { setActiveTab('income'); setShowTreasuryDrawer(false); }}><Wallet size={19} /> Recettes</button>
-            <button className={activeTab === 'expenses' ? 'active' : ''} onClick={() => { setActiveTab('expenses'); setShowTreasuryDrawer(false); }}><ArrowLeftRight size={19} /> Dépenses</button>
-            <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => { setActiveTab('dues'); setShowTreasuryDrawer(false); }}><Users size={19} /> Cotisations <span className="drawer-count">{pendingDuesPayments.length}</span></button>
-            <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowTreasuryDrawer(false); }}><ChartNoAxesCombined size={19} /> Rapports</button>
-            <button className={activeTab === 'budget' ? 'active' : ''} onClick={() => { setActiveTab('budget'); setShowTreasuryDrawer(false); }}><PieChart size={19} /> Budget</button>
-            <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => { setActiveTab('factures'); setShowTreasuryDrawer(false); }}><Receipt size={19} /> Factures</button>
-            <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => { setActiveTab('messages'); setShowTreasuryDrawer(false); }}><MessageSquare size={19} /> Messages</button>
-            <button onClick={() => { exportTreasuryData(); setShowTreasuryDrawer(false); }}><FileDown size={19} /> Exporter les données</button>
-          </nav>
-          <div className="treasury-drawer-footer">Navigation sécurisée · Trésorerie</div>
-        </aside>
-      </div>}
 
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
@@ -622,7 +610,7 @@ export const TresorierDashboard = () => {
                 </div>
                 <div className="contribution-actions">
                   <button className="contribution-approve" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'valide')}><CheckCircle2 size={17} />{processingPaymentId === p.id ? 'Traitement…' : 'Valider le paiement'}</button>
-                  <button className="contribution-reject" disabled={processingPaymentId === p.id} onClick={() => processContributionRequest(p, 'rejete')}>Rejeter</button>
+                  <button className="contribution-reject" disabled={processingPaymentId === p.id} onClick={() => { setRejectionRequest(p); setRejectionReason(''); setRejectionError(''); }}>Rejeter</button>
                 </div>
               </article>
             ))}
@@ -966,12 +954,45 @@ export const TresorierDashboard = () => {
           </div>
       )}
 
-      <nav className="treasury-bottom-nav" aria-label="Navigation principale">
-        <button className={activeTab === 'dashboard' ? 'active' : ''} aria-current={activeTab === 'dashboard' ? 'page' : undefined} onClick={() => setActiveTab('dashboard')}><Home size={20} /><span>Accueil</span></button>
-        <button className={activeTab === 'income' ? 'active' : ''} aria-current={activeTab === 'income' ? 'page' : undefined} onClick={() => setActiveTab('income')}><Wallet size={20} /><span>Recettes</span></button>
-        <button className={activeTab === 'expenses' ? 'active' : ''} aria-current={activeTab === 'expenses' ? 'page' : undefined} onClick={() => setActiveTab('expenses')}><ArrowLeftRight size={20} /><span>Dépenses</span></button>
-        <button className={activeTab === 'dues' ? 'active' : ''} aria-current={activeTab === 'dues' ? 'page' : undefined} onClick={() => setActiveTab('dues')}><Users size={20} /><span>Cotisations</span>{pendingDuesPayments.length > 0 && <i>{pendingDuesPayments.length}</i>}</button>
-      </nav>
+
+
+      {rejectionRequest && (
+        <div className="contribution-rejection-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !processingPaymentId) setRejectionRequest(null); }}>
+          <section className="contribution-rejection-modal" role="dialog" aria-modal="true" aria-labelledby="rejection-modal-title" aria-describedby="rejection-modal-description">
+            <div className="rejection-modal-icon"><AlertCircle size={25} /></div>
+            <button type="button" className="rejection-modal-close" aria-label="Fermer" disabled={!!processingPaymentId} onClick={() => setRejectionRequest(null)}><X size={19} /></button>
+            <span className="rejection-modal-eyebrow">DÉCISION DE TRÉSORERIE</span>
+            <h2 id="rejection-modal-title">Rejeter cette cotisation ?</h2>
+            <p id="rejection-modal-description">Indiquez clairement au membre pourquoi sa déclaration est refusée. Ce motif sera conservé dans l'historique de la demande.</p>
+            <div className="rejection-request-summary">
+              <strong>{rejectionRequest.memberName || rejectionRequest.memberId || 'Membre'}</strong>
+              <span>{Number(rejectionRequest.montant || 0).toLocaleString('fr-FR')} FCFA · {rejectionRequest.period || 'Période non précisée'}</span>
+            </div>
+            <label className="rejection-reason-label" htmlFor="contribution-rejection-reason">Motif du rejet <span>*</span></label>
+            <textarea
+              id="contribution-rejection-reason"
+              value={rejectionReason}
+              onChange={(event) => { setRejectionReason(event.target.value); if (rejectionError) setRejectionError(''); }}
+              placeholder="Ex. : Référence de transaction introuvable, montant incorrect…"
+              rows={4}
+              maxLength={500}
+              required
+              aria-invalid={!!rejectionError}
+              aria-describedby={rejectionError ? 'rejection-reason-error' : 'rejection-reason-hint'}
+            />
+            <div className="rejection-reason-meta">
+              {rejectionError ? <span id="rejection-reason-error" role="alert">{rejectionError}</span> : <span id="rejection-reason-hint">Minimum 5 caractères, maximum 500.</span>}
+              <small>{rejectionReason.trim().length}/500</small>
+            </div>
+            <div className="rejection-modal-actions">
+              <button type="button" className="rejection-cancel" disabled={!!processingPaymentId} onClick={() => setRejectionRequest(null)}>Annuler</button>
+              <button type="button" className="rejection-confirm" disabled={!!processingPaymentId || rejectionReason.trim().length < 5} onClick={() => processContributionRequest(rejectionRequest, 'rejete', rejectionReason)}>
+                {processingPaymentId === rejectionRequest.id ? 'Enregistrement…' : 'Confirmer le rejet'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 };
