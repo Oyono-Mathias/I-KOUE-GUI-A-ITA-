@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   Home, Wallet, ArrowLeftRight, Users, CreditCard, HeartHandshake,
   CalendarDays, MessageSquare, FileText, ClipboardList, FolderOpen,
   BriefcaseBusiness, Scale, ChartNoAxesCombined, PieChart, Receipt,
-  Newspaper, Megaphone, BarChart3, X, Menu, ChevronRight
+  Newspaper, Megaphone, BarChart3, X, Menu, ChevronRight, UserRound
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import './DashboardNavigation.css';
 
 type NavItem = { tab: string; label: string; icon: React.ComponentType<{ size?: number }> };
+type RoleNavigation = { primary: NavItem[]; secondary: NavItem[] };
 
-const navigationByRole: Record<string, { primary: NavItem[]; secondary: NavItem[] }> = {
+const navigationByRole: Record<string, RoleNavigation> = {
   tresorier: {
     primary: [
       { tab: 'dashboard', label: 'Accueil', icon: Home },
@@ -68,7 +69,8 @@ const navigationByRole: Record<string, { primary: NavItem[]; secondary: NavItem[
       { tab: 'objectives', label: 'Objectifs', icon: ChartNoAxesCombined },
       { tab: 'partenaires', label: 'Partenaires', icon: Users },
       { tab: 'reports', label: 'Rapports', icon: FileText },
-      { tab: 'expenses', label: 'Dépenses', icon: Wallet }
+      { tab: 'expenses', label: 'Dépenses', icon: Wallet },
+      { tab: 'suppleance', label: 'Suppléance', icon: Scale }
     ]
   },
   secretaire: {
@@ -84,7 +86,8 @@ const navigationByRole: Record<string, { primary: NavItem[]; secondary: NavItem[
       { tab: 'commissions', label: 'Commissions', icon: Users },
       { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
       { tab: 'members', label: 'Membres', icon: Users },
-      { tab: 'moderation', label: 'Modération', icon: Scale }
+      { tab: 'moderation', label: 'Modération', icon: Scale },
+      { tab: 'suppleance', label: 'Suppléance', icon: BriefcaseBusiness }
     ]
   },
   conseiller: {
@@ -99,7 +102,8 @@ const navigationByRole: Record<string, { primary: NavItem[]; secondary: NavItem[
       { tab: 'partenaires', label: 'Partenaires', icon: Users },
       { tab: 'veille', label: 'Veille', icon: Newspaper },
       { tab: 'tasks', label: 'Tâches', icon: ClipboardList },
-      { tab: 'projets', label: 'Projets', icon: BriefcaseBusiness }
+      { tab: 'projets', label: 'Projets', icon: BriefcaseBusiness },
+      { tab: 'suppleance', label: 'Suppléance', icon: Scale }
     ]
   },
   communicateur: {
@@ -118,14 +122,32 @@ const navigationByRole: Record<string, { primary: NavItem[]; secondary: NavItem[
   }
 };
 
+const normalizeRole = (rawRole?: string | null) => {
+  if (!rawRole) return '';
+  const role = rawRole.trim().toLowerCase();
+  if (['super_admin', 'president_fondateur', 'admin', 'admin_bureau'].includes(role)) return 'president';
+  if (role === 'treasurer') return 'tresorier';
+  if (['member', 'adherent'].includes(role)) return 'membre';
+  return role;
+};
+
 export const DashboardNavigation = () => {
   const { userData } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const role = userData?.role || 'membre';
-  const normalizedRole = ['super_admin', 'president_fondateur', 'admin', 'admin_bureau'].includes(role) ? 'president' : role === 'treasurer' ? 'tresorier' : role;
-  const config = navigationByRole[normalizedRole] || navigationByRole.membre;
+  const authData = userData as (typeof userData & { userRole?: string }) | null;
+  const role = normalizeRole(authData?.role || authData?.userRole);
+  const config = navigationByRole[role];
   const activeTab = searchParams.get('tab') || 'dashboard';
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setDrawerOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [drawerOpen]);
 
   const navigateToTab = (tab: string) => {
     const next = new URLSearchParams(searchParams);
@@ -134,18 +156,37 @@ export const DashboardNavigation = () => {
     setDrawerOpen(false);
   };
 
+  // Aucun rôle reconnu : ne jamais afficher un menu métier par défaut.
+  if (!config) return null;
+
+  const displayName = authData?.displayName || authData?.email || 'Mon compte';
+  const initials = displayName.trim().charAt(0).toUpperCase() || 'U';
+
   return (
     <>
-      <button
-        type="button"
-        className="global-nav-trigger"
-        aria-label="Ouvrir le menu principal"
-        aria-expanded={drawerOpen}
-        aria-controls="global-dashboard-drawer"
-        onClick={() => setDrawerOpen(true)}
-      >
-        <Menu size={21} />
-      </button>
+      <header className="global-dashboard-header">
+        <div className="global-header-brand">
+          <button
+            type="button"
+            className="global-nav-trigger"
+            aria-label="Ouvrir le menu principal"
+            aria-expanded={drawerOpen}
+            aria-controls="global-dashboard-drawer"
+            onClick={() => setDrawerOpen(true)}
+          >
+            <Menu size={21} />
+          </button>
+          <div className="global-brand-mark" aria-hidden="true">IK</div>
+          <div className="global-brand-copy">
+            <strong>I KOUE GUI A ITA</strong>
+            <span>Espace de gestion associative</span>
+          </div>
+        </div>
+        <div className="global-header-account">
+          <span className="global-account-name">{displayName}</span>
+          <span className="global-account-avatar" aria-label={`Profil ${displayName}`}><UserRound size={18} />{initials}</span>
+        </div>
+      </header>
 
       {drawerOpen && (
         <div className="global-nav-backdrop" onClick={() => setDrawerOpen(false)}>
@@ -154,14 +195,17 @@ export const DashboardNavigation = () => {
             className="global-nav-drawer"
             role="dialog"
             aria-modal="true"
-            aria-label="Navigation de l'espace"
+            aria-label={`Navigation ${role}`}
             onClick={event => event.stopPropagation()}
           >
             <div className="global-nav-drawer-head">
-              <div><strong>I KOUE GUI A ITA</strong><span>{userData?.displayName || 'Espace personnel'}</span></div>
+              <div className="global-drawer-brand">
+                <div className="global-brand-mark" aria-hidden="true">IK</div>
+                <div><strong>I KOUE GUI A ITA</strong><span>{displayName}</span></div>
+              </div>
               <button type="button" aria-label="Fermer le menu" onClick={() => setDrawerOpen(false)}><X size={20} /></button>
             </div>
-            <p className="global-nav-section-label">NAVIGATION</p>
+            <p className="global-nav-section-label">VOTRE ESPACE · {role.replace('_', ' ').toUpperCase()}</p>
             <nav className="global-nav-links">
               {[...config.primary, ...config.secondary].map(item => {
                 const Icon = item.icon;
@@ -172,7 +216,7 @@ export const DashboardNavigation = () => {
                 );
               })}
             </nav>
-            <div className="global-nav-drawer-foot">Accès adapté à votre rôle</div>
+            <div className="global-nav-drawer-foot">Navigation réservée à votre espace métier</div>
           </aside>
         </div>
       )}
