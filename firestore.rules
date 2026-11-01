@@ -241,7 +241,18 @@ service cloud.firestore {
       );
 
       // Seuls trésorier et administration habilitée peuvent traiter une demande.
-      allow update, delete: if isTresorier() || isSuperAdmin();
+      allow update: if (isTresorier() || isSuperAdmin()) && (
+        resource.data.type != 'cotisation_demande' ||
+        request.resource.data.status != 'rejete' ||
+        (
+          request.resource.data.rejectionReason is string
+          && request.resource.data.rejectionReason.size() >= 5
+          && request.resource.data.rejectionReason.size() <= 500
+          && request.resource.data.rejectedBy == request.auth.uid
+          && request.resource.data.rejectedAt == request.time
+        )
+      );
+      allow delete: if isTresorier() || isSuperAdmin();
     }
 
     match /expenses/{docId} {
