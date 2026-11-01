@@ -17,8 +17,8 @@ const DashboardLoadingFallback = () => (
 );
 
 // Les alias historiques sont normalisés vers la même vue que leur rôle canonique.
-// admin_bureau conserve une vue de membre tant qu'aucun dashboard dédié ne lui est attribué.
-const PRESIDENT_ROLES = ['super_admin', 'president', 'president_fondateur', 'admin'];
+// Les rôles d'administration du bureau utilisent la vue de pilotage existante.
+const PRESIDENT_ROLES = ['super_admin', 'president', 'president_fondateur', 'admin', 'admin_bureau'];
 
 export const DashboardHome = () => {
   const { userData } = useAuth();
