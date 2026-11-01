@@ -44,13 +44,34 @@ export const MemberDashboard = () => {
       setMissionsBenevolat(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     
-    const unsubPayments = onSnapshot(query(collection(db, 'finances'), where('memberId', '==', userData.uid)), (snap) => {
-      setPayments(snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => {
+    // Les anciens documents peuvent utiliser memberId, userId ou uid.
+    // Les trois requêtes restent cloisonnées sur l'UID authentifié par les règles Firestore.
+    const paymentResults: Record<string, any[]> = { memberId: [], userId: [], uid: [] };
+    const updatePaymentHistory = (field: string, docs: any[]) => {
+      paymentResults[field] = docs;
+      const unique = new Map<string, any>();
+      Object.values(paymentResults).flat().forEach((payment: any) => unique.set(payment.id, payment));
+      setPayments(Array.from(unique.values()).sort((a: any, b: any) => {
         const da = a.createdAt?.toDate?.() || a.date?.toDate?.() || new Date(a.createdAt || a.date || 0);
         const dbDate = b.createdAt?.toDate?.() || b.date?.toDate?.() || new Date(b.createdAt || b.date || 0);
         return dbDate.getTime() - da.getTime();
       }));
-    });
+    };
+    const unsubPaymentsByMemberId = onSnapshot(
+      query(collection(db, 'finances'), where('memberId', '==', userData.uid)),
+      snap => updatePaymentHistory('memberId', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (memberId):', error)
+    );
+    const unsubPaymentsByUserId = onSnapshot(
+      query(collection(db, 'finances'), where('userId', '==', userData.uid)),
+      snap => updatePaymentHistory('userId', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (userId):', error)
+    );
+    const unsubPaymentsByUid = onSnapshot(
+      query(collection(db, 'finances'), where('uid', '==', userData.uid)),
+      snap => updatePaymentHistory('uid', snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      error => console.error('Lecture des cotisations (uid):', error)
+    );
 
     const unsubForum = onSnapshot(query(collection(db, 'forum'), orderBy('createdAt', 'desc')), (snap) => setForumPosts(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubEvents = onSnapshot(query(collection(db, 'ag_events'), orderBy('date', 'desc')), (snap) => setEvents(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -67,7 +88,9 @@ export const MemberDashboard = () => {
 
     return () => {
       unsubNews();
-      unsubPayments();
+      unsubPaymentsByMemberId();
+      unsubPaymentsByUserId();
+      unsubPaymentsByUid();
       unsubDocs(); unsubForum(); unsubEvents();
     };
   }, [userData?.uid]);
