@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
-// Chargement dynamique (lazy loading) des tableaux de bord par rôle
+// Chargement dynamique des tableaux de bord par rôle
 const CommunicateurDashboard = lazy(() => import('../communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
 const PresidentDashboard = lazy(() => import('./PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
 const VicePresidentDashboard = lazy(() => import('./VicePresidentDashboard').then(m => ({ default: m.VicePresidentDashboard })));
@@ -16,38 +16,36 @@ const DashboardLoadingFallback = () => (
   </div>
 );
 
+// Les alias historiques sont normalisés vers la même vue que leur rôle canonique.
+// admin_bureau conserve une vue de membre tant qu'aucun dashboard dédié ne lui est attribué.
+const PRESIDENT_ROLES = ['super_admin', 'president', 'president_fondateur', 'admin'];
+
 export const DashboardHome = () => {
   const { userData } = useAuth();
-  
-  return (
-    <Suspense fallback={<DashboardLoadingFallback />}>
-      {(() => {
-        if (userData?.role === 'communicateur') {
-          return <CommunicateurDashboard />;
-        }
+  const role = userData?.role ?? 'membre';
 
-        if (userData?.role === 'tresorier') {
-          return <TresorierDashboard />;
-        }
+  let dashboard;
+  switch (role) {
+    case 'communicateur':
+      dashboard = <CommunicateurDashboard />;
+      break;
+    case 'tresorier':
+      dashboard = <TresorierDashboard />;
+      break;
+    case 'conseiller':
+      dashboard = <ConseillerDashboard />;
+      break;
+    case 'vice_president':
+      dashboard = <VicePresidentDashboard />;
+      break;
+    case 'secretaire':
+      dashboard = <SecretaireDashboard />;
+      break;
+    default:
+      dashboard = PRESIDENT_ROLES.includes(role)
+        ? <PresidentDashboard />
+        : <MemberDashboard />;
+  }
 
-        if (userData?.role === 'conseiller') {
-          return <ConseillerDashboard />;
-        }
-
-        if (userData?.role === 'super_admin') {
-          return <PresidentDashboard />;
-        }
-
-        if (userData?.role === 'vice_president') {
-          return <VicePresidentDashboard />;
-        }
-
-        if (userData?.role === 'secretaire') {
-          return <SecretaireDashboard />;
-        }
-        
-        return <MemberDashboard />;
-      })()}
-    </Suspense>
-  );
+  return <Suspense fallback={<DashboardLoadingFallback />}>{dashboard}</Suspense>;
 };
