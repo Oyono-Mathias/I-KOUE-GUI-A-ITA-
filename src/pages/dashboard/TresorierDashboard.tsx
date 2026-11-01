@@ -206,8 +206,9 @@ export const TresorierDashboard = () => {
     try {
       const requestRef = doc(db, 'finances', request.id);
       if (decision === 'valide') {
-        const linkedMember = members.find((m: any) => m.userId === request.memberId || m.uid === request.memberId);
-        if (!linkedMember) throw new Error('Aucun profil members ne correspond à cet UID (userId/uid).');
+        const linkedMembers = members.filter((m: any) => m.userId === request.memberId || m.uid === request.memberId);
+        if (linkedMembers.length !== 1) throw new Error(linkedMembers.length === 0 ? 'Aucun profil members ne correspond à cet UID (userId/uid).' : 'Plusieurs profils members correspondent à cet UID : validation bloquée.');
+        const linkedMember = linkedMembers[0];
         const memberRef = doc(db, 'members', linkedMember.id);
         const incomeRef = doc(collection(db, 'income'));
         await runTransaction(db, async transaction => {
