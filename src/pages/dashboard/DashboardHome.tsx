@@ -1,7 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
-// Chargement dynamique des tableaux de bord par rôle
+// Chaque rôle reconnu est traité explicitement : aucun rôle inconnu ne reçoit
+// silencieusement les droits ou l'interface d'un membre.
 const CommunicateurDashboard = lazy(() => import('../communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
 const PresidentDashboard = lazy(() => import('./PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
 const VicePresidentDashboard = lazy(() => import('./VicePresidentDashboard').then(m => ({ default: m.VicePresidentDashboard })));
@@ -16,24 +17,33 @@ const DashboardLoadingFallback = () => (
   </div>
 );
 
-// Les alias historiques sont normalisés vers la même vue que leur rôle canonique.
-// Les rôles d'administration du bureau utilisent la vue de pilotage existante.
-const PRESIDENT_ROLES = ['super_admin', 'president', 'president_fondateur', 'admin', 'admin_bureau'];
+const RoleAccessFallback = ({ message }: { message: string }) => (
+  <section role="alert" className="min-h-[50vh] flex flex-col items-center justify-center gap-3 p-6 text-center">
+    <h2 className="text-xl font-bold">Accès au tableau de bord indisponible</h2>
+    <p>{message}</p>
+    <p>Veuillez contacter un administrateur pour vérifier votre profil et vos autorisations.</p>
+  </section>
+);
 
 export const DashboardHome = () => {
-  const { userData } = useAuth();
-  const role = userData?.role ?? 'membre';
+  const { userData, loading } = useAuth();
 
-  let dashboard;
-  switch (role) {
-    case 'communicateur':
-      dashboard = <CommunicateurDashboard />;
-      break;
-    case 'tresorier':
-      dashboard = <TresorierDashboard />;
-      break;
-    case 'conseiller':
-      dashboard = <ConseillerDashboard />;
+  if (loading) {
+    return <DashboardLoadingFallback />;
+  }
+
+  if (!userData) {
+    return <RoleAccessFallback message="Votre profil utilisateur n'a pas pu être chargé." />;
+  }
+
+  let dashboard: React.ReactNode;
+  switch (userData.role) {
+    case 'super_admin':
+    case 'president':
+    case 'president_fondateur':
+    case 'admin':
+    case 'admin_bureau':
+      dashboard = <PresidentDashboard />;
       break;
     case 'vice_president':
       dashboard = <VicePresidentDashboard />;
@@ -41,10 +51,21 @@ export const DashboardHome = () => {
     case 'secretaire':
       dashboard = <SecretaireDashboard />;
       break;
+    case 'tresorier':
+      dashboard = <TresorierDashboard />;
+      break;
+    case 'conseiller':
+      dashboard = <ConseillerDashboard />;
+      break;
+    case 'communicateur':
+      dashboard = <CommunicateurDashboard />;
+      break;
+    case 'membre':
+      dashboard = <MemberDashboard />;
+      break;
     default:
-      dashboard = PRESIDENT_ROLES.includes(role)
-        ? <PresidentDashboard />
-        : <MemberDashboard />;
+      dashboard = <RoleAccessFallback message={`Le rôle « ${String(userData.role)} » n'est pas reconnu par l'application.`} />;
+      break;
   }
 
   return <Suspense fallback={<DashboardLoadingFallback />}>{dashboard}</Suspense>;
