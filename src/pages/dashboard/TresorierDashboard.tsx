@@ -378,6 +378,18 @@ export const TresorierDashboard = () => {
           </div>
           </header>
 
+      {/* TAB NAV */}
+      <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
+          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">📊</span><span>Dashboard</span></button>
+          <button className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`} onClick={() => setActiveTab('income')}><span className="tab-icon">💵</span><span>Recettes</span></button>
+          <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><span className="tab-icon">💸</span><span>Dépenses</span></button>
+          <button className={`tab-btn ${activeTab === 'dues' ? 'active' : ''}`} onClick={() => setActiveTab('dues')}><span className="tab-icon">👥</span><span>Cotisations</span></button>
+          <button className={`tab-btn ${activeTab === 'factures' ? 'active' : ''}`} onClick={() => setActiveTab('factures')}><span className="tab-icon">🧾</span><span>Factures</span></button>
+          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
+          <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><span className="tab-icon">📊</span><span>Rapports</span></button>
+          <button className={`tab-btn ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}><span className="tab-icon">📋</span><span>Budget</span></button>
+      </nav>
+
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
           <div className="welcome-card">
@@ -919,6 +931,16 @@ export const TresorierDashboard = () => {
               </div>
           </div>
       )}
+
+      {/* BOTTOM NAV */}
+      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'income' ? 'active' : ''} onClick={() => setActiveTab('income')}><span className="nav-icon">💵</span><span>Recettes</span></button>
+          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon">💸</span><span>Dépenses</span></button>
+          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => setActiveTab('dues')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">👥</span><span>Cotisations</span></button>
+          <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => setActiveTab('factures')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🧾</span><span>Factures</span></button>
+          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
+      </nav>
 
       {duesModalOpen.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
