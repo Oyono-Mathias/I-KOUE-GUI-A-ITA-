@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
+import { LayoutDashboard, Wallet, Users, ChartNoAxesCombined, PieChart, Receipt, MessageSquare, ArrowLeftRight, Menu, X, FileDown } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../../lib/firebase';
 import './TresorierDashboard.css';
@@ -14,7 +14,8 @@ export const TresorierDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
-  const [showMoreNav, setShowMoreNav] = useState(false);
+  const [showTreasuryDrawer, setShowTreasuryDrawer] = useState(false);
+  const [duesListenerError, setDuesListenerError] = useState('');
 
   // Data State
   const [members, setMembers] = useState<any[]>([]);
@@ -62,10 +63,26 @@ export const TresorierDashboard = () => {
   useEffect(() => {
     const unsubMembers = onSnapshot(collection(db, 'members'), (snap) => setMembers(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubIncome = onSnapshot(query(collection(db, 'income'), orderBy('date', 'desc')), (snap) => setIncome(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const unsubContributionRequests = onSnapshot(collection(db, 'finances'), (snap) => {
+    // Écoute ciblée des déclarations de cotisation : les demandes sont écrites
+    // dans finances avec type=cotisation_demande et status=en_attente.
+    const contributionRequestsQuery = query(
+      collection(db, 'finances'),
+      where('type', '==', 'cotisation_demande'),
+      where('status', '==', 'en_attente')
+    );
+    const unsubContributionRequests = onSnapshot(contributionRequestsQuery, (snap) => {
+      setDuesListenerError('');
       setPendingDuesPayments(snap.docs.map(d => ({ id: d.id, ...d.data() }))
-        .filter((p: any) => p.type === 'cotisation_demande' && p.status === 'en_attente')
-        .sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+        .sort((a: any, b: any) => {
+          const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+          const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+          return dateB.getTime() - dateA.getTime();
+        }));
+    }, (error) => {
+      console.error('Impossible de charger les demandes de cotisation :', error);
+      setDuesListenerError(error.code === 'permission-denied'
+        ? 'Accès refusé : vérifiez que le rôle du compte est trésorier et que les règles Firestore sont publiées.'
+        : 'Les demandes de cotisation ne peuvent pas être chargées. Vérifiez la connexion et les index Firestore.');
     });
     const unsubBoardMessages = onSnapshot(query(collection(db, 'board_messages'), orderBy('timestamp', 'asc')), (snap) => setBoardMessages(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubFactures = onSnapshot(query(collection(db, 'factures'), orderBy('date', 'desc')), (snap) => setFactures(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
@@ -113,6 +130,24 @@ export const TresorierDashboard = () => {
     confirmAction('🚪 Êtes-vous sûr de vouloir vous déconnecter ?', async () => {
       try { await signOut(auth); navigate('/'); } catch (err) { console.error('Logout error', err); }
     });
+  };
+
+  // Export CSV des données visibles par le trésorier.
+  const exportTreasuryData = () => {
+    const rows = [
+      ['Type', 'Libellé', 'Montant FCFA', 'Date', 'Statut', 'Membre / Bénéficiaire'],
+      ...income.map((item: any) => ['Recette', item.titre || item.type || '', item.montant || 0, formatDate(item.date), item.status || 'enregistrée', item.membre || item.memberName || '']),
+      ...expenses.map((item: any) => ['Dépense', item.titre || '', item.montant || 0, formatDate(item.date), item.status || '', item.beneficiary || '']),
+      ...pendingDuesPayments.map((item: any) => ['Demande de cotisation', item.period || '', item.montant || 0, formatDate(item.createdAt), item.status || 'en_attente', item.memberName || item.memberId || ''])
+    ];
+    const csv = rows.map(row => row.map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(';')).join('\n');
+    const blob = new Blob(['\\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'tresorerie-i-koue-gui-a-ita.csv';
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   // Computed Stats
@@ -307,6 +342,7 @@ export const TresorierDashboard = () => {
       <header className="dashboard-header">
           <div className="header-top">
               <div className="logo-container">
+                  <button type="button" className="header-btn treasury-menu-trigger" aria-label="Ouvrir le menu de navigation" aria-expanded={showTreasuryDrawer} aria-controls="treasury-drawer" onClick={() => setShowTreasuryDrawer(true)}><Menu size={21} /></button>
                   <div className="logo">IK</div>
                   <div className="logo-text">
                       <h1>I KOUE GUI A ITA</h1>
@@ -332,17 +368,27 @@ export const TresorierDashboard = () => {
           </div>
           </header>
 
-      {/* NAVIGATION DESKTOP */}
-      <nav className="tab-nav" aria-label="Navigation trésorerie">
-          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><LayoutDashboard className="tab-icon" size={19} /><span>Dashboard</span></button>
-          <button className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`} onClick={() => setActiveTab('income')}><Wallet className="tab-icon" size={19} /><span>Recettes</span></button>
-          <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><ArrowLeftRight className="tab-icon" size={19} /><span>Dépenses</span></button>
-          <button className={`tab-btn ${activeTab === 'dues' ? 'active' : ''}`} onClick={() => setActiveTab('dues')}><Users className="tab-icon" size={19} /><span>Cotisations</span></button>
-          <button className={`tab-btn ${activeTab === 'factures' ? 'active' : ''}`} onClick={() => setActiveTab('factures')}><Receipt className="tab-icon" size={19} /><span>Factures</span></button>
-          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><MessageSquare className="tab-icon" size={19} /><span>Messages</span></button>
-          <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><ChartNoAxesCombined className="tab-icon" size={19} /><span>Rapports</span></button>
-          <button className={`tab-btn ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}><PieChart className="tab-icon" size={19} /><span>Budget</span></button>
-      </nav>
+      {/* TIROIR DE NAVIGATION — commun desktop et mobile */}
+      {showTreasuryDrawer && <div className="treasury-drawer-backdrop" onClick={() => setShowTreasuryDrawer(false)}>
+        <aside id="treasury-drawer" className="treasury-drawer" role="dialog" aria-modal="true" aria-label="Menu du trésorier" onClick={event => event.stopPropagation()}>
+          <div className="treasury-drawer-header">
+            <div><strong>I KOUE GUI A ITA</strong><span>Espace trésorerie</span></div>
+            <button type="button" className="drawer-close" aria-label="Fermer le menu" onClick={() => setShowTreasuryDrawer(false)}><X size={21} /></button>
+          </div>
+          <nav className="treasury-drawer-nav" aria-label="Rubriques trésorerie">
+            <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setShowTreasuryDrawer(false); }}><LayoutDashboard size={19} /> Tableau de bord</button>
+            <button className={activeTab === 'income' ? 'active' : ''} onClick={() => { setActiveTab('income'); setShowTreasuryDrawer(false); }}><Wallet size={19} /> Recettes</button>
+            <button className={activeTab === 'expenses' ? 'active' : ''} onClick={() => { setActiveTab('expenses'); setShowTreasuryDrawer(false); }}><ArrowLeftRight size={19} /> Dépenses</button>
+            <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => { setActiveTab('dues'); setShowTreasuryDrawer(false); }}><Users size={19} /> Cotisations <span className="drawer-count">{pendingDuesPayments.length}</span></button>
+            <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowTreasuryDrawer(false); }}><ChartNoAxesCombined size={19} /> Rapports</button>
+            <button className={activeTab === 'budget' ? 'active' : ''} onClick={() => { setActiveTab('budget'); setShowTreasuryDrawer(false); }}><PieChart size={19} /> Budget</button>
+            <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => { setActiveTab('factures'); setShowTreasuryDrawer(false); }}><Receipt size={19} /> Factures</button>
+            <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => { setActiveTab('messages'); setShowTreasuryDrawer(false); }}><MessageSquare size={19} /> Messages</button>
+            <button onClick={() => { exportTreasuryData(); setShowTreasuryDrawer(false); }}><FileDown size={19} /> Exporter les données</button>
+          </nav>
+          <div className="treasury-drawer-footer">Navigation sécurisée · Trésorerie</div>
+        </aside>
+      </div>}
 
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
@@ -391,7 +437,7 @@ export const TresorierDashboard = () => {
                   <div className="quick-action" onClick={() => setActiveTab('dues')}><div className="qa-icon">👥</div><div className="qa-title">Cotisations</div></div>
                   <div className="quick-action" onClick={() => setActiveTab('reports')}><div className="qa-icon">📊</div><div className="qa-title">Rapport financier</div></div>
                   <div className="quick-action" onClick={() => setActiveTab('budget')}><div className="qa-icon">📋</div><div className="qa-title">Budget</div></div>
-                  <div className="quick-action" onClick={() => alert('Export non implémenté')}><div className="qa-icon">⬇️</div><div className="qa-title">Exporter</div></div>
+                  <div className="quick-action" role="button" tabIndex={0} onClick={exportTreasuryData} onKeyDown={e => e.key === 'Enter' && exportTreasuryData()}><div className="qa-icon">⬇️</div><div className="qa-title">Exporter</div></div>
               </div>
           </div>
 
@@ -554,6 +600,7 @@ export const TresorierDashboard = () => {
           <div className="section-header"><h2>👥 Suivi des Cotisations</h2></div>
           <div className="card" style={{ marginBottom: '16px' }}>
             <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Demandes à vérifier ({pendingDuesPayments.length})</h3>
+            {duesListenerError && <div className="alert-box danger" role="alert"><div className="alert-icon">⚠️</div><div className="alert-content"><h4>Chargement impossible</h4><p>{duesListenerError}</p></div></div>}
             {pendingDuesPayments.length === 0 ? <p style={{ color: 'var(--texte-secondaire)' }}>Aucune déclaration en attente.</p> : pendingDuesPayments.map((p: any) => (
               <div key={p.id} className="transaction-item" style={{ alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
                 <div className="transaction-info" style={{ flex: 1, minWidth: '180px' }}>
@@ -807,21 +854,6 @@ export const TresorierDashboard = () => {
             </div>
         </div>
       </div>
-
-      {/* NAVIGATION MOBILE — 4 rubriques + accès aux outils secondaires */}
-      <nav className="bottom-nav" aria-label="Navigation mobile trésorier">
-          <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => { setActiveTab('dashboard'); setShowMoreNav(false); }}><LayoutDashboard className="nav-icon" size={20} /><span>Accueil</span></button>
-          <button className={activeTab === 'income' ? 'active' : ''} onClick={() => { setActiveTab('income'); setShowMoreNav(false); }}><Wallet className="nav-icon" size={20} /><span>Recettes</span></button>
-          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => { setActiveTab('dues'); setShowMoreNav(false); }}><Users className="nav-icon" size={20} /><span>Cotisations</span></button>
-          <button className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowMoreNav(false); }}><ChartNoAxesCombined className="nav-icon" size={20} /><span>Rapports</span></button>
-          <button className={['expenses', 'factures', 'messages', 'budget'].includes(activeTab) || showMoreNav ? 'active' : ''} aria-expanded={showMoreNav} onClick={() => setShowMoreNav(value => !value)}><MoreHorizontal className="nav-icon" size={20} /><span>Plus</span></button>
-      </nav>
-      {showMoreNav && <div className="mobile-more-menu" role="menu">
-          <button role="menuitem" onClick={() => { setActiveTab('expenses'); setShowMoreNav(false); }}><ArrowLeftRight size={17} /> Dépenses</button>
-          <button role="menuitem" onClick={() => { setActiveTab('budget'); setShowMoreNav(false); }}><PieChart size={17} /> Budget</button>
-          <button role="menuitem" onClick={() => { setActiveTab('factures'); setShowMoreNav(false); }}><Receipt size={17} /> Factures</button>
-          <button role="menuitem" onClick={() => { setActiveTab('messages'); setShowMoreNav(false); }}><MessageSquare size={17} /> Messages</button>
-      </div>}
 
       {/* MODALS */}
       {incomeModalOpen && (
