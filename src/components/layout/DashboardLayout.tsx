@@ -21,7 +21,7 @@ export const DashboardLayout = () => {
   const rawRole = (userData as typeof userData & { userRole?: string }).role || (userData as typeof userData & { userRole?: string }).userRole || '';
   const userRole = rawRole === 'treasurer' ? 'tresorier' : ['member', 'adherent'].includes(rawRole) ? 'membre' : rawRole;
   const isMember = userRole === 'membre';
-  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(userRole);
+  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin', 'admin_bureau'].includes(userRole);
   const path = location.pathname;
 
   // Contrôle d'accès RBAC strict sur chaque sous-route de tableau de bord
