@@ -182,7 +182,7 @@ export const PresidentDashboard = () => {
 
   // MEMBERS ACTIONS
   const filteredMembers = members.filter(m => {
-    const searchMatch = !memberSearch || (m.nom?.toLowerCase() || '').includes(memberSearch.toLowerCase()) || (m.email?.toLowerCase() || '').includes(memberSearch.toLowerCase());
+    const searchMatch = !memberSearch || (m.nom?.toLowerCase() || '').includes(memberSearch.toLowerCase()) || (m.displayName?.toLowerCase() || '').includes(memberSearch.toLowerCase()) || (m.email?.toLowerCase() || '').includes(memberSearch.toLowerCase());
     if (!searchMatch) return false;
     if (memberFilter === 'all') return true;
     if (memberFilter === 'en_attente') return m.statut === 'en_attente';
@@ -626,26 +626,31 @@ export const PresidentDashboard = () => {
                                     <button className="btn btn-danger btn-small" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #EF4444', padding: '2px 8px' }} onClick={() => suspendMember(m.id)}>⚠️ Suspendre</button>
                                   )}
                                   <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}>🗑️ Supprimer</button>
-                                  {canManageRoles && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%' }}>
-                                      <label htmlFor={`role-${m.id}`} style={{ fontSize: '11px', fontWeight: 700 }}>Rôle et accès</label>
-                                      <select
-                                        id={`role-${m.id}`}
-                                        className="search-input"
-                                        style={{ padding: '8px', fontSize: '13px', height: 'auto', backgroundImage: 'none' }}
-                                        value={m.role || 'membre'}
-                                        disabled={m.id === auth.currentUser?.uid || (m.role === 'super_admin' && !isSuperAdminActor)}
-                                        onChange={(e) => changeMemberRole(m.id, e.target.value)}
-                                        aria-label={`Modifier le rôle de ${m.displayName || m.nom || m.email || 'cet utilisateur'}`}
-                                      >
-                                        {assignableRoles
-                                          .filter(role => isSuperAdminActor || !['super_admin'].includes(role.value))
-                                          .filter(role => currentRole !== 'admin' || !['super_admin', 'president_fondateur', 'president', 'admin'].includes(role.value))
-                                          .map(role => <option key={role.value} value={role.value}>{role.label}</option>)}
-                                      </select>
-                                    </div>
-                                  )}
                                 </div>
+                            )}
+                            {canManageRoles && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', marginTop: '8px' }}>
+                                <label htmlFor={`role-${m.id}`} style={{ fontSize: '11px', fontWeight: 700 }}>Rôle actuel : {assignableRoles.find(role => role.value === (m.role === 'member' ? 'membre' : m.role))?.label || m.role || 'Non défini'}</label>
+                                <select
+                                  id={`role-${m.id}`}
+                                  className="search-input"
+                                  style={{ padding: '8px', fontSize: '13px', height: 'auto', backgroundImage: 'none' }}
+                                  value={m.role === 'member' ? 'membre' : m.role || 'membre'}
+                                  disabled={m.id === auth.currentUser?.uid || (m.role === 'super_admin' && !isSuperAdminActor) || (currentRole === 'admin' && ['president', 'president_fondateur', 'admin'].includes(m.role))}
+                                  onChange={(e) => changeMemberRole(m.id, e.target.value)}
+                                  aria-label={`Modifier le rôle de ${m.displayName || m.nom || m.email || 'cet utilisateur'}`}
+                                >
+                                  {assignableRoles.map(role => (
+                                    <option
+                                      key={role.value}
+                                      value={role.value}
+                                      disabled={(role.value === 'super_admin' && !isSuperAdminActor) || (currentRole === 'admin' && ['super_admin', 'president_fondateur', 'president', 'admin'].includes(role.value))}
+                                    >
+                                      {role.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             )}
                         </div>
                     </div>
