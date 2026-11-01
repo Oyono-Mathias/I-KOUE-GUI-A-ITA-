@@ -71,7 +71,7 @@ export const MemberDashboard = () => {
   }, [userData?.uid]);
 
   const validatedPayments = payments.filter((p: any) => p.status === 'valide' || p.status === 'validated' || p.type === 'recette');
-  const isUpToDate = userData?.statut === 'a_jour' || userData?.statut === 'actif' || validatedPayments.some((p: any) => String(p.period || '').includes(String(new Date().getFullYear())));
+  const isUpToDate = userData?.statut === 'a_jour' || validatedPayments.some((p: any) => String(p.period || '').includes(String(new Date().getFullYear())));
   const totalPaid = validatedPayments.reduce((acc, curr) => acc + (Number(curr.montant) || 0), 0);
 
   const submitContribution = async (e: React.FormEvent) => {
