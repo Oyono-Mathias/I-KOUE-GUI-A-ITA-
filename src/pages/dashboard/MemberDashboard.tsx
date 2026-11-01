@@ -17,6 +17,7 @@ export const MemberDashboard = () => {
   const [news, setNews] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [paymentMessage, setPaymentMessage] = useState('');
   const [paymentForm, setPaymentForm] = useState({ montant: '5000', period: String(new Date().getFullYear()), payment: 'orange_money', reference: '' });
   const [documents, setDocuments] = useState<any[]>([]);
@@ -368,11 +369,11 @@ export const MemberDashboard = () => {
                     <div className="transaction-title">{p.motif || (p.type === 'cotisation_demande' ? 'Déclaration de cotisation' : 'Cotisation')}</div>
                     <div className="transaction-meta">{p.period ? `Période : ${p.period} • ` : ''}Réf. : {p.reference || p.id.substring(0,8).toUpperCase()}</div>
                     <div className="transaction-meta" style={{ marginTop: '4px' }}>{p.status === 'en_attente' ? '⏳ En attente de validation' : p.status === 'rejete' ? `❌ Rejeté : ${p.rejectionReason || 'motif non précisé'}` : p.status === 'valide' || p.status === 'validated' || p.type === 'recette' ? '✅ Validé' : '—'}</div>
-                    {(p.status === 'valide' || p.status === 'validated') && <button type="button" className="btn btn-outline btn-small" style={{ marginTop: '6px' }} onClick={() => window.print()}>🧾 Imprimer le reçu</button>}
+                    {(p.status === 'valide' || p.status === 'validated') && <button type="button" className="btn btn-outline btn-small" style={{ marginTop: '6px' }} onClick={() => setSelectedReceipt(p)}>🧾 Voir / imprimer le reçu</button>}
                   </div>
                   <div className="transaction-amount">
                     <div className="amount">+{Number(p.montant).toLocaleString()} F</div>
-                    <div className="date">{formatDate(p.date)}</div>
+                    <div className="date">{formatDate(p.validatedAt || p.date || p.createdAt)}</div>
                   </div>
                 </div>
               ))
@@ -591,6 +592,29 @@ export const MemberDashboard = () => {
           <span>Vote</span>
         </a>
       </nav>
+
+      {selectedReceipt && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }}>
+          <div style={{ background: '#fff', color: '#222', borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '520px' }}>
+            <div style={{ textAlign: 'center', borderBottom: '2px solid #d5ad45', paddingBottom: '14px', marginBottom: '16px' }}>
+              <h2 style={{ margin: 0 }}>I KOUE GUI A ITA</h2><p style={{ margin: '6px 0 0' }}>REÇU OFFICIEL DE COTISATION</p>
+            </div>
+            <p><strong>N° du reçu :</strong> {selectedReceipt.receiptNumber || selectedReceipt.id}</p>
+            <p><strong>Membre :</strong> {selectedReceipt.memberName || userData?.displayName || userData?.email}</p>
+            <p><strong>Montant :</strong> {Number(selectedReceipt.montant).toLocaleString('fr-FR')} FCFA</p>
+            <p><strong>Période :</strong> {selectedReceipt.period || '—'}</p>
+            <p><strong>Mode :</strong> {selectedReceipt.payment || '—'}</p>
+            <p><strong>Référence :</strong> {selectedReceipt.reference || '—'}</p>
+            <p><strong>Date de validation :</strong> {formatDate(selectedReceipt.validatedAt)}</p>
+            <p><strong>Validé par (UID) :</strong> {selectedReceipt.validatedBy || 'Trésorerie'}</p>
+            <p style={{ textAlign: 'center', marginTop: '22px', fontWeight: 700, color: '#18794e' }}>PAIEMENT VALIDÉ</p>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '20px' }}>
+              <button type="button" className="btn btn-outline" onClick={() => setSelectedReceipt(null)}>Fermer</button>
+              <button type="button" className="btn btn-primary" onClick={() => window.print()}>Imprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* WHATSAPP FAB */}
       <a href="https://wa.me/23675030857?text=Bonjour,%20message%20depuis%20mon%20espace%20membre" className="whatsapp-float" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">💬</a>
