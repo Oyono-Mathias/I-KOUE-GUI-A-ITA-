@@ -16,6 +16,9 @@ export const MemberDashboard = () => {
   
   const [news, setNews] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState('');
+  const [paymentForm, setPaymentForm] = useState({ montant: '5000', period: String(new Date().getFullYear()), payment: 'orange_money', reference: '' });
   const [documents, setDocuments] = useState<any[]>([]);
   const [forumPosts, setForumPosts] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
@@ -310,9 +313,14 @@ export const MemberDashboard = () => {
             <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--or-solaire)' }}>+236 72 06 12 02</span><br/>
             <small>Association I KOUE GUI A ITA</small>
           </div>
-          <button className="btn-gold btn-block" onClick={() => alert("Après votre transfert, veuillez contacter le Trésorier Général avec la référence de transaction pour valider votre reçu.")}>
-            💰 J'ai effectué le paiement
-          </button>
+          <form onSubmit={submitContribution} style={{ display: 'grid', gap: '10px' }}>
+            <label>Montant (FCFA)<input type="number" min="1" required value={paymentForm.montant} onChange={e => setPaymentForm({ ...paymentForm, montant: e.target.value })} /></label>
+            <label>Période<select value={paymentForm.period} onChange={e => setPaymentForm({ ...paymentForm, period: e.target.value })}><option value={String(new Date().getFullYear())}>{new Date().getFullYear()}</option><option value={String(new Date().getFullYear()+1)}>{new Date().getFullYear()+1}</option></select></label>
+            <label>Mode de paiement<select value={paymentForm.payment} onChange={e => setPaymentForm({ ...paymentForm, payment: e.target.value })}><option value="orange_money">Orange Money</option><option value="moov_money">Moov Money</option><option value="airtel_money">Airtel Money</option><option value="especes">Espèces</option><option value="virement">Virement</option></select></label>
+            <label>Référence de transaction<input type="text" required maxLength={100} value={paymentForm.reference} onChange={e => setPaymentForm({ ...paymentForm, reference: e.target.value })} placeholder="Référence reçue après transfert" /></label>
+            <button type="submit" className="btn-gold btn-block" disabled={paymentSubmitting}>{paymentSubmitting ? 'Envoi…' : '📨 Déclarer mon paiement'}</button>
+            {paymentMessage && <p role="status" style={{ fontSize: '13px', color: 'var(--bleu-rca)' }}>{paymentMessage}</p>}
+          </form>
         </div>
 
         <div className="card">
@@ -327,8 +335,10 @@ export const MemberDashboard = () => {
                 <div key={p.id} className="transaction-item">
                   <div className="transaction-icon">💰</div>
                   <div className="transaction-info">
-                    <div className="transaction-title">{p.motif || 'Cotisation'}</div>
-                    <div className="transaction-meta">Ref: {p.id.substring(0,8).toUpperCase()}</div>
+                    <div className="transaction-title">{p.motif || (p.type === 'cotisation_demande' ? 'Déclaration de cotisation' : 'Cotisation')}</div>
+                    <div className="transaction-meta">{p.period ? `Période : ${p.period} • ` : ''}Réf. : {p.reference || p.id.substring(0,8).toUpperCase()}</div>
+                    <div className="transaction-meta" style={{ marginTop: '4px' }}>{p.status === 'en_attente' ? '⏳ En attente de validation' : p.status === 'rejete' ? `❌ Rejeté : ${p.rejectionReason || 'motif non précisé'}` : p.status === 'valide' || p.status === 'validated' || p.type === 'recette' ? '✅ Validé' : '—'}</div>
+                    {(p.status === 'valide' || p.status === 'validated') && <button type="button" className="btn btn-outline btn-small" style={{ marginTop: '6px' }} onClick={() => window.print()}>🧾 Imprimer le reçu</button>}
                   </div>
                   <div className="transaction-amount">
                     <div className="amount">+{Number(p.montant).toLocaleString()} F</div>
