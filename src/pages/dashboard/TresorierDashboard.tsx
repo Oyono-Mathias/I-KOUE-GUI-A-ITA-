@@ -241,8 +241,8 @@ export const TresorierDashboard = () => {
 
   const processContributionRequest = async (request: any, decision: 'valide' | 'rejete', reason = '') => {
     if (!userData?.uid || processingPaymentId) return;
-    if (decision === 'rejete' && !reason.trim()) {
-      setRejectionError('Veuillez saisir un motif précis avant de rejeter cette demande.');
+    if (decision === 'rejete' && (reason.trim().length < 5 || reason.trim().length > 500)) {
+      setRejectionError('Le motif doit contenir entre 5 et 500 caractères.');
       return;
     }
     setProcessingPaymentId(request.id);
