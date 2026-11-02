@@ -1280,3 +1280,11 @@
     min-width: 80px;
     flex-shrink: 0;
 }
+
+
+/* The role-specific tab strip remains a desktop navigation only.
+   Mobile navigation is always the fixed four-item shared bar. */
+@media (max-width: 767px) {
+  .vp-dashboard-container .tab-nav { display: none; }
+  .vp-dashboard-container { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+}
