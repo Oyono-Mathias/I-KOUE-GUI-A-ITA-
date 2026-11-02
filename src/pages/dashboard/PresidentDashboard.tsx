@@ -466,7 +466,6 @@ export const PresidentDashboard = () => {
                 <div className="stat-label">Actualités</div>
                 <div className="stat-sublabel">Publiées</div>
             </section>
-        </div>
 
         <div>
             {pendingApprovals > 0 && (
@@ -517,8 +516,8 @@ export const PresidentDashboard = () => {
                 <div className="quick-action" onClick={() => setActiveTab('expenses')}>
                     <div className="qa-icon"></div>
                     <div className="qa-title">Signer dépense</div>
-                </section>
-            </div>
+                </div>
+            </section>
         </div>
 
         <div className="card">
