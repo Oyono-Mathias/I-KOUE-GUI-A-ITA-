@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileDown, CheckCircle2, X, AlertCircle, LayoutDashboard, Banknote, Receipt, Users, FileText, MessageCircle, ChartNoAxesCombined, Wallet, ClipboardList } from 'lucide-react';
+import { FileDown, CheckCircle2, X, AlertCircle, LayoutDashboard, Banknote, Receipt, Users, FileText, MessageCircle, ChartNoAxesCombined, Wallet } from 'lucide-react';
 import { DashboardHeader } from '../../components/layout/DashboardHeader';
 import { DashboardSidebar } from '../../components/layout/DashboardSidebar';
 import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
