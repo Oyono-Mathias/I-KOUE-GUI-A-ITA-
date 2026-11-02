@@ -683,3 +683,51 @@
   .rejection-modal-actions button { width:100%; }
 }
 @media (prefers-reduced-motion:reduce) { .contribution-rejection-modal { animation:none; } }
+
+
+/* Shared treasurer navigation and compact mobile finance layout */
+.tres-dashboard-container .tres-shared-header-wrap { position: sticky; top: 0; z-index: 100; }
+.tres-dashboard-container .tres-notification-panel {
+  position: absolute; top: calc(100% + 8px); right: 12px; z-index: 120;
+  width: min(320px, calc(100vw - 24px)); padding: 14px;
+  border: 1px solid #E5E7EB; border-radius: 12px; background: #fff;
+  color: #1F2937; box-shadow: 0 8px 24px rgba(15,23,42,.16);
+}
+.tres-dashboard-container .tres-notification-panel h4 { margin: 0 0 8px; color: #0A3D62; }
+.tres-dashboard-container .tres-notification-panel button {
+  display: block; width: 100%; padding: 10px 4px; border: 0;
+  border-bottom: 1px solid #E5E7EB; background: transparent;
+  color: #334155; text-align: left; cursor: pointer;
+}
+.tres-dashboard-container .tres-notification-panel p { margin: 4px 0; font-size: 13px; }
+@media (max-width: 767px) {
+  .tres-dashboard-container { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .tres-dashboard-container > .dashboard-header,
+  .tres-dashboard-container > .tab-nav,
+  .tres-dashboard-container > .bottom-nav { display: none !important; }
+  .tres-dashboard-container .finance-summary { gap: 8px; margin-bottom: 12px; }
+  .tres-dashboard-container .finance-card { min-width: 0; padding: 10px; }
+  .tres-dashboard-container .finance-card .fin-icon { font-size: 21px; margin-bottom: 3px; }
+  .tres-dashboard-container .finance-card .fin-label { font-size: 11px; }
+  .tres-dashboard-container .finance-card .fin-amount { font-size: clamp(15px, 4.2vw, 19px); line-height: 1.2; overflow-wrap: anywhere; }
+  .tres-dashboard-container .finance-card .fin-sublabel { font-size: 10px; }
+  .tres-dashboard-container .card { padding: 12px; margin-bottom: 12px; }
+  .tres-dashboard-container .card-header { margin-bottom: 10px; gap: 8px; }
+  .tres-dashboard-container .card-title { font-size: 16px; }
+  .tres-dashboard-container .quick-actions { gap: 8px; margin-bottom: 12px; }
+  .tres-dashboard-container .quick-action { min-height: 76px; padding: 10px 8px; }
+  .tres-dashboard-container .quick-action .qa-icon { font-size: 22px; margin-bottom: 3px; }
+  .tres-dashboard-container .quick-action .qa-title { font-size: 11px; line-height: 1.25; }
+  .tres-dashboard-container .stats-grid { gap: 8px; margin-bottom: 12px; }
+  .tres-dashboard-container .stat-card { min-width: 0; padding: 10px 8px; }
+  .tres-dashboard-container .stat-card .stat-icon { font-size: 22px; margin-bottom: 4px; }
+  .tres-dashboard-container .stat-card .stat-value { font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
+  .tres-dashboard-container .stat-card .stat-label { font-size: 11px; }
+  .tres-dashboard-container .dues-metrics-grid { gap: 8px; margin-bottom: 12px; }
+  .tres-dashboard-container .dues-metric-card { padding: 11px; }
+  .tres-dashboard-container .dues-metric-card > strong { font-size: 21px; }
+  .tres-dashboard-container .contribution-request-card { padding: 12px; }
+}
+@media (min-width: 768px) {
+  .tres-dashboard-container { padding-bottom: 0; }
+}
