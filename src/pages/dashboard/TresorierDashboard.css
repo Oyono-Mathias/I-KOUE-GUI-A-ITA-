@@ -686,6 +686,7 @@
 
 
 /* Shared treasurer navigation and compact mobile finance layout */
+.tres-dashboard-container > .dashboard-header { display: none; }
 .tres-dashboard-container .tres-shared-header-wrap { position: sticky; top: 0; z-index: 100; }
 .tres-dashboard-container .tres-notification-panel {
   position: absolute; top: calc(100% + 8px); right: 12px; z-index: 120;
