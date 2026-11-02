@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, LogOut, ChevronDown, Menu, X, Bell, FileText, ListTodo, ChartNoAxesCombined, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper } from 'lucide-react';
+import { DashboardHeader } from '../../components/layout/DashboardHeader';
+import { DashboardSidebar, type DashboardSection } from '../../components/layout/DashboardSidebar';
+import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
+import '../../components/layout/dashboard-navigation.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -13,8 +17,6 @@ export const PresidentDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
-  const [showNotifPanel, setShowNotifPanel] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Filters
@@ -340,100 +342,23 @@ export const PresidentDashboard = () => {
 
   return (
     <div className="president-dashboard-container">
-      {/* HEADER COMPACT (APP BAR) */}
-      <header className="dashboard-header-compact">
-        <div className="header-compact-left">
-            <button type="button" className="header-profile-trigger" aria-label="Ouvrir le menu du compte" aria-expanded={showUserMenu} onClick={() => setShowUserMenu(!showUserMenu)}>
-                <span className="avatar-mini">{userData?.displayName?.charAt(0)?.toUpperCase() || 'P'}</span>
-                <span className="header-titles">
-                    <strong>I KOUE GUI A ITA</strong>
-                    <span>{userData?.displayName || 'Président'} • Président</span>
-                </span>
-                <ChevronDown size={16} aria-hidden="true" />
-            </button>
-            {showUserMenu && (
-                <div className="user-context-menu">
-                    <button type="button" onClick={() => { setShowUserMenu(false); handleLogout(); }}>
-                        <LogOut size={18} aria-hidden="true" /> Se déconnecter
-                    </button>
-                </div>
-            )}
-        </div>
-        <div className="header-compact-actions">
-            <div style={{ position: 'relative' }}>
-                <button type="button" className="header-btn" onClick={() => setShowNotifPanel(!showNotifPanel)} aria-label="Ouvrir les notifications">
-                    
-                    {(pendingApprovals + pendingExpensesCount) > 0 && (
-                        <span className="notif-badge">{pendingApprovals + pendingExpensesCount}</span>
-                    )}
-                </button>
-                {showNotifPanel && (
-                    <div className="notif-dropdown">
-                        <h4> Actions Requises</h4>
-                        {pendingApprovals > 0 && (
-                            <div className="notif-dropdown-item warning" onClick={() => { setActiveTab('members'); setShowNotifPanel(false); }}>
-                                <span></span> {pendingApprovals} adhésion(s) en attente
-                            </div>
-                        )}
-                        {pendingExpensesCount > 0 && (
-                            <div className="notif-dropdown-item danger" onClick={() => { setActiveTab('expenses'); setShowNotifPanel(false); }}>
-                                <span></span> {pendingExpensesCount} dépense(s) à signer
-                            </div>
-                        )}
-                        {pendingApprovals === 0 && pendingExpensesCount === 0 && (
-                            <div className="notif-dropdown-empty">Aucune action urgente.</div>
-                        )}
-                    </div>
-                )}
-            </div>
-            <button
-                type="button"
-                className="mobile-menu-trigger"
-                aria-label={showMobileSidebar ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
-                aria-expanded={showMobileSidebar}
-                aria-controls="president-mobile-sidebar"
-                onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-            >
-                {showMobileSidebar ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
-            </button>
-        </div>
-    </header>
-
-    {showMobileSidebar && (
-        <div className="mobile-sidebar-layer">
-            <button
-                type="button"
-                className="mobile-sidebar-backdrop"
-                aria-label="Fermer le menu"
-                onClick={() => setShowMobileSidebar(false)}
-            />
-            <aside id="president-mobile-sidebar" className="mobile-sidebar" aria-label="Autres rubriques" aria-modal="true">
-                <div className="mobile-sidebar-header">
-                    <strong>Autres rubriques</strong>
-                    <button type="button" aria-label="Fermer le menu" onClick={() => setShowMobileSidebar(false)}>
-                        <X size={20} aria-hidden="true" />
-                    </button>
-                </div>
-                <nav className="mobile-sidebar-links" aria-label="Navigation secondaire">
-                    <button type="button" className={activeTab === 'content' ? 'active' : ''} onClick={() => { setActiveTab('content'); setShowMobileSidebar(false); }}>
-                        <FileText size={20} aria-hidden="true" /><span>Contenu</span>
-                    </button>
-                    <button type="button" className={activeTab === 'notifications' ? 'active' : ''} onClick={() => { setActiveTab('notifications'); setShowMobileSidebar(false); }}>
-                        <Bell size={20} aria-hidden="true" /><span>Notifications</span>
-                    </button>
-                    <button type="button" className={activeTab === 'tasks' ? 'active' : ''} onClick={() => { setActiveTab('tasks'); setShowMobileSidebar(false); }}>
-                        <ListTodo size={20} aria-hidden="true" /><span>Délégation</span>
-                    </button>
-                    <button type="button" className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowMobileSidebar(false); }}>
-                        <ChartNoAxesCombined size={20} aria-hidden="true" /><span>Rapports</span>
-                    </button>
-                    <button type="button" className={activeTab === 'messages' ? 'active' : ''} onClick={() => { setActiveTab('messages'); setShowMobileSidebar(false); }}>
-                        <MessageCircle size={20} aria-hidden="true" /><span>Chat Bureau</span>
-                    </button>
-                </nav>
-            </aside>
-        </div>
-    )}
+      <DashboardHeader
+        userName={userData?.displayName || 'Président'}
+        roleLabel="Président"
+        notificationCount={pendingApprovals + pendingExpensesCount}
+        menuOpen={showMobileSidebar}
+        onMenuToggle={() => setShowMobileSidebar(open => !open)}
+        onNotificationsClick={() => setActiveTab('notifications')}
+      />
+      <DashboardSidebar
+        open={showMobileSidebar}
+        activeSection={activeTab as DashboardSection}
+        userName={userData?.displayName || 'Président'}
+        roleLabel="Président"
+        onNavigate={(section) => { setActiveTab(section); setShowMobileSidebar(false); }}
+        onLogout={handleLogout}
+        onClose={() => setShowMobileSidebar(false)}
+      />
 
     {/* TAB NAVIGATION */}
     <nav className="tab-nav" role="navigation" aria-label="Navigation principale">
@@ -1059,13 +984,11 @@ export const PresidentDashboard = () => {
         </div>
     </div>
 
-    {/* BOTTOM NAV (MOBILE) */}
-    <nav className="bottom-nav" role="navigation" aria-label="Navigation mobile">
-        <button type="button" className={activeTab === 'dashboard' ? 'active' : ''} aria-label="Dashboard" aria-current={activeTab === 'dashboard' ? 'page' : undefined} onClick={() => setActiveTab('dashboard')}><LayoutDashboard size={22} aria-hidden="true" /><span>Dashboard</span></button>
-        <button type="button" className={activeTab === 'members' ? 'active' : ''} aria-label="Membres" aria-current={activeTab === 'members' ? 'page' : undefined} onClick={() => setActiveTab('members')}><Users size={22} aria-hidden="true" /><span>Membres</span></button>
-        <button type="button" className={activeTab === 'meetings' ? 'active' : ''} aria-label="Réunions" aria-current={activeTab === 'meetings' ? 'page' : undefined} onClick={() => setActiveTab('meetings')}><CalendarDays size={22} aria-hidden="true" /><span>Réunions</span></button>
-        <button type="button" className={activeTab === 'expenses' ? 'active' : ''} aria-label="Dépenses" aria-current={activeTab === 'expenses' ? 'page' : undefined} onClick={() => setActiveTab('expenses')}><Banknote size={22} aria-hidden="true" /><span>Dépenses</span></button>
-    </nav>
+    <DashboardBottomNavigation
+      activeSection={activeTab as DashboardSection}
+      onNavigate={(section) => setActiveTab(section)}
+      onMenuClick={() => setShowMobileSidebar(true)}
+    />
 
     {/* MODALS & CONFIRM DIALOG */}
     
