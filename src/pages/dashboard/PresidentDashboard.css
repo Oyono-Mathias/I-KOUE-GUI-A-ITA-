@@ -1164,3 +1164,163 @@
     font-size: 12px;
     font-weight: 700;
 }
+
+
+/* Urgent presidential dashboard refinements */
+.president-dashboard-container .bottom-nav {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 4px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    background: #FFFFFF;
+}
+
+.president-dashboard-container .bottom-nav button {
+    flex: 1 1 0;
+    min-width: 60px;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 2px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #666666;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.president-dashboard-container .bottom-nav button.active {
+    color: #0A3D62;
+    font-weight: 700;
+}
+
+.president-dashboard-container .bottom-nav button svg {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+}
+
+.president-dashboard-container .welcome-card {
+    position: relative;
+}
+
+.president-dashboard-container .crisis-alert-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.president-dashboard-container .welcome-card > div:first-child {
+    padding-right: 56px;
+}
+
+.president-dashboard-container .stat-card .stat-icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 8px;
+    color: #0A3D62;
+    stroke: #0A3D62;
+}
+
+.president-dashboard-container .quick-action {
+    width: 100%;
+    min-height: 64px;
+    background: #FFFFFF;
+    color: #0A3D62;
+    font: inherit;
+    cursor: pointer;
+}
+
+.president-dashboard-container .quick-action .qa-title {
+    color: inherit;
+}
+
+.president-dashboard-container .header-compact-left {
+    position: relative;
+}
+
+.president-dashboard-container .header-profile-trigger {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.president-dashboard-container .header-profile-trigger .header-titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.president-dashboard-container .header-profile-trigger .header-titles strong {
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.president-dashboard-container .user-context-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 1100;
+    min-width: 190px;
+    padding: 6px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    background: #FFFFFF;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.president-dashboard-container .user-context-menu button {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #0A3D62;
+    text-align: left;
+    cursor: pointer;
+}
+
+.president-dashboard-container .user-context-menu button:hover {
+    background: #F5F7FA;
+}
+
+@media (min-width: 768px) {
+    .president-dashboard-container .bottom-nav {
+        display: none;
+    }
+}
