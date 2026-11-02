@@ -364,10 +364,6 @@ export const VicePresidentDashboard = () => {
         onMenuClick={() => setShowMobileSidebar(true)}
       />
 
-    {isSuppleanceActive && (
-            <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><span className="tab-icon">💰</span><span>Dépenses (Suppléance)</span></button>
-        )}
-    </nav>
 
     {isSuppleanceActive && (
         <div className="suppleance-banner" style={{ margin: '16px' }}>
