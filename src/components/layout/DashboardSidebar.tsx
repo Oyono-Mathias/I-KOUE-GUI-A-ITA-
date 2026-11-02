@@ -1,5 +1,5 @@
 import React from 'react';
-import { Banknote,Bell,CalendarDays,ChartNoAxesCombined,FileText,LayoutDashboard,ListTodo,LogOut,MessageCircle,Users,X } from 'lucide-react';
+import { LogOut, X } from 'lucide-react';
 export type DashboardSection=string;
 type NavigationItem={id:DashboardSection;label:string;icon:React.ComponentType<{size?:number}>};
 type Props={open:boolean;activeSection:DashboardSection;userName:string;roleLabel:string;onNavigate:(section:DashboardSection)=>void;onLogout:()=>void;onClose:()=>void;items:NavigationItem[]};
