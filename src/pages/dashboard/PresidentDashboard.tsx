@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, LogOut, ChevronDown } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -13,6 +14,7 @@ export const PresidentDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   // Filters
   const [memberFilter, setMemberFilter] = useState('all');
@@ -340,11 +342,21 @@ export const PresidentDashboard = () => {
       {/* HEADER COMPACT (APP BAR) */}
       <header className="dashboard-header-compact">
         <div className="header-compact-left">
-            <div className="avatar-mini">{userData?.displayName?.charAt(0)?.toUpperCase() || 'P'}</div>
-            <div className="header-titles">
-                <h1>I KOUE GUI A ITA</h1>
-                <span>{userData?.displayName || 'Sosthène M. ZONAITA'} • Président</span>
-            </div>
+            <button type="button" className="header-profile-trigger" aria-label="Ouvrir le menu du compte" aria-expanded={showUserMenu} onClick={() => setShowUserMenu(!showUserMenu)}>
+                <span className="avatar-mini">{userData?.displayName?.charAt(0)?.toUpperCase() || 'P'}</span>
+                <span className="header-titles">
+                    <strong>I KOUE GUI A ITA</strong>
+                    <span>{userData?.displayName || 'Président'} • Président</span>
+                </span>
+                <ChevronDown size={16} aria-hidden="true" />
+            </button>
+            {showUserMenu && (
+                <div className="user-context-menu">
+                    <button type="button" onClick={() => { setShowUserMenu(false); handleLogout(); }}>
+                        <LogOut size={18} aria-hidden="true" /> Se déconnecter
+                    </button>
+                </div>
+            )}
         </div>
         <div className="header-compact-actions">
             <div style={{ position: 'relative' }}>
@@ -373,7 +385,7 @@ export const PresidentDashboard = () => {
                     </div>
                 )}
             </div>
-            <button type="button" className="header-btn" onClick={handleLogout} aria-label="Se déconnecter" title="Déconnexion">Quitter</button>
+            
         </div>
     </header>
 
@@ -437,31 +449,31 @@ export const PresidentDashboard = () => {
               <p>Vous avez plusieurs actions requises aujourd'hui. Le Bureau compte sur votre leadership.</p>
             </div>
             {!crisisMode && (
-              <button type="button" onClick={toggleCrisisMode} aria-label="Déclencher une action d’urgence" style={{ background: '#EF4444', color: 'white', border: 'none', borderRadius: '50%', width: '56px', height: '56px', fontSize: '24px', flexShrink: 0, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.4)' }} title="Déclencher Action d'Urgence">!</button>
+              <button type="button" className="crisis-alert-button" onClick={toggleCrisisMode} aria-label="Déclencher une action d’urgence" title="Déclencher Action d’Urgence">!</button>
             )}
         </div>
 
         <section className="stats-grid" aria-label="Statistiques du bureau">
             <div className="stat-card" onClick={() => setActiveTab('members')}>
-                <div className="stat-icon"></div>
+                <Users className="stat-icon" size={24} color="#0A3D62" aria-hidden="true" />
                 <div className="stat-value">{members.length}</div>
                 <div className="stat-label">Membres</div>
                 <div className="stat-sublabel">{pendingApprovals} en attente</div>
             </div>
             <div className={`stat-card ${upcomingMeetings > 0 ? 'alert' : ''}`} onClick={() => setActiveTab('meetings')}>
-                <div className="stat-icon"></div>
+                <ClipboardList className="stat-icon" size={24} color="#0A3D62" aria-hidden="true" />
                 <div className="stat-value">{upcomingMeetings}</div>
                 <div className="stat-label">Réunions</div>
                 <div className="stat-sublabel">À venir</div>
             </div>
             <div className={`stat-card ${pendingExpensesCount > 0 ? 'alert' : ''}`} onClick={() => setActiveTab('expenses')}>
-                <div className="stat-icon"></div>
+                <Banknote className="stat-icon" size={24} color="#0A3D62" aria-hidden="true" />
                 <div className="stat-value">{pendingExpensesCount}</div>
                 <div className="stat-label">Dépenses</div>
                 <div className="stat-sublabel">À signer</div>
             </div>
             <div className="stat-card success">
-                <div className="stat-icon"></div>
+                <Newspaper className="stat-icon" size={24} color="#0A3D62" aria-hidden="true" />
                 <div className="stat-value">{publishedNewsCount}</div>
                 <div className="stat-label">Actualités</div>
                 <div className="stat-sublabel">Publiées</div>
@@ -510,10 +522,10 @@ export const PresidentDashboard = () => {
                     <div className="qa-icon"></div>
                     <div className="qa-title">Gérer membres</div>
                 </div>
-                <div className="quick-action" onClick={() => { setActiveTab('meetings'); setMeetingModalOpen(true); }}>
-                    <div className="qa-icon"></div>
-                    <div className="qa-title">Convoquer AG</div>
-                </div>
+                <button type="button" className="quick-action" onClick={() => { setActiveTab('content'); setContentSection('news'); }}>
+                    <Newspaper size={22} color="#0A3D62" aria-hidden="true" />
+                    <span className="qa-title">Publier actualité</span>
+                </button>
                 <div className="quick-action" onClick={() => setActiveTab('expenses')}>
                     <div className="qa-icon"></div>
                     <div className="qa-title">Signer dépense</div>
@@ -1003,11 +1015,10 @@ export const PresidentDashboard = () => {
 
     {/* BOTTOM NAV (MOBILE) */}
     <nav className="bottom-nav" role="navigation" aria-label="Navigation mobile">
-        <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon"></span><span>Dash</span></button>
-        <button className={activeTab === 'members' ? 'active' : ''} onClick={() => setActiveTab('members')}><span className="nav-icon"></span><span>Membres</span></button>
-        <button className={activeTab === 'meetings' ? 'active' : ''} onClick={() => setActiveTab('meetings')}><span className="nav-icon"></span><span>Réunions</span></button>
-        <button className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon"></span><span>Dépenses</span></button>
-        <button className={activeTab === 'content' ? 'active' : ''} onClick={() => setActiveTab('content')}><span className="nav-icon"></span><span>Contenu</span></button>
+        <button type="button" className={activeTab === 'dashboard' ? 'active' : ''} aria-label="Dashboard" aria-current={activeTab === 'dashboard' ? 'page' : undefined} onClick={() => setActiveTab('dashboard')}><LayoutDashboard size={22} aria-hidden="true" /><span>Dashboard</span></button>
+        <button type="button" className={activeTab === 'members' ? 'active' : ''} aria-label="Membres" aria-current={activeTab === 'members' ? 'page' : undefined} onClick={() => setActiveTab('members')}><Users size={22} aria-hidden="true" /><span>Membres</span></button>
+        <button type="button" className={activeTab === 'meetings' ? 'active' : ''} aria-label="Réunions" aria-current={activeTab === 'meetings' ? 'page' : undefined} onClick={() => setActiveTab('meetings')}><CalendarDays size={22} aria-hidden="true" /><span>Réunions</span></button>
+        <button type="button" className={activeTab === 'expenses' ? 'active' : ''} aria-label="Dépenses" aria-current={activeTab === 'expenses' ? 'page' : undefined} onClick={() => setActiveTab('expenses')}><Banknote size={22} aria-hidden="true" /><span>Dépenses</span></button>
     </nav>
 
     {/* MODALS & CONFIRM DIALOG */}
