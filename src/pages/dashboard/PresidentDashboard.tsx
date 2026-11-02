@@ -373,7 +373,7 @@ export const PresidentDashboard = () => {
                     </div>
                 )}
             </div>
-            <button type="button" className="header-btn" onClick={handleLogout} aria-label="Se déconnecter" title="Déconnexion"></button>
+            <button type="button" className="header-btn" onClick={handleLogout} aria-label="Se déconnecter" title="Déconnexion">Quitter</button>
         </div>
     </header>
 
@@ -437,7 +437,7 @@ export const PresidentDashboard = () => {
               <p>Vous avez plusieurs actions requises aujourd'hui. Le Bureau compte sur votre leadership.</p>
             </div>
             {!crisisMode && (
-              <button type="button" onClick={toggleCrisisMode} aria-label="Déclencher une action d’urgence" style={{ background: '#EF4444', color: 'white', border: 'none', borderRadius: '50%', width: '56px', height: '56px', fontSize: '24px', flexShrink: 0, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.4)' }} title="Déclencher Action d'Urgence"></button>
+              <button type="button" onClick={toggleCrisisMode} aria-label="Déclencher une action d’urgence" style={{ background: '#EF4444', color: 'white', border: 'none', borderRadius: '50%', width: '56px', height: '56px', fontSize: '24px', flexShrink: 0, cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.4)' }} title="Déclencher Action d'Urgence">!</button>
             )}
         </div>
 
