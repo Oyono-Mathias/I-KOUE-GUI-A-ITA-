@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, Bell, FileText, ChartNoAxesCombined, MessageCircle } from 'lucide-react';
 import { DashboardHeader } from '../../components/layout/DashboardHeader';
 import { DashboardSidebar, type DashboardSection } from '../../components/layout/DashboardSidebar';
 import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
@@ -355,6 +355,17 @@ export const PresidentDashboard = () => {
         activeSection={activeTab as DashboardSection}
         userName={userData?.displayName || 'Président'}
         roleLabel="Président"
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard },
+          { id: 'members', label: 'Membres', icon: Users },
+          { id: 'meetings', label: 'Réunions', icon: CalendarDays },
+          { id: 'expenses', label: 'Dépenses', icon: Banknote },
+          { id: 'content', label: 'Contenu', icon: FileText },
+          { id: 'notifications', label: 'Notifications', icon: Bell },
+          { id: 'tasks', label: 'Délégation', icon: ClipboardList },
+          { id: 'reports', label: 'Rapports', icon: ChartNoAxesCombined },
+          { id: 'messages', label: 'Chat Bureau', icon: MessageCircle }
+        ]}
         onNavigate={(section) => { setActiveTab(section); setShowMobileSidebar(false); }}
         onLogout={handleLogout}
         onClose={() => setShowMobileSidebar(false)}
