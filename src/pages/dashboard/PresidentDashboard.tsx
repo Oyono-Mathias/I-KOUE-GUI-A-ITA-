@@ -465,7 +465,8 @@ export const PresidentDashboard = () => {
                 <div className="stat-value">{publishedNewsCount}</div>
                 <div className="stat-label">Actualités</div>
                 <div className="stat-sublabel">Publiées</div>
-            </section>
+            </div>
+        </section>
 
         <div>
             {pendingApprovals > 0 && (
