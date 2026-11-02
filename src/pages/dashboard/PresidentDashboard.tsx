@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, LogOut, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, LogOut, ChevronDown, Menu, X, Bell, FileText, ListTodo, ChartNoAxesCombined, MessageCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -15,6 +15,7 @@ export const PresidentDashboard = () => {
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Filters
   const [memberFilter, setMemberFilter] = useState('all');
@@ -385,9 +386,54 @@ export const PresidentDashboard = () => {
                     </div>
                 )}
             </div>
-            
+            <button
+                type="button"
+                className="mobile-menu-trigger"
+                aria-label={showMobileSidebar ? "Fermer le menu de navigation" : "Ouvrir le menu de navigation"}
+                aria-expanded={showMobileSidebar}
+                aria-controls="president-mobile-sidebar"
+                onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            >
+                {showMobileSidebar ? <X size={22} aria-hidden="true" /> : <Menu size={22} aria-hidden="true" />}
+            </button>
         </div>
     </header>
+
+    {showMobileSidebar && (
+        <div className="mobile-sidebar-layer">
+            <button
+                type="button"
+                className="mobile-sidebar-backdrop"
+                aria-label="Fermer le menu"
+                onClick={() => setShowMobileSidebar(false)}
+            />
+            <aside id="president-mobile-sidebar" className="mobile-sidebar" aria-label="Autres rubriques" aria-modal="true">
+                <div className="mobile-sidebar-header">
+                    <strong>Autres rubriques</strong>
+                    <button type="button" aria-label="Fermer le menu" onClick={() => setShowMobileSidebar(false)}>
+                        <X size={20} aria-hidden="true" />
+                    </button>
+                </div>
+                <nav className="mobile-sidebar-links" aria-label="Navigation secondaire">
+                    <button type="button" className={activeTab === 'content' ? 'active' : ''} onClick={() => { setActiveTab('content'); setShowMobileSidebar(false); }}>
+                        <FileText size={20} aria-hidden="true" /><span>Contenu</span>
+                    </button>
+                    <button type="button" className={activeTab === 'notifications' ? 'active' : ''} onClick={() => { setActiveTab('notifications'); setShowMobileSidebar(false); }}>
+                        <Bell size={20} aria-hidden="true" /><span>Notifications</span>
+                    </button>
+                    <button type="button" className={activeTab === 'tasks' ? 'active' : ''} onClick={() => { setActiveTab('tasks'); setShowMobileSidebar(false); }}>
+                        <ListTodo size={20} aria-hidden="true" /><span>Délégation</span>
+                    </button>
+                    <button type="button" className={activeTab === 'reports' ? 'active' : ''} onClick={() => { setActiveTab('reports'); setShowMobileSidebar(false); }}>
+                        <ChartNoAxesCombined size={20} aria-hidden="true" /><span>Rapports</span>
+                    </button>
+                    <button type="button" className={activeTab === 'messages' ? 'active' : ''} onClick={() => { setActiveTab('messages'); setShowMobileSidebar(false); }}>
+                        <MessageCircle size={20} aria-hidden="true" /><span>Chat Bureau</span>
+                    </button>
+                </nav>
+            </aside>
+        </div>
+    )}
 
     {/* TAB NAVIGATION */}
     <nav className="tab-nav" role="navigation" aria-label="Navigation principale">
