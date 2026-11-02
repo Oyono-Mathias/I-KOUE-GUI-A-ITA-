@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Archive, FileText, CalendarDays, Mail, Landmark, Zap, ClipboardList, MessageCircle, Users, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { DashboardHeader } from '../../components/layout/DashboardHeader';
+import { DashboardSidebar } from '../../components/layout/DashboardSidebar';
+import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
+import '../../components/layout/dashboard-navigation.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
@@ -14,6 +19,8 @@ export const SecretaireDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const navigateToSection = (section: string) => { setActiveTab(section); setShowMobileSidebar(false); };
 
   // Filters
   const [memberFilter, setMemberFilter] = useState('all');
@@ -231,51 +238,47 @@ export const SecretaireDashboard = () => {
 
   return (
     <div className="sec-dashboard-container">
-      {/* HEADER */}
-      <header className="dashboard-header">
-          <div className="header-top">
-              <div className="logo-container">
-                  <div className="logo">IK</div>
-                  <div className="logo-text">
-                      <h1>I KOUE GUI A ITA</h1>
-                      <div className="devise">ENSEMBLE · VOLONTÉ · ENGAGEMENT</div>
-                  </div>
-              </div>
-              <div className="header-actions">
-                  <div style={{ position: 'relative' }}>
-                      <button className="header-btn" onClick={() => setShowNotifPanel(!showNotifPanel)}>
-                          🔔 {totalNotifs > 0 && <span className="notif-badge">{totalNotifs}</span>}
-                      </button>
-                      {showNotifPanel && (
-                          <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '280px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 50, padding: '16px', color: '#1a1a1a' }}>
-                              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>🔔 Notifications</h4>
-                              {pendingPV > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#B45309', cursor: 'pointer' }} onClick={() => { setActiveTab('pv'); setShowNotifPanel(false); }}>📝 {pendingPV} PV à traiter</div>}
-                              {pendingMod > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#C62828', cursor: 'pointer' }} onClick={() => { setActiveTab('moderation'); setShowNotifPanel(false); }}>🛡️ {pendingMod} élément(s) à modérer</div>}
-                              {upcomingConvos > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#1D4ED8', cursor: 'pointer' }} onClick={() => { setActiveTab('convocations'); setShowNotifPanel(false); }}>📬 {upcomingConvos} convocation(s) à venir</div>}
-                              {totalNotifs === 0 && upcomingConvos === 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#666' }}>Aucune notification.</div>}
-                          </div>
-                      )}
-                  </div>
-                  <button className="header-btn" onClick={handleLogout}>🚪</button>
-              </div>
+      <div className="sec-shared-header-wrap">
+        <DashboardHeader
+          userName={userData?.displayName || 'Secrétaire Général'}
+          roleLabel="Secrétaire général"
+          notificationCount={totalNotifs + upcomingConvos}
+          menuOpen={showMobileSidebar}
+          onMenuToggle={() => setShowMobileSidebar(open => !open)}
+          onNotificationsClick={() => setShowNotifPanel(open => !open)}
+        />
+        {showNotifPanel && (
+          <div className="sec-notification-panel" role="region" aria-label="Notifications">
+            <h4>Notifications</h4>
+            {pendingPV > 0 && <button type="button" onClick={() => { navigateToSection('pv'); setShowNotifPanel(false); }}>{pendingPV} PV à traiter</button>}
+            {pendingMod > 0 && <button type="button" onClick={() => { navigateToSection('moderation'); setShowNotifPanel(false); }}>{pendingMod} élément(s) à modérer</button>}
+            {upcomingConvos > 0 && <button type="button" onClick={() => { navigateToSection('convocations'); setShowNotifPanel(false); }}>{upcomingConvos} convocation(s) à venir</button>}
+            {totalNotifs === 0 && upcomingConvos === 0 && <p>Aucune notification.</p>}
           </div>
-          </header>
-
-      {/* TAB NAV */}
-      <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
-          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">📊</span><span>Dashboard</span></button>
-          <button className={`tab-btn ${activeTab === 'archives' ? 'active' : ''}`} onClick={() => setActiveTab('archives')}><span className="tab-icon">🗂️</span><span>Archives</span></button>
-          <button className={`tab-btn ${activeTab === 'pv' ? 'active' : ''}`} onClick={() => setActiveTab('pv')}><span className="tab-icon">📝</span><span>PV & CR</span></button>
-          <button className={`tab-btn ${activeTab === 'convocations' ? 'active' : ''}`} onClick={() => setActiveTab('convocations')}><span className="tab-icon">📬</span><span>Convocations</span></button>
-          <button className={`tab-btn ${activeTab === 'courriers' ? 'active' : ''}`} onClick={() => setActiveTab('courriers')}><span className="tab-icon">📬</span><span>Courriers</span></button>
-          <button className={`tab-btn ${activeTab === 'commissions' ? 'active' : ''}`} onClick={() => setActiveTab('commissions')}><span className="tab-icon">🏛️</span><span>Commissions</span></button>
-          <button className={`tab-btn ${activeTab === 'suppleance' ? 'active' : ''}`} onClick={() => setActiveTab('suppleance')}><span className="tab-icon">⚡</span><span>Suppléance</span></button>
-          <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}><span className="tab-icon">📋</span><span>Tâches</span></button>
-          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
-          <button className={`tab-btn ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}><span className="tab-icon">👥</span><span>Membres</span></button>
-          <button className={`tab-btn ${activeTab === 'moderation' ? 'active' : ''}`} onClick={() => setActiveTab('moderation')}><span className="tab-icon">🛡️</span><span>Modération</span></button>
-      </nav>
-
+        )}
+      </div>
+      <DashboardSidebar
+        open={showMobileSidebar}
+        activeSection={activeTab}
+        userName={userData?.displayName || 'Secrétaire Général'}
+        roleLabel="Secrétaire général"
+        onNavigate={navigateToSection}
+        onLogout={handleLogout}
+        onClose={() => setShowMobileSidebar(false)}
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard },
+          { id: 'archives', label: 'Archives', icon: Archive },
+          { id: 'pv', label: 'PV & comptes rendus', icon: FileText },
+          { id: 'convocations', label: 'Convocations', icon: CalendarDays },
+          { id: 'courriers', label: 'Courriers', icon: Mail },
+          { id: 'commissions', label: 'Commissions', icon: Landmark },
+          { id: 'suppleance', label: 'Suppléance', icon: Zap },
+          { id: 'tasks', label: 'Tâches', icon: ClipboardList },
+          { id: 'messages', label: 'Messages', icon: MessageCircle },
+          { id: 'members', label: 'Membres', icon: Users },
+          { id: 'moderation', label: 'Modération', icon: ShieldCheck }
+        ]}
+      />
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
           
@@ -727,17 +730,11 @@ export const SecretaireDashboard = () => {
         </div>
       </div>
 
-      {/* BOTTOM NAV */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
-          <button className={activeTab === 'courriers' ? 'active' : ''} onClick={() => setActiveTab('courriers')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📬</span><span>Courriers</span></button>
-          <button className={activeTab === 'commissions' ? 'active' : ''} onClick={() => setActiveTab('commissions')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🏛️</span><span>Comm.</span></button>
-          <button className={activeTab === 'tasks' ? 'active' : ''} onClick={() => setActiveTab('tasks')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📋</span><span>Tâches</span></button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
-          <button className={activeTab === 'archives' ? 'active' : ''} onClick={() => setActiveTab('archives')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🗂️</span><span>Archives</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'pv' ? 'active' : ''} onClick={() => setActiveTab('pv')}><span className="nav-icon">📝</span><span>PV</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'convocations' ? 'active' : ''} onClick={() => setActiveTab('convocations')}><span className="nav-icon">📬</span><span>Convoc.</span></button>
-      </nav>
+      <DashboardBottomNavigation
+        activeSection={activeTab}
+        onNavigate={navigateToSection}
+        onMenuClick={() => setShowMobileSidebar(true)}
+      />
 
       {/* MODALS */}
       {pvModalOpen && (
