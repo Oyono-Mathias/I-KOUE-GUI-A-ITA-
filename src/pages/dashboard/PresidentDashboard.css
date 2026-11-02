@@ -1146,3 +1146,21 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/* Decorative icon slots are omitted when no icon library is imported. */
+.president-dashboard-container .stat-icon:empty,
+.president-dashboard-container .qa-icon:empty,
+.president-dashboard-container .alert-icon:empty,
+.president-dashboard-container .nav-icon:empty,
+.president-dashboard-container .tab-icon:empty {
+    display: none;
+}
+
+.president-dashboard-container .header-btn {
+    width: auto;
+    min-width: 44px;
+    padding: 0 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
