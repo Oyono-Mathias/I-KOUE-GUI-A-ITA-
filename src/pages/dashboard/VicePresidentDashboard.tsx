@@ -358,21 +358,6 @@ export const VicePresidentDashboard = () => {
         onLogout={handleLogout}
         onClose={() => setShowMobileSidebar(false)}
       />
-      <nav className="tab-nav" aria-label="Navigation du tableau de bord">
-        <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">🏠</span><span>Dashboard</span></button>
-        <button className={`tab-btn ${activeTab === 'commissions' ? 'active' : ''}`} onClick={() => setActiveTab('commissions')}><span className="tab-icon">🏛️</span><span>Commissions</span></button>
-        <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}><span className="tab-icon">📋</span><span>Tâches</span></button>
-        <button className={`tab-btn ${activeTab === 'objectives' ? 'active' : ''}`} onClick={() => setActiveTab('objectives')}><span className="tab-icon">🎯</span><span>Objectifs</span></button>
-        <button className={`tab-btn ${activeTab === 'partenaires' ? 'active' : ''}`} onClick={() => setActiveTab('partenaires')}><span className="tab-icon">🤝</span><span>Partenaires</span></button>
-        <button className={`tab-btn ${activeTab === 'conflits' ? 'active' : ''}`} onClick={() => setActiveTab('conflits')}><span className="tab-icon">⚖️</span><span>Conflits</span></button>
-        <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
-        <button className={`tab-btn ${activeTab === 'members' ? 'active' : ''}`} onClick={() => setActiveTab('members')}><span className="tab-icon">👥</span><span>Membres</span></button>
-        <button className={`tab-btn ${activeTab === 'meetings' ? 'active' : ''}`} onClick={() => setActiveTab('meetings')}><span className="tab-icon">📅</span><span>Réunions</span></button>
-        <button className={`tab-btn ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}><span className="tab-icon">📝</span><span>Contenu</span></button>
-        <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><span className="tab-icon">📊</span><span>Rapports</span></button>
-        <button className={`tab-btn ${activeTab === 'suppleance' ? 'active' : ''}`} onClick={() => setActiveTab('suppleance')}><span className="tab-icon">⚡</span><span>Suppléance</span></button>
-        {isSuppleanceActive && <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><span className="tab-icon">💰</span><span>Dépenses</span></button>}
-      </nav>
       <DashboardBottomNavigation
         activeSection={(['dashboard','tasks','messages'].includes(activeTab) ? activeTab : '') as DashboardSection}
         onNavigate={(section) => setActiveTab(section)}
