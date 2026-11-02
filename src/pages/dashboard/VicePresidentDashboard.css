@@ -1288,3 +1288,61 @@
   .vp-dashboard-container .tab-nav { display: none; }
   .vp-dashboard-container { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 }
+
+
+/* Compact mobile dashboard spacing */
+@media (max-width: 767px) {
+    .vp-dashboard-container .card {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    .vp-dashboard-container .card-header {
+        margin-bottom: 10px;
+        gap: 8px;
+    }
+
+    .vp-dashboard-container .stats-grid {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .vp-dashboard-container .stat-card {
+        min-height: 0;
+        padding: 12px;
+    }
+
+    .vp-dashboard-container .stat-card .stat-icon {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+
+    .vp-dashboard-container .stat-card .stat-value {
+        font-size: 20px;
+        line-height: 1.2;
+    }
+
+    .vp-dashboard-container .stat-card .stat-label {
+        margin-top: 3px;
+    }
+
+    .vp-dashboard-container .quick-actions {
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .vp-dashboard-container .quick-action {
+        min-height: 0;
+        padding: 12px;
+    }
+
+    .vp-dashboard-container .quick-action .qa-icon {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+
+    .vp-dashboard-container .task-item {
+        padding: 10px;
+        margin-bottom: 8px;
+    }
+}
