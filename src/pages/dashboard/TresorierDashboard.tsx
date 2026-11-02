@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FileDown, CheckCircle2, X, AlertCircle } from 'lucide-react';
+import { FileDown, CheckCircle2, X, AlertCircle, LayoutDashboard, Banknote, Receipt, Users, FileText, MessageCircle, ChartNoAxesCombined, Wallet, ClipboardList } from 'lucide-react';
+import { DashboardHeader } from '../../components/layout/DashboardHeader';
+import { DashboardSidebar } from '../../components/layout/DashboardSidebar';
+import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
+import '../../components/layout/dashboard-navigation.css';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, where, orderBy, onSnapshot, updateDoc, doc, addDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
@@ -14,6 +18,12 @@ export const TresorierDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const navigateToSection = (section: string) => {
+    setActiveTab(section === 'tasks' ? 'expenses' : section);
+    setShowMobileSidebar(false);
+    setShowNotifPanel(false);
+  };
   const [duesListenerError, setDuesListenerError] = useState('');
 
   // Data State
@@ -348,48 +358,44 @@ export const TresorierDashboard = () => {
 
   return (
     <div className="tres-dashboard-container">
-      {/* HEADER */}
-      <header className="dashboard-header">
-          <div className="header-top">
-              <div className="logo-container">
-                  
-                  <div className="logo">IK</div>
-                  <div className="logo-text">
-                      <h1>I KOUE GUI A ITA</h1>
-                      <div className="devise">ENSEMBLE · VOLONTÉ · ENGAGEMENT</div>
-                  </div>
-              </div>
-              <div className="header-actions">
-                  <div style={{ position: 'relative' }}>
-                      <button className="header-btn" onClick={() => setShowNotifPanel(!showNotifPanel)}>
-                          🔔 {totalNotifs > 0 && <span className="notif-badge">{totalNotifs}</span>}
-                      </button>
-                      {showNotifPanel && (
-                          <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '280px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 50, padding: '16px', color: '#1a1a1a' }}>
-                              <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>🔔 Notifications</h4>
-                              {unpaidMembersCount > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#B45309', cursor: 'pointer' }} onClick={() => { setActiveTab('dues'); setShowNotifPanel(false); }}>⚠️ {unpaidMembersCount} membre(s) en retard</div>}
-                              {expenses.filter(e => e.status === 'pending').length > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#C62828', cursor: 'pointer' }} onClick={() => { setActiveTab('expenses'); setShowNotifPanel(false); }}>💸 {expenses.filter(e => e.status === 'pending').length} dépense(s) en attente</div>}
-                              {totalNotifs === 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#666' }}>Aucune notification.</div>}
-                          </div>
-                      )}
-                  </div>
-                  <button className="header-btn" onClick={handleLogout}>🚪</button>
-              </div>
+      <div className="tres-shared-header-wrap">
+        <DashboardHeader
+          userName={userData?.displayName || 'Trésorier Général'}
+          roleLabel="Trésorier"
+          notificationCount={totalNotifs + pendingDuesPayments.length}
+          menuOpen={showMobileSidebar}
+          onMenuToggle={() => setShowMobileSidebar(open => !open)}
+          onNotificationsClick={() => setShowNotifPanel(open => !open)}
+        />
+        {showNotifPanel && (
+          <div className="tres-notification-panel" role="region" aria-label="Notifications">
+            <h4>Notifications financières</h4>
+            {unpaidMembersCount > 0 && <button type="button" onClick={() => navigateToSection('dues')}>{unpaidMembersCount} membre(s) en retard de cotisation</button>}
+            {expenses.filter(e => e.status === 'pending').length > 0 && <button type="button" onClick={() => navigateToSection('expenses')}>{expenses.filter(e => e.status === 'pending').length} dépense(s) en attente</button>}
+            {pendingDuesPayments.length > 0 && <button type="button" onClick={() => navigateToSection('dues')}>{pendingDuesPayments.length} demande(s) de cotisation à valider</button>}
+            {totalNotifs === 0 && pendingDuesPayments.length === 0 && <p>Aucune notification.</p>}
           </div>
-          </header>
-
-      {/* TAB NAV */}
-      <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
-          <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">📊</span><span>Dashboard</span></button>
-          <button className={`tab-btn ${activeTab === 'income' ? 'active' : ''}`} onClick={() => setActiveTab('income')}><span className="tab-icon">💵</span><span>Recettes</span></button>
-          <button className={`tab-btn ${activeTab === 'expenses' ? 'active' : ''}`} onClick={() => setActiveTab('expenses')}><span className="tab-icon">💸</span><span>Dépenses</span></button>
-          <button className={`tab-btn ${activeTab === 'dues' ? 'active' : ''}`} onClick={() => setActiveTab('dues')}><span className="tab-icon">👥</span><span>Cotisations</span></button>
-          <button className={`tab-btn ${activeTab === 'factures' ? 'active' : ''}`} onClick={() => setActiveTab('factures')}><span className="tab-icon">🧾</span><span>Factures</span></button>
-          <button className={`tab-btn ${activeTab === 'messages' ? 'active' : ''}`} onClick={() => setActiveTab('messages')}><span className="tab-icon">💬</span><span>Messages</span></button>
-          <button className={`tab-btn ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}><span className="tab-icon">📊</span><span>Rapports</span></button>
-          <button className={`tab-btn ${activeTab === 'budget' ? 'active' : ''}`} onClick={() => setActiveTab('budget')}><span className="tab-icon">📋</span><span>Budget</span></button>
-      </nav>
-
+        )}
+      </div>
+      <DashboardSidebar
+        open={showMobileSidebar}
+        activeSection={activeTab}
+        userName={userData?.displayName || 'Trésorier Général'}
+        roleLabel="Trésorier"
+        onNavigate={navigateToSection}
+        onLogout={handleLogout}
+        onClose={() => setShowMobileSidebar(false)}
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard },
+          { id: 'income', label: 'Recettes', icon: Banknote },
+          { id: 'expenses', label: 'Dépenses', icon: Receipt },
+          { id: 'dues', label: 'Cotisations & validations', icon: Users },
+          { id: 'factures', label: 'Factures', icon: FileText },
+          { id: 'budget', label: 'Budget prévisionnel', icon: Wallet },
+          { id: 'reports', label: 'Rapports financiers', icon: ChartNoAxesCombined },
+          { id: 'messages', label: 'Messages du bureau', icon: MessageCircle }
+        ]}
+      />
       {/* TAB: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
           <div className="welcome-card">
@@ -932,15 +938,11 @@ export const TresorierDashboard = () => {
           </div>
       )}
 
-      {/* BOTTOM NAV */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'income' ? 'active' : ''} onClick={() => setActiveTab('income')}><span className="nav-icon">💵</span><span>Recettes</span></button>
-          <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'expenses' ? 'active' : ''} onClick={() => setActiveTab('expenses')}><span className="nav-icon">💸</span><span>Dépenses</span></button>
-          <button className={activeTab === 'dues' ? 'active' : ''} onClick={() => setActiveTab('dues')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">👥</span><span>Cotisations</span></button>
-          <button className={activeTab === 'factures' ? 'active' : ''} onClick={() => setActiveTab('factures')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">🧾</span><span>Factures</span></button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
-      </nav>
+      <DashboardBottomNavigation
+        activeSection={activeTab === 'expenses' ? 'tasks' : activeTab}
+        onNavigate={navigateToSection}
+        onMenuClick={() => setShowMobileSidebar(true)}
+      />
 
       {duesModalOpen.isOpen && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
