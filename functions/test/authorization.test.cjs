@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { canCreateMember } = require('../lib/authorization');
 
-test('allows the four approved executive/secretary roles', () => {
+test('allows approved executive and secretary roles', () => {
   for (const role of ['president', 'president_fondateur', 'secretaire_general', 'secretaire', 'super_admin']) {
     assert.equal(canCreateMember(role, 'actif'), true, role);
   }
