@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, Bell, FileText, ChartNoAxesCombined, MessageCircle } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Banknote, ClipboardList, Newspaper, Bell, FileText, ChartNoAxesCombined, MessageCircle, MoreVertical, Eye, Pencil, Trash2, UserRoundX } from 'lucide-react';
 import { DashboardHeader } from '../../components/layout/DashboardHeader';
 import { DashboardSidebar, type DashboardSection } from '../../components/layout/DashboardSidebar';
 import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
@@ -30,6 +30,7 @@ export const PresidentDashboard = () => {
 
   // Modals
   const [memberModal, setMemberModal] = useState<any>(null);
+  const [activeMemberMenuId, setActiveMemberMenuId] = useState<string | null>(null);
   const [roleEditModal, setRoleEditModal] = useState<{ member: any; role: InstitutionalRole } | null>(null);
   const [roleSaving, setRoleSaving] = useState(false);
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
@@ -605,13 +606,23 @@ export const PresidentDashboard = () => {
                                     <button className="btn btn-danger btn-small" onClick={() => rejectMember(m.id, !!m.isRequest)}>✕ Refuser</button>
                                 </>
                             ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-                                  <button className="btn btn-outline btn-small" onClick={() => setMemberModal(m)}> Voir</button>
-                                  {m.statut !== 'suspendu' && m.statut !== 'refuse' && (
-                                    <button className="btn btn-danger btn-small" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #EF4444', padding: '2px 8px' }} onClick={() => suspendMember(m.id)}> Suspendre</button>
-                                  )}
-                                  <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}> Supprimer</button>
-                                  <button type="button" className="btn btn-outline btn-small" onClick={() => setRoleEditModal({ member: m, role: (ROLE_DEFINITIONS.some((item) => item.id === m.role) ? m.role : 'membre') as InstitutionalRole })}>Modifier le rôle</button>
+                                <div className="member-action-menu-wrap">
+                                    <button type="button" className="member-action-trigger"
+                                        aria-label={`Actions pour ${m.nom || 'ce membre'}`}
+                                        aria-haspopup="menu" aria-expanded={activeMemberMenuId === m.id}
+                                        onClick={() => setActiveMemberMenuId(current => current === m.id ? null : m.id)}>
+                                        <MoreVertical size={19} /><span>Actions</span>
+                                    </button>
+                                    {activeMemberMenuId === m.id && (
+                                        <div className="member-action-menu" role="menu" aria-label="Actions du membre">
+                                            <button type="button" role="menuitem" onClick={() => { setMemberModal(m); setActiveMemberMenuId(null); }}><Eye size={16} /> Voir le profil</button>
+                                            <button type="button" role="menuitem" onClick={() => { setRoleEditModal({ member: m, role: (ROLE_DEFINITIONS.some((item) => item.id === m.role) ? m.role : 'membre') as InstitutionalRole }); setActiveMemberMenuId(null); }}><Pencil size={16} /> Modifier le rôle</button>
+                                            {m.statut !== 'suspendu' && m.statut !== 'refuse' && (
+                                                <button type="button" role="menuitem" onClick={() => { suspendMember(m.id); setActiveMemberMenuId(null); }}><UserRoundX size={16} /> Suspendre</button>
+                                            )}
+                                            <button type="button" role="menuitem" className="danger" onClick={() => { deleteMember(m.id); setActiveMemberMenuId(null); }}><Trash2 size={16} /> Supprimer</button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
