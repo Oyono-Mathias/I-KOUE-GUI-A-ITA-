@@ -83,12 +83,29 @@ export const LandingPage = () => {
   }, [domains, news, reports]);
 
   useEffect(() => {
-    // Fetch site config
+    // Legacy configuration remains the fallback during progressive CMS migration.
     const unsubConfig = onSnapshot(doc(db, 'site_config', 'main'), (docSnap) => {
-      if (docSnap.exists()) {
-        setSiteConfig(prev => ({ ...prev, ...docSnap.data() }));
-      }
+      if (docSnap.exists()) setSiteConfig(prev => ({ ...prev, ...docSnap.data() }));
     });
+    const unsubLandingContent = onSnapshot(doc(db, 'landing_content', 'main'), (snapshot) => {
+      if (!snapshot.exists()) return;
+      const cms = snapshot.data();
+      setSiteConfig((prev: any) => ({
+        ...prev,
+        heroTitle: cms.hero?.title ?? prev.heroTitle,
+        heroSubtitle: cms.hero?.subtitle ?? prev.heroSubtitle,
+        aboutHistory: cms.about?.history ?? prev.aboutHistory,
+        aboutMission: cms.about?.mission ?? prev.aboutMission,
+        contactAddress: cms.contact?.address ?? prev.contactAddress,
+        contactPhone1: cms.donation?.mobileMoney?.orangeMoneyNumber ?? cms.contact?.phone1 ?? prev.contactPhone1,
+        contactPhone2: cms.donation?.mobileMoney?.moovMoneyNumber ?? cms.contact?.phone2 ?? prev.contactPhone2,
+        contactEmail: cms.contact?.email ?? prev.contactEmail,
+        contactFacebook: cms.contact?.facebookUrl ?? prev.contactFacebook,
+        donationTitle: cms.donation?.title,
+        donationDescription: cms.donation?.description,
+        airtelMoneyNumber: cms.donation?.mobileMoney?.airtelMoneyNumber,
+      }));
+    }, (error) => console.warn('Erreur chargement CMS landing:', error));
 
     // Fetch domains
     const qDomains = query(collection(db, 'domains'), orderBy('order', 'asc'));
@@ -116,6 +133,7 @@ export const LandingPage = () => {
 
     return () => {
       unsubConfig();
+      unsubLandingContent();
       unsubDomains();
       unsubNews();
       unsubReports();
@@ -430,8 +448,8 @@ export const LandingPage = () => {
 
       {/* DONATION / MOBILE MONEY */}
       <section className="donation-section" id="don">
-          <h2 className="reveal">💛 Soutenez Nos Actions</h2>
-          <p className="reveal">Chaque don, même modeste, fait la différence. Donnez via Mobile Money.</p>
+          <h2 className="reveal">💛 {siteConfig.donationTitle || 'Soutenez Nos Actions'}</h2>
+          <p className="reveal">{siteConfig.donationDescription || 'Chaque don, même modeste, fait la différence. Donnez via Mobile Money.'}</p>
 
           <div className="mobile-money-grid reveal">
               <div className="mobile-money-card">
@@ -446,7 +464,7 @@ export const LandingPage = () => {
               </div>
               <div className="mobile-money-card">
                   <div className="provider">🔴 Airtel Money</div>
-                  <div className="number">{siteConfig.contactPhone1}</div>
+                  <div className="number">{siteConfig.airtelMoneyNumber || siteConfig.contactPhone1}</div>
                   <div className="name">Association I KOUE GUI A ITA</div>
               </div>
           </div>

@@ -257,3 +257,53 @@ test('Un utilisateur ne peut pas s’attribuer un rôle privilégié', async () 
     role: 'tresorier',
   }));
 });
+
+
+test('CMS Landing Page: les trois rôles éditoriaux peuvent publier le document public', async () => {
+  for (const [uid, role] of [
+    ['cms-communicator', 'communicateur'],
+    ['cms-president', 'president'],
+    ['cms-founder', 'president_fondateur'],
+  ]) {
+    await seedUser(uid, role);
+    const db = dbFor(uid);
+    await assertSucceeds(setDoc(doc(db, 'landing_content', 'main'), {
+      hero: { title: 'Titre de test', subtitle: 'Sous-titre' },
+      statistics: [{ label: 'Bénéficiaires', value: '500+' }],
+      about: { history: 'Histoire', mission: 'Mission' },
+      donation: { title: 'Soutenir', mobileMoney: { orangeMoneyNumber: '+23670000000' } },
+      banners: [],
+      contact: { address: 'Bangui' },
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    }));
+  }
+});
+
+test('CMS Landing Page: les autres rôles ne peuvent ni créer ni modifier le contenu', async () => {
+  for (const [uid, role] of [
+    ['cms-member', 'membre'],
+    ['cms-treasurer', 'tresorier'],
+    ['cms-vice-president', 'vice_president'],
+  ]) {
+    await seedUser(uid, role);
+    const db = dbFor(uid);
+    await assertFails(setDoc(doc(db, 'landing_content', 'main'), {
+      hero: { title: 'Interdit' }, updatedAt: serverTimestamp(), updatedBy: uid,
+    }));
+  }
+});
+
+test('CMS Landing Page: un rôle autorisé ne peut pas écrire hors du document main ni supprimer le CMS', async () => {
+  await seedUser('cms-editor', 'communicateur');
+  const db = dbFor('cms-editor');
+  await assertFails(setDoc(doc(db, 'landing_content', 'draft'), {
+    hero: { title: 'Autre document' }, updatedAt: serverTimestamp(), updatedBy: 'cms-editor',
+  }));
+  await seedDocument('landing_content', 'main', {
+    hero: { title: 'Titre initial' }, updatedAt: new Date(), updatedBy: 'seed',
+  });
+  const mainRef = doc(db, 'landing_content', 'main');
+  const { deleteDoc } = await import('firebase/firestore');
+  await assertFails(deleteDoc(mainRef));
+});

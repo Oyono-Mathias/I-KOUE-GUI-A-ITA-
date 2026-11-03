@@ -145,6 +145,23 @@ service cloud.firestore {
       allow write: if isSystemAdmin() || isCommunicateur();
     }
 
+    // CMS public : seul le Communicateur, le Président et le Président Fondateur
+    // (ainsi que l'administration technique) peuvent publier le contenu de la Landing Page.
+    // Le document ne contient que des informations destinées à être rendues publiques.
+    match /landing_content/{docId} {
+      allow read: if docId == 'main';
+      allow create, update: if docId == 'main'
+        && isActiveUser()
+        && getUserRole() in ['communicateur', 'president', 'president_fondateur', 'super_admin', 'admin']
+        && request.resource.data.keys().hasOnly([
+          'hero', 'statistics', 'about', 'donation', 'banners', 'contact',
+          'updatedAt', 'updatedBy'
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /domains/{docId} {
       allow read: if true;
       allow write: if isSystemAdmin() || isCommunicateur();
