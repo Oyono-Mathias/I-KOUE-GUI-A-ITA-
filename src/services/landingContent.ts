@@ -1,5 +1,5 @@
 import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db } from '../firebase';
 import type { LandingContent } from '../types/landing';
 
 const landingContentRef = doc(db, 'landing_content', 'main');
