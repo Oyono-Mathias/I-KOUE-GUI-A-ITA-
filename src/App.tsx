@@ -16,6 +16,7 @@ const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome').then(
 const MemberVoting = lazy(() => import('./pages/member/MemberVoting').then(m => ({ default: m.MemberVoting })));
 const CommunicateurDashboard = lazy(() => import('./pages/communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
 const PresidentDashboard = lazy(() => import('./pages/dashboard/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
+const PresidentFondateurDashboard = lazy(() => import('./pages/dashboard/PresidentFondateurDashboard').then(m => ({ default: m.PresidentFondateurDashboard })));
 const VicePresidentDashboard = lazy(() => import('./pages/dashboard/VicePresidentDashboard').then(m => ({ default: m.VicePresidentDashboard })));
 const SecretaireDashboard = lazy(() => import('./pages/dashboard/SecretaireDashboard').then(m => ({ default: m.SecretaireDashboard })));
 const TresorierDashboard = lazy(() => import('./pages/dashboard/TresorierDashboard').then(m => ({ default: m.TresorierDashboard })));
@@ -57,7 +58,7 @@ export const App = () => {
             <Route path="voting" element={<MemberVoting />} />
             <Route path="super_admin" element={<PresidentDashboard />} />
             <Route path="president" element={<PresidentDashboard />} />
-            <Route path="president_fondateur" element={<DashboardHome />} />
+            <Route path="president_fondateur" element={<PresidentFondateurDashboard />} />
             <Route path="admin_vice_president" element={<VicePresidentDashboard />} />
             <Route path="admin_secretaire" element={<SecretaireDashboard />} />
             <Route path="admin_tresorier" element={<TresorierDashboard />} />
