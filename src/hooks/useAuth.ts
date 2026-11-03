@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { createContext, createElement, useContext, useState, useEffect, type ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
@@ -15,7 +15,11 @@ export interface UserData {
     statut: 'actif' | 'suspendu' | 'a_jour';
 }
 
-export const useAuth = () => {
+interface AuthState { user: User | null; userData: UserData | null; loading: boolean; }
+
+const AuthContext = createContext<AuthState | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -63,5 +67,11 @@ export const useAuth = () => {
         };
     }, []);
 
-    return { user, userData, loading };
+    return createElement(AuthContext.Provider, { value: { user, userData, loading } }, children);
+};
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) throw new Error('useAuth doit être utilisé à l’intérieur de AuthProvider.');
+    return context;
 };
