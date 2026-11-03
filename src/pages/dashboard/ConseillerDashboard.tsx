@@ -3,6 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, where } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
+import { LayoutDashboard, Landmark, Lightbulb, FileText, Handshake, BookOpen, ClipboardList, Zap, MessageCircle, FolderKanban } from 'lucide-react';
+import { DashboardHeader } from '../../components/layout/DashboardHeader';
+import { DashboardSidebar } from '../../components/layout/DashboardSidebar';
+import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
+import '../../components/layout/dashboard-navigation.css';
 import { db, auth } from '../../lib/firebase';
 import './ConseillerDashboard.css';
 
@@ -13,6 +18,8 @@ export const ConseillerDashboard = () => {
   const activeTab = searchParams.get('tab') || 'dashboard';
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const navigateToSection = (section: string) => { setActiveTab(section); setShowMobileSidebar(false); setShowNotifPanel(false); };
 
   // Data State
   const [avis, setAvis] = useState<any[]>([]);
@@ -189,44 +196,43 @@ export const ConseillerDashboard = () => {
 
   return (
     <div className="cons-dashboard-container">
-        {/* HEADER */}
-        <header className="dashboard-header">
-            <div className="header-top">
-                <div className="logo-container">
-                    <div className="logo">IK</div>
-                    <div className="logo-text">
-                        <h1>I KOUE GUI A ITA</h1>
-                        <div className="devise">ENSEMBLE · VOLONTÉ · ENGAGEMENT</div>
-                    </div>
-                </div>
-                <div className="header-actions">
-                    <button className="header-btn" onClick={() => setShowNotifPanel(!showNotifPanel)}>
-                        🔔 {totalNotifs > 0 && <span className="notif-badge">{totalNotifs}</span>}
-                    </button>
-                    {showNotifPanel && (
-                        <div style={{ position: 'absolute', top: '60px', right: '16px', width: '280px', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 50, padding: '16px', color: '#1a1a1a' }}>
-                            <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '8px' }}>🔔 Notifications</h4>
-                            {pendingAvisCount > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#B45309' }}>⚠️ {pendingAvisCount} avis en attente</div>}
-                            {upcomingMeetingsCount > 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#0A3D62' }}>📅 {upcomingMeetingsCount} réunion(s) à venir</div>}
-                            {totalNotifs === 0 && <div style={{ padding: '8px 0', fontSize: '13px', color: '#666' }}>Aucune notification.</div>}
-                        </div>
-                    )}
-                    <button className="header-btn" onClick={handleLogout}>🚪</button>
-                </div>
-            </div>
-            </header>
-
-        {/* TAB NAV (Desktop only conceptually, scrollable) */}
-        <nav className="tab-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', paddingBottom: '8px' }}>
-            <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}><span className="tab-icon">📊</span><span>Dashboard</span></button>
-            <button className={`tab-btn ${activeTab === 'commission' ? 'active' : ''}`} onClick={() => setActiveTab('commission')}><span className="tab-icon">🏛️</span><span>Commission</span></button>
-            <button className={`tab-btn ${activeTab === 'avis' ? 'active' : ''}`} onClick={() => setActiveTab('avis')}><span className="tab-icon">💡</span><span>Avis</span></button>
-            <button className={`tab-btn ${activeTab === 'rapports' ? 'active' : ''}`} onClick={() => setActiveTab('rapports')}><span className="tab-icon">📄</span><span>Rapports</span></button>
-            <button className={`tab-btn ${activeTab === 'partenaires' ? 'active' : ''}`} onClick={() => setActiveTab('partenaires')}><span className="tab-icon">🤝</span><span>Partenaires</span></button>
-            <button className={`tab-btn ${activeTab === 'veille' ? 'active' : ''}`} onClick={() => setActiveTab('veille')}><span className="tab-icon">📚</span><span>Veille</span></button>
-            <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}><span className="tab-icon">📋</span><span>Tâches</span></button>
-            <button className={`tab-btn ${activeTab === 'suppleance' ? 'active' : ''}`} onClick={() => setActiveTab('suppleance')}><span className="tab-icon">⚡</span><span>Suppléance</span></button>
-        </nav>
+      <div className="cons-shared-header-wrap">
+        <DashboardHeader
+          userName={userData?.displayName || userData?.email || 'Conseiller'}
+          roleLabel="Conseiller"
+          notificationCount={totalNotifs}
+          menuOpen={showMobileSidebar}
+          onMenuToggle={() => setShowMobileSidebar(open => !open)}
+          onNotificationsClick={() => setShowNotifPanel(open => !open)}
+        />
+        {showNotifPanel && <div className="cons-notification-panel" role="region" aria-label="Notifications">
+          <h4>Notifications</h4>
+          {pendingAvisCount > 0 && <button type="button" onClick={() => navigateToSection('avis')}>{pendingAvisCount} avis en attente</button>}
+          {upcomingMeetingsCount > 0 && <button type="button" onClick={() => navigateToSection('commission')}>{upcomingMeetingsCount} réunion(s) à venir</button>}
+          {totalNotifs === 0 && <p>Aucune notification.</p>}
+        </div>}
+      </div>
+      <DashboardSidebar
+        open={showMobileSidebar}
+        activeSection={activeTab}
+        userName={userData?.displayName || userData?.email || 'Conseiller'}
+        roleLabel="Conseiller"
+        onNavigate={navigateToSection}
+        onLogout={handleLogout}
+        onClose={() => setShowMobileSidebar(false)}
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: LayoutDashboard },
+          { id: 'commission', label: 'Commission technique', icon: Landmark },
+          { id: 'avis', label: 'Avis & recommandations', icon: Lightbulb },
+          { id: 'rapports', label: 'Rapports', icon: FileText },
+          { id: 'partenaires', label: 'Partenaires', icon: Handshake },
+          { id: 'veille', label: 'Veille stratégique', icon: BookOpen },
+          { id: 'projets', label: 'Projets', icon: FolderKanban },
+          { id: 'tasks', label: 'Tâches', icon: ClipboardList },
+          { id: 'messages', label: 'Messages du Bureau', icon: MessageCircle },
+          ...(isSuppleanceActive ? [{ id: 'suppleance', label: 'Suppléance', icon: Zap }] : [])
+        ]}
+      />
 
         {/* TAB: DASHBOARD */}
         <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
@@ -416,16 +422,11 @@ export const ConseillerDashboard = () => {
             </div>
         </div>
 
-        {/* BOTTOM NAV (MOBILE FIRST) */}
-        <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-            <button style={{ minWidth: '80px', flex: '0 0 auto' }} className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}><span className="nav-icon">📊</span><span>Dash</span></button>
-            <button className={activeTab === 'commission' ? 'active' : ''} onClick={() => setActiveTab('commission')}><span className="nav-icon">🏛️</span><span>Com.</span></button>
-            <button className={activeTab === 'avis' ? 'active' : ''} onClick={() => setActiveTab('avis')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💡</span><span>Avis</span></button>
-          <button className={activeTab === 'projets' ? 'active' : ''} onClick={() => setActiveTab('projets')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">📈</span><span>Projets</span></button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')} style={{ minWidth: '80px', flex: '0 0 auto' }}><span className="nav-icon">💬</span><span>Messages</span></button>
-            <button className={activeTab === 'partenaires' ? 'active' : ''} onClick={() => setActiveTab('partenaires')}><span className="nav-icon">🤝</span><span>Partenaires</span></button>
-            <button className={activeTab === 'tasks' ? 'active' : ''} onClick={() => setActiveTab('tasks')}><span className="nav-icon">📋</span><span>Tâches</span></button>
-        </nav>
+        <DashboardBottomNavigation
+          activeSection={activeTab}
+          onNavigate={navigateToSection}
+          onMenuClick={() => setShowMobileSidebar(true)}
+        />
 
         {/* MODALS */}
         {avisModalOpen && (
