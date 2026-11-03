@@ -83,8 +83,12 @@ service cloud.firestore {
 
     function isAssignedTaskToCurrentRole() {
       let role = getUserRole();
-      let assignedTo = resource.data.assignedTo;
-      return isActiveUser() && ('assignedTo' in resource.data) && (
+      let assignedTo = resource.data.get('assignedTo', '');
+      return isActiveUser() && role in [
+        'membre', 'member', 'conseiller', 'communicateur', 'tresorier',
+        'treasurer', 'tresorier_adjoint', 'secretaire_adjoint', 'secretaire',
+        'secretaire_general', 'vice_president', 'president', 'admin_bureau'
+      ] && (
         assignedTo == role ||
         (role == 'secretaire_general' && assignedTo == 'secretaire') ||
         (role == 'tresorier' && assignedTo == 'treasurer') ||
@@ -103,7 +107,7 @@ service cloud.firestore {
     // =========================================================================
     match /users/{userId} {
       // Lecture : L'utilisateur pour son propre compte, ou le bureau habilité pour la gestion des membres
-      allow read: if isOwner(userId) || isSystemAdmin() || isSecretaire() || isVicePresident();
+      allow read: if isOwner(userId) || isSystemAdmin() || isPresident() || isSecretaire() || isVicePresident();
 
       // Création :
       // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
@@ -211,7 +215,7 @@ service cloud.firestore {
     }
 
     // =========================================================================
-    // 5. COLLECTIONS FINANCIÈRES (CLOISONNEMENT STRICT — TRÉSORIER / PRÉSIDENT)
+    // 5. COLLECTIONS FINANCIÈRES (TRÉSORIER, ADJOINT EN LECTURE SEULE, AUDIT)
     // =========================================================================
     match /finances/{docId} {
       // Le Commissaire aux Comptes et le Trésorier adjoint disposent d'une lecture seule.
@@ -265,7 +269,9 @@ service cloud.firestore {
             && request.resource.data.validatedAt == request.time
             && request.resource.data.validatedBy == request.auth.uid
             && request.resource.data.validatedByName is string
+            && request.resource.data.validatedByName.size() <= 120
             && request.resource.data.receiptNumber is string
+            && request.resource.data.receiptNumber.size() <= 50
           )
           ||
           (
@@ -279,6 +285,7 @@ service cloud.firestore {
             && request.resource.data.rejectedAt == request.time
             && request.resource.data.rejectedBy == request.auth.uid
             && request.resource.data.rejectedByName is string
+            && request.resource.data.rejectedByName.size() <= 120
           )
         );
 
