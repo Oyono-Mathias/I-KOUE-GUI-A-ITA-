@@ -19,6 +19,8 @@ export const TresorierDashboard = () => {
   const setActiveTab = (tab: string) => setSearchParams({ tab });
   const [showNotifPanel, setShowNotifPanel] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  // L'onglet universel « Tâches » sert d'alias visuel à « Dépenses » pour ce rôle.
+  // On conserve ce mapping afin de ne pas créer une rubrique métier ou un accès supplémentaire.
   const navigateToSection = (section: string) => {
     setActiveTab(section === 'tasks' ? 'expenses' : section);
     setShowMobileSidebar(false);
