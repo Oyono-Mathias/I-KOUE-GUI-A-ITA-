@@ -3,11 +3,30 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
+export const INSTITUTIONAL_ROLES = [
+    'president_fondateur',
+    'president',
+    'vice_president',
+    'secretaire_general',
+    'secretaire_adjoint',
+    'tresorier',
+    'tresorier_adjoint',
+    'conseiller',
+    'commissaire_aux_comptes',
+    'communicateur',
+    'membre',
+] as const;
+
+export type InstitutionalRole = typeof INSTITUTIONAL_ROLES[number];
+export type LegacyRole = 'secretaire' | 'admin_bureau';
+export type SystemRole = 'super_admin' | 'admin';
+export type UserRole = InstitutionalRole | LegacyRole | SystemRole;
+
 export interface UserData {
     uid: string;
     email: string | null;
     displayName: string | null;
-    role: 'super_admin' | 'president_fondateur' | 'president' | 'vice_president' | 'admin_bureau' | 'secretaire' | 'tresorier' | 'communicateur' | 'conseiller' | 'admin' | 'membre';
+    role: UserRole;
     photoURL: string | null;
     statut: 'actif' | 'suspendu' | 'a_jour';
 }
