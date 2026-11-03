@@ -116,6 +116,10 @@ service cloud.firestore {
       allow create: if (
         (isSystemAdmin() || isPresident() || isPresidentFondateur() || isSecretaire())
         && request.resource.data.role == 'membre'
+        && request.resource.data.keys().hasOnly([
+          'uid', 'nom', 'displayName', 'email', 'telephone', 'role', 'categorie',
+          'statut', 'createdAt', 'createdBy', 'isAdmin'
+        ])
         && (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente', 'a_jour'])
         && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
         && !request.resource.data.keys().hasAny(['permissions', 'admin', 'superAdmin'])
