@@ -41,66 +41,74 @@ service cloud.firestore {
       return s == null || s != 'suspendu';
     }
 
-    function isSuperAdmin() {
+    // Les privilèges techniques sont réservés aux comptes d'administration technique.
+    function isSystemAdmin() {
       let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
-        r == 'super_admin' || r == 'president' || r == 'president_fondateur' || r == 'admin'
+      return isSignedIn() && isNotSuspended() && r in ['super_admin', 'admin'];
+    }
+
+    function isActiveUser() {
+      return isSignedIn() && getUserRole() != null && isNotSuspended();
+    }
+
+    function isPresident() { return isActiveUser() && getUserRole() == 'president'; }
+    function isPresidentFondateur() { return isActiveUser() && getUserRole() == 'president_fondateur'; }
+    function isVicePresident() { return isActiveUser() && getUserRole() == 'vice_president'; }
+    function isSecretaire() { return isActiveUser() && getUserRole() in ['secretaire_general', 'secretaire']; }
+    function isSecretaireAdjoint() { return isActiveUser() && getUserRole() == 'secretaire_adjoint'; }
+    function isTresorier() { return isActiveUser() && getUserRole() in ['tresorier', 'treasurer']; }
+    function isTresorierAdjoint() { return isActiveUser() && getUserRole() == 'tresorier_adjoint'; }
+    function isCommissaireAuxComptes() { return isActiveUser() && getUserRole() == 'commissaire_aux_comptes'; }
+    function isCommunicateur() { return isActiveUser() && getUserRole() == 'communicateur'; }
+    function isConseiller() { return isActiveUser() && getUserRole() == 'conseiller'; }
+
+    // Le Fondateur, les adjoints et le Commissaire aux Comptes ne reçoivent
+    // aucun privilège opérationnel par héritage.
+    function isBureau() {
+      return isSystemAdmin() || (
+        isActiveUser() && getUserRole() in [
+          'president', 'vice_president', 'secretaire_general', 'secretaire',
+          'tresorier', 'communicateur', 'conseiller', 'admin_bureau'
+        ]
       );
     }
 
-    function isVicePresident() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'vice_president' || isSuperAdmin());
+    function isTaskManager() {
+      return isSystemAdmin() || (
+        isActiveUser() && getUserRole() in [
+          'president', 'vice_president', 'secretaire_general', 'secretaire', 'admin_bureau'
+        ]
+      );
     }
 
-    function isSecretaire() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'secretaire' || isSuperAdmin());
-    }
-
-    function isTresorier() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r in ['tresorier', 'treasurer'] || isSuperAdmin());
-    }
-
-    function isCommunicateur() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'communicateur' || isSuperAdmin());
-    }
-
-    function isConseiller() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (r == 'conseiller' || isSuperAdmin());
-    }
-
-    function isBureau() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && (
-        r in ['super_admin', 'president', 'president_fondateur', 'vice_president', 
-              'secretaire', 'tresorier', 'communicateur', 'conseiller', 'admin_bureau', 'admin']
+    function isAssignedTaskToCurrentRole() {
+      let role = getUserRole();
+      let assignedTo = resource.data.assignedTo;
+      return isActiveUser() && ('assignedTo' in resource.data) && (
+        assignedTo == role ||
+        (role == 'secretaire_general' && assignedTo == 'secretaire') ||
+        (role == 'tresorier' && assignedTo == 'treasurer') ||
+        (role == 'membre' && assignedTo == 'member')
       );
     }
 
     function isMember() {
-      return isSignedIn() && isNotSuspended();
+      return isSignedIn() && isNotSuspended() && getUserRole() in ['membre', 'member'];
     }
 
-    function isRegularMember() {
-      let r = getUserRole();
-      return isSignedIn() && isNotSuspended() && r in ['membre', 'member'];
-    }
+    function isRegularMember() { return isMember(); }
 
     // =========================================================================
     // 3. PROTECTION CRITIQUE DES PROFILS UTILISATEURS (/users/{userId})
     // =========================================================================
     match /users/{userId} {
       // Lecture : L'utilisateur pour son propre compte, ou le bureau habilité pour la gestion des membres
-      allow read: if isOwner(userId) || isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow read: if isOwner(userId) || isSystemAdmin() || isSecretaire() || isVicePresident();
 
       // Création :
       // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
       // - Auto-inscription : rôle strictement forcé à membre / member et statut non privilégié
-      allow create: if isSuperAdmin() || isSecretaire() || (
+      allow create: if isSystemAdmin() || isSecretaire() || (
         isOwner(userId) &&
         (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
         (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente']) &&
@@ -111,7 +119,7 @@ service cloud.firestore {
       // - Le bureau habilité peut administrer les rôles et statuts
       // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
       //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
-      allow update: if isSuperAdmin() || isSecretaire() || (
+      allow update: if isSystemAdmin() || isSecretaire() || (
         isOwner(userId) && isNotSuspended() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
@@ -119,7 +127,7 @@ service cloud.firestore {
       );
 
       // Suppression : Strictement réservée à la haute administration
-      allow delete: if isSuperAdmin() || isSecretaire();
+      allow delete: if isSystemAdmin() || isSecretaire();
     }
 
     // =========================================================================
@@ -127,87 +135,87 @@ service cloud.firestore {
     // =========================================================================
     match /site_config/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /domains/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /domaines/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /news/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur() || isVicePresident();
+      allow write: if isSystemAdmin() || isCommunicateur() || isVicePresident();
     }
 
     match /actualites/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /activites/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /temoignages/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isCommunicateur();
+      allow write: if isSystemAdmin() || isCommunicateur();
     }
 
     match /stats/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isBureau();
+      allow write: if isSystemAdmin() || isBureau();
     }
 
     match /public_reports/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow write: if isSystemAdmin() || isSecretaire() || isVicePresident();
     }
 
     match /partners/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+      allow write: if isSystemAdmin() || isVicePresident() || isConseiller();
     }
 
     match /partenaires/{docId} {
       allow read: if true;
-      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+      allow write: if isSystemAdmin() || isVicePresident() || isConseiller();
     }
 
     // Formulaire de contact public (Création ouverte, administration réservée)
     match /contact_messages/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isCommunicateur() || isSecretaire();
+      allow read, update, delete: if isSystemAdmin() || isCommunicateur() || isSecretaire();
     }
 
     // Demandes d'adhésion publiques
     match /membership_requests/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow read, update, delete: if isSystemAdmin() || isSecretaire() || isVicePresident();
     }
 
     match /adhesions/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isSecretaire() || isVicePresident();
+      allow read, update, delete: if isSystemAdmin() || isSecretaire() || isVicePresident();
     }
 
     match /newsletter/{docId} {
       allow create: if true;
-      allow read, update, delete: if isSuperAdmin() || isCommunicateur();
+      allow read, update, delete: if isSystemAdmin() || isCommunicateur();
     }
 
     // =========================================================================
     // 5. COLLECTIONS FINANCIÈRES (CLOISONNEMENT STRICT — TRÉSORIER / PRÉSIDENT)
     // =========================================================================
     match /finances/{docId} {
-      // Le membre consulte uniquement ses propres déclarations et reçus.
-      allow read: if isTresorier() || isSuperAdmin() || (
+      // Le Commissaire aux Comptes et le Trésorier adjoint disposent d'une lecture seule.
+      allow read: if isTresorier() || isTresorierAdjoint() || isCommissaireAuxComptes() || isSystemAdmin() || (
         isRegularMember() && (
           (resource.data.keys().hasAny(['memberId']) && resource.data.memberId == request.auth.uid) ||
           (resource.data.keys().hasAny(['userId']) && resource.data.userId == request.auth.uid) ||
@@ -215,9 +223,7 @@ service cloud.firestore {
         )
       );
 
-      // Un membre peut uniquement déclarer une cotisation pour son UID.
-      // Il ne peut ni créer une recette validée, ni choisir le statut du paiement.
-      allow create: if isTresorier() || isSuperAdmin() || (
+      allow create: if isTresorier() || isSystemAdmin() || (
         isRegularMember()
         && request.resource.data.keys().hasOnly([
           'type', 'category', 'memberId', 'memberName', 'montant',
@@ -240,61 +246,81 @@ service cloud.firestore {
         && request.resource.data.createdAt == request.time
       );
 
-      // Seuls trésorier et administration habilitée peuvent traiter une demande.
-      allow update: if (isTresorier() || isSuperAdmin()) && (
-        resource.data.type != 'cotisation_demande' ||
-        request.resource.data.status != 'rejete' ||
-        (
-          request.resource.data.rejectionReason is string
-          && request.resource.data.rejectionReason.size() >= 5
-          && request.resource.data.rejectionReason.size() <= 500
-          && request.resource.data.rejectedBy == request.auth.uid
-          && request.resource.data.rejectedAt == request.time
-        )
-      );
-      allow delete: if isTresorier() || isSuperAdmin();
+      // Le Trésorier seul valide ou rejette une demande en attente.
+      // Les attributs initiaux du paiement restent immuables.
+      allow update: if (isTresorier() || isSystemAdmin())
+        && resource.data.type == 'cotisation_demande'
+        && resource.data.status == 'en_attente'
+        && request.resource.data.memberId == resource.data.memberId
+        && request.resource.data.montant == resource.data.montant
+        && request.resource.data.period == resource.data.period
+        && request.resource.data.payment == resource.data.payment
+        && request.resource.data.reference == resource.data.reference
+        && (
+          (
+            request.resource.data.status == 'valide'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'status', 'validatedAt', 'validatedBy', 'validatedByName', 'receiptNumber'
+            ])
+            && request.resource.data.validatedAt == request.time
+            && request.resource.data.validatedBy == request.auth.uid
+            && request.resource.data.validatedByName is string
+            && request.resource.data.receiptNumber is string
+          )
+          ||
+          (
+            request.resource.data.status == 'rejete'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+              'status', 'rejectionReason', 'rejectedAt', 'rejectedBy', 'rejectedByName'
+            ])
+            && request.resource.data.rejectionReason is string
+            && request.resource.data.rejectionReason.size() >= 5
+            && request.resource.data.rejectionReason.size() <= 500
+            && request.resource.data.rejectedAt == request.time
+            && request.resource.data.rejectedBy == request.auth.uid
+            && request.resource.data.rejectedByName is string
+          )
+        );
+
+      allow delete: if false;
     }
 
     match /expenses/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
+      allow read: if isTresorier() || isTresorierAdjoint() || isCommissaireAuxComptes() || isVicePresident() || isSystemAdmin();
+      allow create, update: if isTresorier() || isSystemAdmin();
+      allow delete: if false;
     }
 
     match /income/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
+      allow read: if isTresorier() || isTresorierAdjoint() || isCommissaireAuxComptes() || isVicePresident() || isSystemAdmin();
+      allow create, update: if isTresorier() || isSystemAdmin();
+      allow delete: if false;
     }
 
     match /factures/{docId} {
-      allow read: if isTresorier() || isSuperAdmin();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
+      allow read: if isTresorier() || isTresorierAdjoint() || isCommissaireAuxComptes() || isSystemAdmin();
+      allow create, update: if isTresorier() || isSystemAdmin();
+      allow delete: if false;
     }
 
     match /transactions/{docId} {
-      allow read: if isTresorier() || isSuperAdmin() || isVicePresident();
-      allow create, update, delete: if isTresorier() || isSuperAdmin();
+      allow read: if isTresorier() || isTresorierAdjoint() || isCommissaireAuxComptes() || isVicePresident() || isSystemAdmin();
+      allow create, update: if isTresorier() || isSystemAdmin();
+      allow delete: if false;
     }
 
     // =========================================================================
     // 6. JOURNAUX D'AUDIT (INVIOLABILITÉ ET APPEND-ONLY RENFORCÉ — SEC-4C-01)
     // =========================================================================
     match /audit_logs/{docId} {
-      // Seul le Président / Super Admin peut consulter les journaux de sécurité
-      allow read: if isSuperAdmin();
-
-      // Création append-only sécurisée :
-      // - Utilisateur obligatoirement authentifié et non suspendu
-      // - Anti-usurpation stricte : actorUid DOIT correspondre à l'UID de la requête auth
-      // - Schéma minimal vérifié : action non vide (max 100 caractères), details et user bornés
-      allow create: if isSignedIn() && isNotSuspended()
+      allow read: if isPresident() || isSystemAdmin();
+      allow create: if isActiveUser()
         && request.resource.data.actorUid == request.auth.uid
         && request.resource.data.action is string
         && request.resource.data.action.size() > 0
         && request.resource.data.action.size() <= 100
         && (!('details' in request.resource.data) || (request.resource.data.details is string && request.resource.data.details.size() <= 1000))
         && (!('user' in request.resource.data) || (request.resource.data.user is string && request.resource.data.user.size() <= 100));
-
-      // Immutabilité absolue : Modification et suppression strictement impossibles pour tous
       allow update, delete: if false;
     }
 
@@ -302,41 +328,41 @@ service cloud.firestore {
     // 7. REGISTRE DES MEMBRES & VALIDATIONS
     // =========================================================================
     match /members/{docId} {
-      allow read: if isTresorier() || isSecretaire() || isVicePresident() || isSuperAdmin();
-      allow create, update, delete: if isTresorier() || isSecretaire() || isSuperAdmin();
+      allow read: if isTresorier() || isTresorierAdjoint() || isSecretaire() || isSecretaireAdjoint() || isVicePresident() || isSystemAdmin();
+      allow create, update, delete: if isTresorier() || isSecretaire() || isSystemAdmin();
     }
 
     match /validations/{docId} {
       allow read: if isBureau();
-      allow write: if isSuperAdmin() || isVicePresident() || isConseiller();
+      allow write: if isSystemAdmin() || isVicePresident() || isConseiller();
     }
 
     // =========================================================================
     // 8. GOUVERNANCE, ADMINISTRATION ET SECRÉTARIAT
     // =========================================================================
     match /documents/{docId} {
-      // Documents officiels partagés : lecture autorisée à tous les membres
-      allow read: if isMember();
-      // Gestion des documents : Secrétaire Général et Président
-      allow create, update, delete: if isSecretaire() || isSuperAdmin();
+      allow read: if isMember() || isBureau() || isSecretaireAdjoint();
+      allow create, update, delete: if isSecretaire() || isPresident() || isSystemAdmin();
     }
 
     match /pv/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isSecretaire() || isSuperAdmin();
+      allow read: if isBureau() || isMember() || isSecretaireAdjoint();
+      allow write: if isSecretaire() || isSystemAdmin();
     }
 
     match /convocations/{docId} {
-      allow read: if isBureau() || isMember();
-      allow write: if isSecretaire() || isSuperAdmin();
+      allow read: if isBureau() || isMember() || isSecretaireAdjoint();
+      allow write: if isSecretaire() || isSystemAdmin();
     }
 
     match /courriers/{docId} {
-      allow read, write: if isSecretaire() || isSuperAdmin();
+      allow read: if isSecretaire() || isSecretaireAdjoint() || isSystemAdmin();
+      allow write: if isSecretaire() || isSystemAdmin();
     }
 
     match /moderation/{docId} {
-      allow read, write: if isSecretaire() || isSuperAdmin();
+      allow read: if isSecretaire() || isSecretaireAdjoint() || isSystemAdmin();
+      allow write: if isSecretaire() || isSystemAdmin();
     }
 
     match /meetings/{docId} {
@@ -350,23 +376,42 @@ service cloud.firestore {
     }
 
     match /tasks/{docId} {
-      allow read: if isBureau() || isMember();
-      allow create, delete: if isBureau();
-      // Un membre assigné peut cocher l'accomplissement d'une tâche
-      allow update: if isBureau() || (
-        isMember() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'completedAt'])
+      // Les responsables désignés consultent le tableau de délégation complet.
+      // Les autres rôles ne consultent que les tâches affectées à leur rôle.
+      allow read: if isTaskManager() || isAssignedTaskToCurrentRole();
+
+      allow create: if isTaskManager()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.assignedTo in [
+          'president', 'vice_president', 'secretaire', 'secretaire_general',
+          'secretaire_adjoint', 'tresorier', 'treasurer', 'tresorier_adjoint',
+          'communicateur', 'conseiller', 'commissaire_aux_comptes', 'membre', 'member'
+        ]
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isTaskManager() || (
+        isAssignedTaskToCurrentRole()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completed', 'completedAt'])
+        && request.resource.data.completed is bool
+        && (
+          (request.resource.data.completed == true && request.resource.data.completedAt == request.time)
+          || (request.resource.data.completed == false && request.resource.data.completedAt == null)
+        )
       );
+      allow delete: if isTaskManager();
     }
 
     match /system/{docId} {
-      // Configuration d'urgence ou de suppléance
       allow read: if isBureau() || (isMember() && docId == 'suppleance');
-      allow write: if isSuperAdmin() || (isVicePresident() && docId == 'suppleance');
+      allow write: if isSystemAdmin() || (isVicePresident() && docId == 'suppleance');
     }
 
     match /suppleance_history/{docId} {
       allow read: if isBureau() || isMember();
-      allow write: if isVicePresident() || isSuperAdmin();
+      allow write: if isVicePresident() || isSystemAdmin();
     }
 
     match /board_messages/{docId} {
@@ -375,19 +420,19 @@ service cloud.firestore {
     }
 
     match /avis/{docId} {
-      allow read, write: if isConseiller() || isSuperAdmin();
+      allow read, write: if isConseiller() || isSystemAdmin();
     }
 
     match /conflits/{docId} {
-      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
+      allow read, write: if isConseiller() || isVicePresident() || isSystemAdmin();
     }
 
     match /projets/{docId} {
-      allow read, write: if isConseiller() || isVicePresident() || isSuperAdmin();
+      allow read, write: if isConseiller() || isVicePresident() || isSystemAdmin();
     }
 
     match /objectives/{docId} {
-      allow read, write: if isVicePresident() || isSuperAdmin();
+      allow read, write: if isVicePresident() || isSystemAdmin();
     }
 
     match /rapports/{docId} {
@@ -403,9 +448,9 @@ service cloud.firestore {
     // =========================================================================
     match /missions_benevolat/{docId} {
       allow read: if isMember();
-      allow create, delete: if isVicePresident() || isSuperAdmin();
+      allow create, delete: if isVicePresident() || isSystemAdmin();
       // Les membres peuvent s'inscrire / se désinscrire des missions de bénévolat
-      allow update: if isVicePresident() || isSuperAdmin() || (
+      allow update: if isVicePresident() || isSystemAdmin() || (
         isMember() && request.resource.data.diff(resource.data).affectedKeys().hasAny(['inscrits', 'volunteers', 'participants'])
       );
     }
@@ -413,16 +458,16 @@ service cloud.firestore {
     match /forum/{docId} {
       allow read: if isMember();
       allow create: if isMember();
-      allow update, delete: if isSuperAdmin() || (
+      allow update, delete: if isSystemAdmin() || (
         isMember() && resource.data.authorId == request.auth.uid
       );
     }
 
     match /votes/{docId} {
       allow read: if isMember();
-      allow create, delete: if isSuperAdmin() || isSecretaire();
+      allow create, delete: if isSystemAdmin() || isSecretaire();
       // Un membre peut participer en enregistrant son vote sans modifier la structure de la session
-      allow update: if isSuperAdmin() || isSecretaire() || isMember();
+      allow update: if isSystemAdmin() || isSecretaire() || isMember();
     }
 
     match /notifications/{docId} {
@@ -433,10 +478,12 @@ service cloud.firestore {
     }
 
     match /messages/{docId} {
-      allow read: if isMember() && (
-        resource.data.recipientId == request.auth.uid || resource.data.senderId == request.auth.uid || isBureau()
+      allow read: if (isMember() || isBureau()) && (
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.senderId == request.auth.uid ||
+        isBureau()
       );
-      allow create: if isMember();
+      allow create: if isMember() || isBureau();
       allow update, delete: if isBureau() || (
         isMember() && resource.data.senderId == request.auth.uid
       );
@@ -444,16 +491,16 @@ service cloud.firestore {
 
     match /ag_events/{docId} {
       allow read: if isMember();
-      allow write: if isSuperAdmin() || isSecretaire();
+      allow write: if isSystemAdmin() || isSecretaire();
     }
 
     match /media/{docId} {
       allow read: if isBureau();
-      allow write: if isCommunicateur() || isSuperAdmin();
+      allow write: if isCommunicateur() || isSystemAdmin();
     }
 
     match /editorial_calendar/{docId} {
-      allow read, write: if isCommunicateur() || isSuperAdmin();
+      allow read, write: if isCommunicateur() || isSystemAdmin();
     }
   }
 }
