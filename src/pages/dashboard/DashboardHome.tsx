@@ -5,6 +5,7 @@ import { useAuth } from '../../hooks/useAuth';
 // silencieusement les droits ou l'interface d'un membre.
 const CommunicateurDashboard = lazy(() => import('../communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
 const PresidentDashboard = lazy(() => import('./PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
+const PresidentFondateurDashboard = lazy(() => import('./PresidentFondateurDashboard').then(m => ({ default: m.PresidentFondateurDashboard })));
 const VicePresidentDashboard = lazy(() => import('./VicePresidentDashboard').then(m => ({ default: m.VicePresidentDashboard })));
 const SecretaireDashboard = lazy(() => import('./SecretaireDashboard').then(m => ({ default: m.SecretaireDashboard })));
 const TresorierDashboard = lazy(() => import('./TresorierDashboard').then(m => ({ default: m.TresorierDashboard })));
@@ -40,14 +41,17 @@ export const DashboardHome = () => {
   switch (userData.role) {
     case 'super_admin':
     case 'president':
-    case 'president_fondateur':
     case 'admin':
     case 'admin_bureau':
       dashboard = <PresidentDashboard />;
       break;
+    case 'president_fondateur':
+      dashboard = <PresidentFondateurDashboard />;
+      break;
     case 'vice_president':
       dashboard = <VicePresidentDashboard />;
       break;
+    case 'secretaire_general':
     case 'secretaire':
       dashboard = <SecretaireDashboard />;
       break;
