@@ -339,8 +339,7 @@
     padding: 16px; padding-top: calc(16px + env(safe-area-inset-top));
     text-align: center;
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--bordure);
-    border-top: 3px solid var(--or-solaire);
+    border: 1px solid #E5E7EB;
     transition: var(--transition);
     cursor: pointer;
 }
@@ -369,10 +368,10 @@
     margin-top: 2px;
 }
 
-.president-dashboard-container .stat-card.alert { border-top-color: var(--rouge-solidarite); }
+.president-dashboard-container .stat-card.alert { border-color: #E5E7EB; }
 .president-dashboard-container .stat-card.alert .stat-value { color: var(--rouge-solidarite); }
 
-.president-dashboard-container .stat-card.success { border-top-color: var(--vert-espoir); }
+.president-dashboard-container .stat-card.success { border-color: #E5E7EB; }
 .president-dashboard-container .stat-card.success .stat-value { color: var(--vert-espoir); }
 
 /* ============================================
@@ -1026,7 +1025,7 @@
     min-height: 132px;
     padding: 16px;
     border-radius: 12px;
-    border-top: 3px solid #D4A017;
+    border: 1px solid #E5E7EB;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

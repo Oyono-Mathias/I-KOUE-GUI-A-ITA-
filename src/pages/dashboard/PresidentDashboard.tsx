@@ -10,6 +10,7 @@ import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth, secondaryAuth } from '../../firebase';
 import { useAuth } from '../../hooks/useAuth';
 import './PresidentDashboard.css';
+import { ROLE_DEFINITIONS, type InstitutionalRole } from '../../constants/roles';
 
 export const PresidentDashboard = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const PresidentDashboard = () => {
 
   // Modals
   const [memberModal, setMemberModal] = useState<any>(null);
+  const [roleEditModal, setRoleEditModal] = useState<{ member: any; role: InstitutionalRole } | null>(null);
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
@@ -218,11 +220,17 @@ export const PresidentDashboard = () => {
       });
   };
 
-  const changeMemberRole = async (id: string, newRole: string) => {
-    confirmAction(` Changer le rôle en ${newRole} ?`, async () => {
-        await updateDoc(doc(db, 'users', id), { role: newRole });
-        await logDecision('CHANGEMENT_ROLE', `Rôle du membre ${id} changé en ${newRole}`);
-    });
+  const saveMemberRole = async () => {
+    if (!roleEditModal) return;
+    const { member, role } = roleEditModal;
+    try {
+      await updateDoc(doc(db, 'users', member.id), { role });
+      await logDecision('CHANGEMENT_ROLE', `Rôle du membre ${member.id} changé en ${role}`);
+      setRoleEditModal(null);
+    } catch (error) {
+      console.error('Erreur lors du changement de rôle :', error);
+      alert('Impossible de mettre à jour le rôle. Réessayez.');
+    }
   };
 
   // MEETINGS ACTIONS
@@ -580,14 +588,7 @@ export const PresidentDashboard = () => {
                                     <button className="btn btn-danger btn-small" style={{ background: 'transparent', color: '#EF4444', border: '1px solid #EF4444', padding: '2px 8px' }} onClick={() => suspendMember(m.id)}> Suspendre</button>
                                   )}
                                   <button className="btn btn-danger btn-small" style={{ background: '#EF4444', color: 'white', padding: '2px 8px', border: 'none' }} onClick={() => deleteMember(m.id)}> Supprimer</button>
-                                  <select className="search-input" style={{ padding: '2px 4px', fontSize: '11px', height: 'auto', backgroundImage: 'none' }} value={m.role || 'membre'} onChange={(e) => changeMemberRole(m.id, e.target.value)}>
-                                    <option value="membre"> Membre</option>
-                                    <option value="tresorier"> Trésorier</option>
-                                    <option value="secretaire"> Secrétaire</option>
-                                    <option value="conseiller"> Conseiller</option>
-                                    <option value="vice_president"> Vice-Président</option>
-                                    <option value="communicateur"> Communicateur</option>
-                                  </select>
+                                  <button type="button" className="btn btn-outline btn-small" onClick={() => setRoleEditModal({ member: m, role: (ROLE_DEFINITIONS.some((item) => item.id === m.role) ? m.role : 'membre') as InstitutionalRole })}>Modifier le rôle</button>
                                 </div>
                             )}
                         </div>
@@ -802,11 +803,7 @@ export const PresidentDashboard = () => {
                 <div className="form-group"><label>Description</label><textarea id="taskDesc" rows={2} required></textarea></div>
                 <div className="form-group"><label>Assigner à (Rôle)</label>
                     <select id="taskAssignee" required>
-                        <option value="secretaire">Secrétaire</option>
-                        <option value="tresorier">Trésorier</option>
-                        <option value="communicateur">Communicateur</option>
-                        <option value="vice_president">Vice-Président</option>
-                        <option value="conseiller">Conseiller</option>
+                        {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                     </select>
                 </div>
                 <button type="submit" className="btn btn-gold">Assigner</button>
@@ -1003,6 +1000,21 @@ export const PresidentDashboard = () => {
 
     {/* MODALS & CONFIRM DIALOG */}
     
+    {roleEditModal && (
+      <div className="fixed inset-0 z-[11000] flex items-center justify-center overflow-y-auto bg-slate-950/45 p-4 backdrop-blur-sm" onClick={() => setRoleEditModal(null)}>
+        <section role="dialog" aria-modal="true" aria-labelledby="role-editor-title" className="my-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-7" onClick={(event) => event.stopPropagation()}>
+          <div className="mb-5 flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wide text-blue-700">Gestion des membres</p><h2 id="role-editor-title" className="mt-1 text-xl font-bold text-slate-900">Modifier le rôle d'un membre</h2><p className="mt-1 text-sm text-slate-500">{roleEditModal.member.nom || roleEditModal.member.displayName || 'Membre'}</p></div><button type="button" onClick={() => setRoleEditModal(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Fermer">✕</button></div>
+          <div className="grid max-h-[55vh] gap-2 overflow-y-auto sm:grid-cols-2">
+            {ROLE_DEFINITIONS.map((role) => { const Icon = role.icon; const selected = roleEditModal.role === role.id; return (
+              <button key={role.id} type="button" aria-pressed={selected} onClick={() => setRoleEditModal((current) => current ? { ...current, role: role.id } : current)} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}>
+                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 ${role.iconClass}`}><Icon size={19}/></span><span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-slate-900">{role.label}</span><span className="mt-1 block text-xs text-slate-500">{role.description}</span></span><span className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-bold ${role.badgeClass}`}>{selected?'Sélectionné':'Rôle'}</span>
+              </button>
+            ); })}
+          </div>
+          <div className="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row"><button type="button" onClick={() => setRoleEditModal(null)} className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Annuler</button><button type="button" onClick={saveMemberRole} className="rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Enregistrer le rôle</button></div>
+        </section>
+      </div>
+    )}
     {addMemberModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowY: 'auto' }}>
             <div style={{ background: 'var(--blanc-pur)', borderRadius: 'var(--radius-lg)', maxWidth: '500px', width: '100%', padding: '24px', maxHeight: '85vh', overflowY: 'auto' }}>
@@ -1039,13 +1051,7 @@ export const PresidentDashboard = () => {
                         <div className="form-group">
                             <label>Rôle</label>
                             <select id="newMemRole" style={{ width: '100%', padding: '8px' }}>
-                                <option value="member">Membre standard</option>
-                                <option value="president">Président</option>
-                                <option value="vice_president">Vice-Président</option>
-                                <option value="secretaire">Secrétaire Général</option>
-                                <option value="tresorier">Trésorier</option>
-                                <option value="communicateur">Communicateur</option>
-                                <option value="conseiller">Conseiller</option>
+                                {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
@@ -1103,13 +1109,13 @@ export const PresidentDashboard = () => {
     )}
 
     {confirmDialog.isOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', maxWidth: '400px', width: '90%', maxHeight: '85vh', overflowY: 'auto' }}>
-                <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Confirmation</h3>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{confirmDialog.message}</p>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', flexWrap: 'wrap', marginTop: '24px' }}>
-                    <button className="btn btn-outline" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
-                    <button className="btn btn-primary" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
+        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+                <h3 className="mt-0 text-lg font-bold text-slate-900">Confirmation</h3>
+                <p className="whitespace-pre-wrap text-sm leading-6 text-slate-600">{confirmDialog.message}</p>
+                <div className="mt-6 flex flex-wrap justify-end gap-3">
+                    <button className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50" onClick={() => setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} })}>Annuler</button>
+                    <button className="rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800" onClick={() => { confirmDialog.onConfirm(); setConfirmDialog({ isOpen: false, message: '', onConfirm: () => {} }); }}>Confirmer</button>
                 </div>
             </div>
         </div>

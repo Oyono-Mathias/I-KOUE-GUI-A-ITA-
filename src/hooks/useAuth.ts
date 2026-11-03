@@ -3,24 +3,8 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
-export const INSTITUTIONAL_ROLES = [
-    'president_fondateur',
-    'president',
-    'vice_president',
-    'secretaire_general',
-    'secretaire_adjoint',
-    'tresorier',
-    'tresorier_adjoint',
-    'conseiller',
-    'commissaire_aux_comptes',
-    'communicateur',
-    'membre',
-] as const;
-
-export type InstitutionalRole = typeof INSTITUTIONAL_ROLES[number];
-export type LegacyRole = 'secretaire' | 'admin_bureau';
-export type SystemRole = 'super_admin' | 'admin';
-export type UserRole = InstitutionalRole | LegacyRole | SystemRole;
+import { type UserRole } from '../constants/roles';
+export { INSTITUTIONAL_ROLES, type InstitutionalRole, type LegacyRole, type SystemRole, type UserRole } from '../constants/roles';
 
 export interface UserData {
     uid: string;

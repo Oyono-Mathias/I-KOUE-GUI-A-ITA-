@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { UserData } from '../../hooks/useAuth';
+import { ROLE_DEFINITIONS } from '../../constants/roles';
 import { 
     Home, Users, Banknote, CalendarDays, Newspaper, FileText, 
     Search, Plus, CheckCircle, AlertTriangle, XCircle, Download, Send 
@@ -304,13 +305,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--bordure)', fontSize: '16px', flex: '0 1 200px', background: 'white' }}
                         >
                             <option value="all">Tous les rôles</option>
-                            <option value="membre">Membres</option>
-                            <option value="conseiller">Conseillers</option>
-                            <option value="communicateur">Communicateurs</option>
-                            <option value="tresorier">Trésoriers</option>
-                            <option value="admin_bureau">Secrétaires Généraux</option>
-                            <option value="vice_president">Vice-Présidents</option>
-                            <option value="super_admin">Président</option>
+                            {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                         </select>
                         {['super_admin', 'vice_president', 'admin_bureau'].includes(currentUser.role) && (
                             <button 
@@ -341,12 +336,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                 <div>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Rôle initial</label>
                                     <select value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--bordure)', fontSize: '16px', background: 'white' }}>
-                                        <option value="membre">Membre</option>
-                                        <option value="conseiller">Conseiller</option>
-                                        <option value="communicateur">Communicateur</option>
-                                        <option value="tresorier">Trésorier</option>
-                                        <option value="admin_bureau">Secrétaire Général</option>
-                                        <option value="vice_president">Vice-Président</option>
+                                        {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -369,13 +359,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                                 onChange={(e) => handleRoleChange(user.uid, e.target.value)}
                                                 style={{ marginTop: '8px', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', background: 'var(--fond-alterne)', border: '1px solid var(--bordure)', cursor: 'pointer' }}
                                             >
-                                                <option value="membre">MEMBRE</option>
-                                                <option value="conseiller">CONSEILLER</option>
-                                                <option value="communicateur">COMMUNICATEUR</option>
-                                                <option value="tresorier">TRÉSORIER</option>
-                                                <option value="admin_bureau">SECRÉTAIRE GÉNÉRAL</option>
-                                                <option value="vice_president">VICE-PRÉSIDENT</option>
-                                                <option value="super_admin">PRÉSIDENT FONDATEUR</option>
+                                                {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label.toUpperCase()}</option>)}
                                             </select>
                                         ) : (
                                             <span style={{ display: 'inline-block', marginTop: '4px', fontSize: '11px', padding: '2px 8px', background: 'var(--fond-alterne)', borderRadius: '12px', fontWeight: 'bold' }}>
@@ -423,25 +407,22 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                        {[
-                            { role: 'Président Fondateur', desc: 'Représente l’association. Veille à l\'application des statuts (Art. 17).', color: 'var(--or-solaire)', count: users.filter(u => u.role === 'super_admin').length },
-                            { role: 'Vice-Président', desc: 'Assiste le Président et le remplace en cas d\'empêchement.', color: '#9C27B0', count: users.filter(u => u.role === 'vice_president').length },
-                            { role: 'Secrétaire Général', desc: 'Rédige les PV, gère les archives et coordonne l\'administration.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
-                            { role: 'Trésorier', desc: 'Responsable des fonds, recouvre les cotisations et prépare le bilan.', color: 'var(--vert-espoir)', count: users.filter(u => u.role === 'tresorier').length },
-                            { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length },
-                            { role: 'Conseillers', desc: 'Assiste le bureau par ses conseils et son expertise.', color: '#607D8B', count: users.filter(u => u.role === 'conseiller').length }
-                        ].map((r, i) => (
-                            <div key={i} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', borderTop: `4px solid ${r.color}` }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--texte-principal)' }}>{r.role}</h4>
-                                    <span style={{ background: '#f5f5f5', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>{r.count} actif(s)</span>
+                        {ROLE_DEFINITIONS.map((role) => {
+                            const Icon = role.icon;
+                            const count = users.filter(user => user.role === role.id).length;
+                            return (
+                                <div key={role.id} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', border: '1px solid #E5E7EB' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--texte-principal)', display: 'flex', alignItems: 'center', gap: '8px' }}><Icon size={18} className={role.iconClass} />{role.label}</h4>
+                                        <span className={role.badgeClass} style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{count} actif(s)</span>
+                                    </div>
+                                    <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>{role.description}</p>
+                                    <button onClick={() => { setActiveTab('membres'); setRoleFilter(role.id); }} style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid #CBD5E1', color: '#334155', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                        Gérer les attributions
+                                    </button>
                                 </div>
-                                <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>{r.desc}</p>
-                                <button onClick={() => { setActiveTab('membres'); setRoleFilter('all'); }} style={{ width: '100%', padding: '10px', background: 'transparent', border: `1px solid ${r.color}`, color: r.color, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                    Gérer les attributions
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}
