@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
-import { INSTITUTIONAL_ROLES, type InstitutionalRole } from '../constants/roles';
+import type { InstitutionalRole } from '../constants/roles';
 
 export { INSTITUTIONAL_ROLES } from '../constants/roles';
 export type { InstitutionalRole } from '../constants/roles';
