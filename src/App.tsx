@@ -17,7 +17,6 @@ const PresidentDashboard = lazy(() => import('./pages/dashboard/PresidentDashboa
 const PresidentFondateurDashboard = lazy(() => import('./pages/dashboard/PresidentFondateurDashboard').then(m => ({ default: m.PresidentFondateurDashboard })));
 const MemberVoting = lazy(() => import('./pages/member/MemberVoting').then(m => ({ default: m.MemberVoting })));
 const CommunicateurDashboard = lazy(() => import('./pages/communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
-const PresidentDashboard = lazy(() => import('./pages/dashboard/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
 const VicePresidentDashboard = lazy(() => import('./pages/dashboard/VicePresidentDashboard').then(m => ({ default: m.VicePresidentDashboard })));
 const SecretaireDashboard = lazy(() => import('./pages/dashboard/SecretaireDashboard').then(m => ({ default: m.SecretaireDashboard })));
 const TresorierDashboard = lazy(() => import('./pages/dashboard/TresorierDashboard').then(m => ({ default: m.TresorierDashboard })));
