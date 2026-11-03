@@ -3,7 +3,7 @@ import {useNavigate,useLocation} from 'react-router-dom';
 import {LayoutGrid} from 'lucide-react';
 import {useAuth} from '../../hooks/useAuth';
 import {ROLE_DEFINITIONS,type InstitutionalRole} from '../../constants/roles';
-const ROLE_DASHBOARD_PATHS:Record<InstitutionalRole,string>={president_fondateur:'/dashboard',president:'/dashboard',vice_president:'/dashboard/admin_vice_president',secretaire_general:'/dashboard/admin_secretaire',secretaire_adjoint:'/dashboard',tresorier:'/dashboard/admin_tresorier',tresorier_adjoint:'/dashboard',conseiller:'/dashboard/admin_conseiller',commissaire_aux_comptes:'/dashboard',communicateur:'/dashboard/communicateur',membre:'/dashboard/membre'};
+const ROLE_DASHBOARD_PATHS:Record<InstitutionalRole,string>={president_fondateur:'/dashboard/president_fondateur',president:'/dashboard/president',vice_president:'/dashboard/admin_vice_president',secretaire_general:'/dashboard/admin_secretaire',secretaire_adjoint:'/dashboard',tresorier:'/dashboard/admin_tresorier',tresorier_adjoint:'/dashboard',conseiller:'/dashboard/admin_conseiller',commissaire_aux_comptes:'/dashboard',communicateur:'/dashboard/communicateur',membre:'/dashboard/membre'};
 export const DashboardSwitcher=({inline=false}:{inline?:boolean})=>{
  const [isOpen,setIsOpen]=useState(false);const navigate=useNavigate();const location=useLocation();const {userData}=useAuth();
  const currentRole=userData?.role||'membre';const normalizedRole=currentRole==='secretaire'||currentRole==='admin_bureau'?'secretaire_general':currentRole;const canViewAll=['super_admin','president','president_fondateur','admin'].includes(normalizedRole);
