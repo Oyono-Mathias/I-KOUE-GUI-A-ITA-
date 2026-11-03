@@ -7,35 +7,3 @@
 .shared-sidebar-account{margin-top:auto;padding-top:14px;border-top:1px solid #E5E7EB}.shared-sidebar-profile{display:flex;align-items:center;gap:10px;min-width:0;padding:8px 4px 14px;color:#0A3D62}.shared-sidebar-avatar{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:#D4A017;color:#0A3D62;font-weight:800}.shared-sidebar-profile span:last-child{display:flex;flex-direction:column;min-width:0}.shared-sidebar-profile strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.shared-sidebar-profile small{color:#64748B;font-size:11px}.shared-sidebar-logout{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:46px;border:1px solid #FECACA;border-radius:10px;background:#FEF2F2;color:#B91C1C;font-weight:700;cursor:pointer}
 .shared-bottom-navigation{position:fixed;right:0;bottom:0;left:0;z-index:1000;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));border-top:1px solid #E5E7EB;background:#fff;box-shadow:0 -4px 16px rgba(15,23,42,.08)}.shared-bottom-navigation button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:52px;padding:4px 2px;border:0;border-radius:8px;background:transparent;color:#64748B;font-family:inherit;font-size:10px;font-weight:600;line-height:1.2;cursor:pointer}.shared-bottom-navigation button svg{display:block;flex:0 0 21px}.shared-bottom-navigation button.active{color:#0A3D62}.shared-bottom-navigation button.active svg{color:#D4A017}
 @media(min-width:768px){.shared-bottom-navigation{display:none}}@media(prefers-reduced-motion:reduce){.shared-dashboard-sidebar{transition:none}}
-
-
-/* Global mobile dashboard shell: shared navigation is anchored to the viewport,
-   independently of each role dashboard's local layout and scrolling content. */
-.dashboard-app-shell {
-  box-sizing: border-box;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-}
-.dashboard-app-shell .shared-bottom-navigation {
-  position: fixed !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  z-index: 50 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-  transform: none !important;
-  will-change: auto;
-}
-@media (min-width: 768px) {
-  .dashboard-app-shell {
-    min-height: 100vh;
-    min-height: 100dvh;
-    padding-bottom: 0;
-  }
-  .dashboard-app-shell .shared-bottom-navigation {
-    display: none !important;
-  }
-}
