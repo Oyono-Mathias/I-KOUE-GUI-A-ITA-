@@ -357,3 +357,47 @@ test('Président Fondateur et autres rôles institutionnels: ne peuvent pas attr
   await assertFails(updateDoc(doc(dbFor('founder-role-manager'), 'users', 'role-target'), { role: 'president' }));
   await assertFails(updateDoc(doc(dbFor('treasurer-role-manager'), 'users', 'role-target'), { role: 'communicateur' }));
 });
+
+
+test('Gestion des fiches membres: le Secrétaire Général peut modifier les champs administratifs uniquement', async () => {
+  await seedUser('secretary-member-manager', 'secretaire_general');
+  await seedDocument('members', 'member-record-1', {
+    nom: 'Nom initial', email: 'initial@example.com', telephone: '+23670000000',
+    categorie: 'actif', statut: 'en_retard', cotisationAnnuelle: 5000, userId: 'member-uid',
+  });
+  const db = dbFor('secretary-member-manager');
+
+  await assertSucceeds(updateDoc(doc(db, 'members', 'member-record-1'), {
+    nom: 'Nom modifié', email: 'modifie@example.com', telephone: '+23671111111',
+    categorie: 'bienfaiteur', updatedAt: serverTimestamp(), updatedBy: 'secretary-member-manager',
+  }));
+  await assertFails(updateDoc(doc(db, 'members', 'member-record-1'), { statut: 'a_jour' }));
+  await assertFails(updateDoc(doc(db, 'members', 'member-record-1'), { cotisationAnnuelle: 9000 }));
+  await assertFails(updateDoc(doc(db, 'members', 'member-record-1'), { userId: 'other-uid' }));
+});
+
+test('Gestion des fiches membres: le Trésorier conserve uniquement la mise à jour de cotisation', async () => {
+  await seedUser('treasurer-member-manager', 'tresorier');
+  await seedDocument('members', 'member-record-2', {
+    nom: 'Membre test', statut: 'en_retard', cotisationAnnuelle: 5000,
+  });
+  const db = dbFor('treasurer-member-manager');
+
+  await assertSucceeds(updateDoc(doc(db, 'members', 'member-record-2'), {
+    statut: 'a_jour', dernierPaiement: serverTimestamp(),
+  }));
+  await assertFails(updateDoc(doc(db, 'members', 'member-record-2'), { nom: 'Nom modifié' }));
+});
+
+test('Gestion des fiches membres: les rôles en lecture seule ne peuvent pas modifier les fiches', async () => {
+  await seedUser('assistant-secretary-reader', 'secretaire_adjoint');
+  await seedUser('assistant-treasurer-reader', 'tresorier_adjoint');
+  await seedUser('president-reader', 'president');
+  await seedDocument('members', 'member-record-3', { nom: 'Membre lecture seule' });
+
+  await assertSucceeds(getDoc(doc(dbFor('assistant-secretary-reader'), 'members', 'member-record-3')));
+  await assertFails(updateDoc(doc(dbFor('assistant-secretary-reader'), 'members', 'member-record-3'), { nom: 'Interdit' }));
+  await assertSucceeds(getDoc(doc(dbFor('assistant-treasurer-reader'), 'members', 'member-record-3')));
+  await assertFails(updateDoc(doc(dbFor('assistant-treasurer-reader'), 'members', 'member-record-3'), { nom: 'Interdit' }));
+  await assertFails(getDoc(doc(dbFor('president-reader'), 'members', 'member-record-3')));
+});

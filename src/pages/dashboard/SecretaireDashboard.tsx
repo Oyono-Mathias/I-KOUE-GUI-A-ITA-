@@ -412,7 +412,7 @@ export const SecretaireDashboard = () => {
       <div className={`tab-content ${activeTab === 'members' ? 'active' : ''}`}>
           <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>👥 Fiches Membres</h2>
-            <button className="btn btn-primary" onClick={() => setAddMemberModalOpen(true)}>+ Nouveau membre</button>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}><button type="button" className="btn btn-outline" onClick={() => navigate('/dashboard/members')}>Gérer / modifier les fiches</button><button className="btn btn-primary" onClick={() => setAddMemberModalOpen(true)}>+ Nouveau membre</button></div>
         </div>
           <div className="sub-tabs">
               <button className={`sub-tab ${memberFilter === 'all' ? 'active' : ''}`} onClick={() => setMemberFilter('all')}>Tous</button>
