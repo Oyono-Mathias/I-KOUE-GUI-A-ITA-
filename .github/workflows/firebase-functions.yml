@@ -29,4 +29,4 @@ jobs:
       - name: Compile Cloud Functions
         run: npm run build
       - name: Run authorization tests
-        run: node --test
+        run: npm test
