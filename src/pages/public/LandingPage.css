@@ -1096,3 +1096,27 @@
   .landing-page-container .bottom-nav a { font-size: 9px !important; }
   .landing-page-container .bottom-nav .nav-icon { font-size: 20px !important; }
 }
+
+
+/* Landing page multi-view navigation: one exclusive content panel at a time. */
+.landing-page-container .landing-view {
+  display: block;
+  width: 100%;
+  min-height: 55vh;
+  animation: landing-view-enter .24s ease-out both;
+}
+@keyframes landing-view-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.landing-page-container .landing-view--accueil { min-height: 60vh; }
+.landing-page-container .landing-view--don {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.landing-page-container .bottom-nav a { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .landing-page-container .landing-view { animation: none; }
+}

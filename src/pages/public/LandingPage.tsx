@@ -33,7 +33,7 @@ export const LandingPage = () => {
   const [domains, setDomains] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
-  const [activeSection, setActiveSection] = useState('accueil');
+  const [activeView, setActiveView] = useState('accueil');
 
   // Refs for animation
   const revealRefs = useRef<Element[]>([]);
@@ -42,36 +42,19 @@ export const LandingPage = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
-  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    e.preventDefault();
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      setMobileMenuOpen(false);
-    }
+  const viewForSection = (id: string) => {
+    if (['accueil', 'apropos'].includes(id)) return 'accueil';
+    if (['domaines', 'actualites', 'transparence'].includes(id)) return 'domaines';
+    if (id === 'don') return 'don';
+    return 'contact';
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['accueil', 'apropos', 'domaines', 'transparence', 'don', 'contact'];
-      let currentSection = 'accueil';
-
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
-            currentSection = section;
-            break;
-          }
-        }
-      }
-      setActiveSection(currentSection);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const navigateToView = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setActiveView(viewForSection(id));
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
 
   useEffect(() => {
     // Scroll reveal observer
@@ -93,7 +76,7 @@ export const LandingPage = () => {
     return () => {
       elements.forEach((el) => observer.unobserve(el));
     };
-  }, [domains, news, reports]);
+  }, [domains, news, reports, activeView]);
 
   useEffect(() => {
     // Legacy configuration remains the fallback during progressive CMS migration.
@@ -283,25 +266,27 @@ export const LandingPage = () => {
               }}>✕</button>
           </div>
           <div className="mobile-menu-nav">
-              <a href="#accueil" onClick={(e) => scrollToSection(e, 'accueil')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🏠 Accueil</a>
-              <a href="#apropos" onClick={(e) => scrollToSection(e, 'apropos')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'apropos' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>ℹ️ À Propos</a>
-              <a href="#domaines" onClick={(e) => scrollToSection(e, 'domaines')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🌍 Domaines</a>
-              <a href="#actualites" onClick={(e) => scrollToSection(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
-              <a href="#transparence" onClick={(e) => scrollToSection(e, 'transparence')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'transparence' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📊 Transparence</a>
-              <a href="#adhesion" onClick={(e) => scrollToSection(e, 'adhesion')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'adhesion' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📝 Adhérer</a>
-              <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} style={{ display: 'flex', padding: '16px 24px', color: activeSection === 'contact' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📞 Contact</a>
+              <a href="#accueil" onClick={(e) => navigateToView(e, 'accueil')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🏠 Accueil</a>
+              <a href="#apropos" onClick={(e) => navigateToView(e, 'apropos')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'apropos' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>ℹ️ À Propos</a>
+              <a href="#domaines" onClick={(e) => navigateToView(e, 'domaines')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🌍 Domaines</a>
+              <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
+              <a href="#transparence" onClick={(e) => navigateToView(e, 'transparence')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'transparence' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📊 Transparence</a>
+              <a href="#adhesion" onClick={(e) => navigateToView(e, 'adhesion')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'adhesion' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📝 Adhérer</a>
+              <a href="#contact" onClick={(e) => navigateToView(e, 'contact')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'contact' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📞 Contact</a>
               <Link to="/login" onClick={toggleMenu} style={{ display: 'flex', padding: '16px 24px', color: 'var(--texte-secondaire)', textDecoration: 'none', fontSize: '13px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🔒 Espace Membre</Link>
           </div>
       </nav>
 
+      {activeView === 'accueil' && (
+        <div className="landing-view landing-view--accueil" role="tabpanel">
       {/* HERO SECTION */}
       <section className="hero-section" id="accueil" style={safeImageUrl(siteConfig.heroBannerUrl) ? { backgroundImage: `linear-gradient(135deg, rgba(10,61,98,.9), rgba(52,152,219,.82)), url("${safeImageUrl(siteConfig.heroBannerUrl)}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
           <span className="badge-legal">Reconnue d'Utilité Publique (Loi N° 61/233)</span>
           <h2 id="heroTitle">{siteConfig.heroTitle}</h2>
           <p className="subtitle" id="heroSubtitle">{siteConfig.heroSubtitle}</p>
           <div className="hero-buttons">
-              <a href={safePublicHref(siteConfig.primaryCtaUrl, "#don")} className="btn-lp btn-lp-primary">💛 {siteConfig.primaryCtaLabel || "FAIRE UN DON"}</a>
-              <a href={safePublicHref(siteConfig.secondaryCtaUrl, "#domaines")} className="btn-lp btn-lp-secondary">🌍 {siteConfig.secondaryCtaLabel || "NOS DOMAINES"}</a>
+              <a href="#don" onClick={(e) => navigateToView(e, "don")} className="btn-lp btn-lp-primary">💛 {siteConfig.primaryCtaLabel || "FAIRE UN DON"}</a>
+              <a href="#domaines" onClick={(e) => navigateToView(e, "domaines")} className="btn-lp btn-lp-secondary">🌍 {siteConfig.secondaryCtaLabel || "NOS DOMAINES"}</a>
           </div>
       </section>
 
@@ -371,6 +356,11 @@ export const LandingPage = () => {
           </div>
       </section>
 
+        </div>
+      )}
+
+      {activeView === 'domaines' && (
+        <div className="landing-view landing-view--domaines" role="tabpanel">
       {/* DOMAINES D'INTERVENTION */}
       <section className="lp-section lp-section-alt" id="domaines">
           <div className="lp-container">
@@ -460,6 +450,11 @@ export const LandingPage = () => {
           </div>
       </section>
 
+        </div>
+      )}
+
+      {activeView === 'don' && (
+        <div className="landing-view landing-view--don" role="tabpanel">
       {/* DONATION / MOBILE MONEY */}
       <section className="donation-section" id="don">
           <h2 className="reveal">💛 {siteConfig.donationTitle || 'Soutenez Nos Actions'}</h2>
@@ -488,6 +483,11 @@ export const LandingPage = () => {
           </a>
       </section>
 
+        </div>
+      )}
+
+      {activeView === 'domaines' && (
+        <div className="landing-view landing-view--domaines" role="tabpanel">
       {/* TRANSPARENCE */}
       <section className="lp-section lp-section-alt" id="transparence">
           <div className="lp-container">
@@ -525,6 +525,11 @@ export const LandingPage = () => {
           </div>
       </section>
 
+        </div>
+      )}
+
+      {activeView === 'contact' && (
+        <div className="landing-view landing-view--contact" role="tabpanel">
       {/* ADHÉSION */}
       <section className="lp-section membership-section" id="adhesion">
           <div className="lp-container">
@@ -594,7 +599,7 @@ export const LandingPage = () => {
               <span className="membership-contact-bridge__eyebrow">Construisons ensemble</span>
               <h2>Une question avant de nous rejoindre ?</h2>
               <p>Notre équipe est à votre écoute pour vous accompagner dans votre démarche et répondre à vos questions.</p>
-              <a href="#contact" className="btn-lp btn-lp-primary" onClick={(e) => scrollToSection(e, 'contact')}>Parlons de votre engagement <span aria-hidden="true">→</span></a>
+              <a href="#contact" className="btn-lp btn-lp-primary" onClick={(e) => navigateToView(e, 'contact')}>Parlons de votre engagement <span aria-hidden="true">→</span></a>
           </div>
       </section>
 
@@ -676,6 +681,9 @@ export const LandingPage = () => {
           </div>
       </section>
 
+        </div>
+      )}
+
       {/* FOOTER */}
       <footer className="footer" style={{ background: 'var(--bleu-rca)', color: 'var(--blanc-pur)', padding: '40px 20px 100px' }}>
           <div className="footer-grid">
@@ -686,11 +694,11 @@ export const LandingPage = () => {
               </div>
               <div className="footer-col" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--or-solaire)' }}>Liens Rapides</h4>
-                  <a href="#accueil" onClick={(e) => scrollToSection(e, 'accueil')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Accueil</a>
-                  <a href="#apropos" onClick={(e) => scrollToSection(e, 'apropos')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>À Propos</a>
-                  <a href="#domaines" onClick={(e) => scrollToSection(e, 'domaines')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Nos Domaines</a>
-                  <a href="#transparence" onClick={(e) => scrollToSection(e, 'transparence')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Transparence</a>
-                  <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Contact</a>
+                  <a href="#accueil" onClick={(e) => navigateToView(e, 'accueil')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Accueil</a>
+                  <a href="#apropos" onClick={(e) => navigateToView(e, 'apropos')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>À Propos</a>
+                  <a href="#domaines" onClick={(e) => navigateToView(e, 'domaines')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Nos Domaines</a>
+                  <a href="#transparence" onClick={(e) => navigateToView(e, 'transparence')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Transparence</a>
+                  <a href="#contact" onClick={(e) => navigateToView(e, 'contact')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Contact</a>
               </div>
               <div className="footer-col" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--or-solaire)' }}>Contact</h4>
@@ -716,20 +724,20 @@ export const LandingPage = () => {
       <nav className="bottom-nav" style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--blanc-pur)', borderTop: '1px solid var(--bordure)', display: 'flex', justifyContent: 'space-around', paddingTop: '8px', paddingBottom: 'calc(8px + env(safe-area-inset-bottom))', overflowX: 'auto', whiteSpace: 'nowrap', zIndex: 90, boxShadow: '0 -2px 10px rgba(0,0,0,0.1)'
       }}>
-          <a href="#accueil" className={activeSection === 'accueil' ? 'active' : ''} onClick={(e) => scrollToSection(e, 'accueil')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeSection === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
-              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeSection === 'accueil' ? 'var(--or-solaire)' : '' }}>🏠</span>
+          <a href="#accueil" className={activeView === 'accueil' ? 'active' : ''} onClick={(e) => navigateToView(e, 'accueil')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
+              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'accueil' ? 'var(--or-solaire)' : '' }}>🏠</span>
               <span>Accueil</span>
           </a>
-          <a href="#domaines" className={activeSection === 'domaines' ? 'active' : ''} onClick={(e) => scrollToSection(e, 'domaines')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeSection === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
-              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeSection === 'domaines' ? 'var(--or-solaire)' : '' }}>🌍</span>
+          <a href="#domaines" className={activeView === 'domaines' ? 'active' : ''} onClick={(e) => navigateToView(e, 'domaines')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
+              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'domaines' ? 'var(--or-solaire)' : '' }}>🌍</span>
               <span>Domaines</span>
           </a>
-          <a href="#don" className={activeSection === 'don' ? 'active' : ''} onClick={(e) => scrollToSection(e, 'don')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeSection === 'don' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
-              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeSection === 'don' ? 'var(--or-solaire)' : '' }}>💛</span>
+          <a href="#don" className={activeView === 'don' ? 'active' : ''} onClick={(e) => navigateToView(e, 'don')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'don' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
+              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'don' ? 'var(--or-solaire)' : '' }}>💛</span>
               <span>Faire un Don</span>
           </a>
-          <a href="#contact" className={activeSection === 'contact' ? 'active' : ''} onClick={(e) => scrollToSection(e, 'contact')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeSection === 'contact' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
-              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeSection === 'contact' ? 'var(--or-solaire)' : '' }}>📞</span>
+          <a href="#contact" className={activeView === 'contact' ? 'active' : ''} onClick={(e) => navigateToView(e, 'contact')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'contact' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
+              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'contact' ? 'var(--or-solaire)' : '' }}>📞</span>
               <span>Contact</span>
           </a>
       </nav>
