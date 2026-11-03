@@ -1,109 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-
-export const DashboardSwitcher = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { userData } = useAuth();
-
-  const allDashboards = [
-    { path: '/dashboard/super_admin', label: '👑 Président', role: 'super_admin' },
-    { path: '/dashboard/admin_vice_president', label: '🤝 Vice-Président', role: 'vice_president' },
-    { path: '/dashboard/admin_secretaire', label: '📝 Secrétaire', role: 'secretaire' },
-    { path: '/dashboard/admin_tresorier', label: '💰 Trésorier', role: 'tresorier' },
-    { path: '/dashboard/admin_conseiller', label: '⚖️ Conseiller', role: 'conseiller' },
-    { path: '/dashboard/membre', label: '👥 Membre', role: 'membre' }
-  ];
-
-  const currentRole = userData?.role || 'membre';
-  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(currentRole);
-
-  // Filtrage strict : chaque utilisateur ne voit QUE les tableaux de bord autorisés
-  const authorizedDashboards = allDashboards.filter(d => {
-    if (isSuper) return true;
-    if (d.role === 'membre') return true;
-    return d.role === currentRole;
-  });
-
-  // Si un membre standard n'a accès qu'à la vue membre, masquer complètement le bouton switcher
-  if (authorizedDashboards.length <= 1) {
-    return null;
-  }
-
-  return (
-    <div style={{ position: 'fixed', top: 'calc(16px + env(safe-area-inset-top))', left: '50%', transform: 'translateX(-50%)', zIndex: 99999 }}>
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.15)',
-          border: 'none',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          fontSize: '18px',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backdropFilter: 'blur(4px)',
-          cursor: 'pointer', minHeight: '44px',
-          padding: 0
-        }}
-        title="Changer de vue"
-        aria-label="Changer de vue"
-      >
-        🔄
-      </button>
-
-      {isOpen && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginTop: '12px',
-          background: '#fff',
-          borderRadius: '12px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          overflow: 'hidden',
-          width: '200px',
-          maxWidth: '90vw',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{ padding: '8px 12px', background: '#f8fafc', fontSize: '11px', color: '#64748b', fontWeight: 'bold', borderBottom: '1px solid #f1f5f9' }}>
-            TABLEAUX DE BORD AUTORISÉS
-          </div>
-          {authorizedDashboards.map(d => (
-            <button
-              key={d.path}
-              onClick={() => {
-                navigate(d.path);
-                setIsOpen(false);
-              }}
-              style={{
-                padding: '10px 12px',
-                textAlign: 'left',
-                border: 'none',
-                background: location.pathname === d.path ? '#eff6ff' : 'transparent',
-                color: location.pathname === d.path ? '#1d4ed8' : '#334155',
-                fontSize: '13px',
-                cursor: 'pointer', minHeight: '44px',
-                borderBottom: '1px solid #f1f5f9',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontWeight: location.pathname === d.path ? '600' : '400'
-              }}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+import React,{useState} from 'react';
+import {useNavigate,useLocation} from 'react-router-dom';
+import {LayoutGrid} from 'lucide-react';
+import {useAuth} from '../../hooks/useAuth';
+import {ROLE_DEFINITIONS,type InstitutionalRole} from '../../constants/roles';
+const ROLE_DASHBOARD_PATHS:Record<InstitutionalRole,string>={president_fondateur:'/dashboard',president:'/dashboard/super_admin',vice_president:'/dashboard/admin_vice_president',secretaire_general:'/dashboard/admin_secretaire',secretaire_adjoint:'/dashboard',tresorier:'/dashboard/admin_tresorier',tresorier_adjoint:'/dashboard',conseiller:'/dashboard/admin_conseiller',commissaire_aux_comptes:'/dashboard',communicateur:'/dashboard/communicateur',membre:'/dashboard/membre'};
+export const DashboardSwitcher=()=>{
+ const [isOpen,setIsOpen]=useState(false);const navigate=useNavigate();const location=useLocation();const {userData}=useAuth();
+ const currentRole=userData?.role||'membre';const canViewAll=['super_admin','president','president_fondateur','admin'].includes(currentRole);
+ const authorized=ROLE_DEFINITIONS.filter(role=>canViewAll||role.id===currentRole||role.id==='membre');
+ if(authorized.length<=1)return null;
+ return <div className="fixed right-4 top-[calc(76px+env(safe-area-inset-top))] z-[99999]">
+  <button type="button" onClick={()=>setIsOpen(v=>!v)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-slate-900/85 text-white shadow-lg backdrop-blur-md transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400" title="Changer de tableau de bord" aria-label="Changer de tableau de bord" aria-expanded={isOpen}><LayoutGrid size={19}/></button>
+  {isOpen&&<div className="absolute right-0 mt-3 max-h-[70vh] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
+   <div className="px-3 py-2"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">Tableaux de bord autorisés</p><p className="mt-1 text-xs text-slate-400">{authorized.length} espace(s) disponible(s)</p></div>
+   <div className="grid gap-1">{authorized.map(role=>{const Icon=role.icon;const path=ROLE_DASHBOARD_PATHS[role.id];const active=location.pathname===path;return <button key={role.id} type="button" onClick={()=>{navigate(path);setIsOpen(false);}} className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${active?'border-blue-200 bg-blue-50':'border-transparent hover:border-slate-200 hover:bg-slate-50'}`}>
+    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-50 ${role.iconClass}`}><Icon size={19}/></span><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-slate-800">{role.label}</span><span className="mt-0.5 block truncate text-xs text-slate-500">{role.description}</span></span><span className={`rounded-full px-2 py-1 text-[10px] font-bold ${role.badgeClass}`}>{active?'Actif':'Ouvrir'}</span>
+   </button>})}</div>
+  </div>}
+ </div>;
 };
