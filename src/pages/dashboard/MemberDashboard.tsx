@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, ArrowRight, CalendarDays, Check, Clipboard, CreditCard, Hash, Wallet } from 'lucide-react';
+import { AlertCircle, ArrowRight, CalendarDays, Check, Clipboard, CreditCard, Hash, Wallet, Home, CreditCard as MemberCardIcon, Newspaper, Users, FileText, CalendarDays as AssemblyIcon, Handshake, Landmark, ClipboardList, Scale } from 'lucide-react';
+import { DashboardHeader } from '../../components/layout/DashboardHeader';
+import { DashboardSidebar } from '../../components/layout/DashboardSidebar';
+import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
+import '../../components/layout/dashboard-navigation.css';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, where, addDoc, serverTimestamp, updateDoc, doc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
@@ -32,6 +36,7 @@ export const MemberDashboard = () => {
 
   const [missionsBenevolat, setMissionsBenevolat] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   useEffect(() => {
     if (!userData?.uid) return;
@@ -126,6 +131,13 @@ export const MemberDashboard = () => {
   const memberSinceYear = userData?.createdAt ? new Date(userData.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
   const yearsMember = new Date().getFullYear() - memberSinceYear + 1;
 
+  const memberName = userData?.nom || userData?.displayName || userData?.email || 'Membre';
+  const navigateToSection = (section: string) => {
+    setActiveTab(section);
+    setShowMobileSidebar(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleLogout = async () => {
     if (window.confirm('🚪 Êtes-vous sûr de vouloir vous déconnecter ?')) {
       await signOut(auth);
@@ -143,61 +155,83 @@ export const MemberDashboard = () => {
 
   return (
     <div className="membre-page">
-      {/* HEADER */}
-      <header className="dashboard-header">
-        <div className="header-top">
-          <div className="logo-container">
-            <div className="logo">IK</div>
-            <div className="logo-text">
-              <h1>I KOUE GUI A ITA</h1>
-              <div className="devise">ENSEMBLE · VOLONTÉ · ENGAGEMENT</div>
-            </div>
-          </div>
-          <div className="header-actions">
-            <button className="header-btn" onClick={() => setActiveTab('notifications')} aria-label="Notifications">
-              🔔
-              {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
-            </button>
-            <button className="header-btn" onClick={handleLogout} aria-label="Déconnexion">🚪</button>
-          </div>
-        </div>
-        </header>
+      <DashboardHeader
+        userName={memberName}
+        roleLabel={userData?.role?.replace(/_/g, ' ') || 'Membre'}
+        notificationCount={notifications.length}
+        menuOpen={showMobileSidebar}
+        onMenuToggle={() => setShowMobileSidebar(open => !open)}
+        onNotificationsClick={() => navigateToSection('actualites')}
+      />
+      <DashboardSidebar
+        open={showMobileSidebar}
+        activeSection={activeTab}
+        userName={memberName}
+        roleLabel={userData?.role?.replace(/_/g, ' ') || 'Membre'}
+        onNavigate={navigateToSection}
+        onLogout={handleLogout}
+        onClose={() => setShowMobileSidebar(false)}
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: Home },
+          { id: 'carte', label: 'Carte numérique', icon: MemberCardIcon },
+          { id: 'cotisations', label: 'Cotisations', icon: Wallet },
+          { id: 'actualites', label: 'Actualités', icon: Newspaper },
+          { id: 'documents', label: 'Documents', icon: FileText },
+          { id: 'assemblees', label: 'Assemblées', icon: AssemblyIcon },
+          { id: 'annuaire', label: 'Annuaire', icon: Users },
+          { id: 'benevolat', label: 'Bénévolat', icon: Handshake },
+          { id: 'commissions', label: 'Commissions', icon: Landmark },
+          { id: 'tasks', label: 'Tâches', icon: ClipboardList },
+          { id: 'droits', label: 'Droits & votes', icon: Scale }
+        ]}
+      />
+      <DashboardBottomNavigation
+        activeSection={activeTab}
+        onNavigate={navigateToSection}
+        onMenuClick={() => setShowMobileSidebar(true)}
+        items={[
+          { id: 'dashboard', label: 'Accueil', icon: Home },
+          { id: 'cotisations', label: 'Cotisations', icon: Wallet },
+          { id: 'actualites', label: 'Actualités', icon: Newspaper }
+        ]}
+      />
 
-      {/* TAB NAV */}
-      <nav className="tab-nav">
-        <button className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => { setActiveTab('dashboard'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">🏠</span>
-          <span>Accueil</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'carte' ? 'active' : ''}`} onClick={() => { setActiveTab('carte'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">🎫</span>
-          <span>Ma Carte</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'cotisations' ? 'active' : ''}`} onClick={() => { setActiveTab('cotisations'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">💰</span>
-          <span>Cotisations</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'benevolat' ? 'active' : ''}`} onClick={() => { setActiveTab('benevolat'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">🤝</span>
-          <span>Bénévolat</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'commissions' ? 'active' : ''}`} onClick={() => { setActiveTab('commissions'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">🏛️</span>
-          <span>Commissions</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => { setActiveTab('tasks'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">📋</span>
-          <span>Tâches</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'documents' ? 'active' : ''}`} onClick={() => { setActiveTab('documents'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">📄</span>
-          <span>Documents</span>
-        </button>
-        <button className={`tab-btn ${activeTab === 'droits' ? 'active' : ''}`} onClick={() => { setActiveTab('droits'); window.scrollTo(0,0); }}>
-          <span className="tab-icon">⚖️</span>
-          <span>Mes Droits</span>
-        </button>
-      </nav>
+      {/* ACTUALITÉS */}
+      <div className={`tab-content ${activeTab === 'actualites' ? 'active' : ''}`}>
+        <div className="section-header"><h2>📰 Actualités de l'association</h2><p>Les dernières informations publiées</p></div>
+        <div className="member-news-list">
+          {news.length === 0 ? <div className="empty-state">Aucune actualité publiée pour le moment.</div> : news.map((item: any) => (
+            <article className="card member-news-card" key={item.id}>
+              <h3 className="card-title">{item.title || item.titre || 'Actualité'}</h3>
+              {item.createdAt && <p className="transaction-meta">{formatDate(item.createdAt)}</p>}
+              <p>{item.content || item.description || item.contenu || ''}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* ASSEMBLÉES */}
+      <div className={`tab-content ${activeTab === 'assemblees' ? 'active' : ''}`}>
+        <div className="section-header"><h2>🏛️ Assemblées & rencontres</h2><p>Calendrier des activités de l'association</p></div>
+        <div className="card">
+          {events.length === 0 ? <div className="empty-state">Aucune assemblée ou rencontre publiée.</div> : events.map((event: any) => (
+            <article className="transaction-item" key={event.id}>
+              <div className="transaction-icon">📅</div>
+              <div className="transaction-info">
+                <div className="transaction-title">{event.title || event.titre || event.name || 'Rencontre de l’association'}</div>
+                <div className="transaction-meta">{formatDate(event.date || event.createdAt)}{event.location || event.lieu ? ` · ${event.location || event.lieu}` : ''}</div>
+                {(event.description || event.details) && <p>{event.description || event.details}</p>}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* ANNUAIRE — aucune source membres n'est actuellement exposée dans ce dashboard */}
+      <div className={`tab-content ${activeTab === 'annuaire' ? 'active' : ''}`}>
+        <div className="section-header"><h2>👥 Annuaire des membres</h2><p>Répertoire de l’association</p></div>
+        <div className="card"><p>L’annuaire n’est pas encore disponible dans cet espace. Aucune liste de membres n’est chargée ici afin de ne pas exposer des données personnelles sans vérifier les autorisations Firestore dédiées.</p></div>
+      </div>
 
       {/* TAB 1: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
@@ -629,38 +663,6 @@ export const MemberDashboard = () => {
           <MemberVoting />
         </div>
       </div>
-
-      {/* BOTTOM NAV */}
-      <nav className="bottom-nav">
-        <a onClick={() => { setActiveTab('dashboard'); window.scrollTo(0,0); }} className={activeTab === 'dashboard' ? 'active' : ''}>
-          <span className="nav-icon">🏠</span>
-          <span>Accueil</span>
-        </a>
-        <a onClick={() => { setActiveTab('carte'); window.scrollTo(0,0); }} className={activeTab === 'carte' ? 'active' : ''}>
-          <span className="nav-icon">🎫</span>
-          <span>Carte</span>
-        </a>
-        <a onClick={() => { setActiveTab('cotisations'); window.scrollTo(0,0); }} className={activeTab === 'cotisations' ? 'active' : ''}>
-          <span className="nav-icon">💰</span>
-          <span>Cotisations</span>
-        </a>
-        <a onClick={() => { setActiveTab('benevolat'); window.scrollTo(0,0); }} className={activeTab === 'benevolat' ? 'active' : ''}>
-          <span className="nav-icon">🤝</span>
-          <span>Bénévolat</span>
-        </a>
-        <a onClick={() => { setActiveTab('commissions'); window.scrollTo(0,0); }} className={activeTab === 'commissions' ? 'active' : ''}>
-          <span className="nav-icon">🏛️</span>
-          <span>Comm.</span>
-        </a>
-        <a onClick={() => { setActiveTab('tasks'); window.scrollTo(0,0); }} className={activeTab === 'tasks' ? 'active' : ''}>
-          <span className="nav-icon">📋</span>
-          <span>Tâches</span>
-        </a>
-        <a onClick={() => { setActiveTab('droits'); window.scrollTo(0,0); }} className={activeTab === 'droits' ? 'active' : ''}>
-          <span className="nav-icon">🗳️</span>
-          <span>Vote</span>
-        </a>
-      </nav>
 
       {selectedReceipt && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 3000, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', overflowY: 'auto' }}>

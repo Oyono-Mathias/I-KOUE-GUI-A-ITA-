@@ -532,3 +532,43 @@
     .membre-page .dues-history-item { flex-wrap: wrap; }
     .membre-page .dues-history-side { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; padding-left: 60px; }
 }
+
+
+/* Member dashboard — mobile-first compact layout */
+.membre-page { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.membre-page .tab-nav, .membre-page .bottom-nav { display: none !important; }
+.membre-page .tab-content { padding: 16px; }
+.membre-page .member-card-visual { padding: 20px; }
+@media (max-width: 767px) {
+  .membre-page .tab-content { padding: 12px; }
+  .membre-page .welcome-card { padding: 16px 14px; margin-bottom: 12px; }
+  .membre-page .welcome-card h2 { font-size: 19px; margin-bottom: 5px; }
+  .membre-page .welcome-card p { font-size: 12px; }
+  .membre-page .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .membre-page .stat-card { min-width: 0; padding: 10px 7px; border-radius: 10px; }
+  .membre-page .stat-icon { font-size: 18px; }
+  .membre-page .stat-value { font-size: clamp(15px, 4vw, 19px); }
+  .membre-page .stat-label { font-size: 10px; }
+  .membre-page .card { padding: 12px; margin-bottom: 10px; }
+  .membre-page .card-header { gap: 7px; margin-bottom: 10px; }
+  .membre-page .card-title { font-size: 15px; }
+  .membre-page .quick-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .membre-page .quick-action { min-width: 0; padding: 10px 6px; }
+  .membre-page .qa-icon { font-size: 20px; }
+  .membre-page .qa-title { font-size: 11px; }
+  .membre-page .qa-subtitle { font-size: 9px; }
+  .membre-page .member-card-visual { aspect-ratio: auto; min-height: 300px; padding: 14px; gap: 12px; }
+  .membre-page .card-logo { width: 38px; height: 38px; }
+  .membre-page .card-photo { width: 58px; height: 58px; font-size: 27px; margin-bottom: 7px; }
+  .membre-page .card-member-name { font-size: 16px; }
+  .membre-page .card-bottom { gap: 7px; }
+  .membre-page .card-detail-item { padding: 7px 8px; }
+  .membre-page .card-detail-item .value { font-size: 11px; overflow-wrap: anywhere; }
+  .membre-page .section-header h2 { font-size: 19px; }
+  .membre-page .cotisation-status { gap: 9px; padding: 12px; }
+  .membre-page .dues-payment-card { padding: 12px; }
+}
+@media (min-width: 768px) {
+  .membre-page { padding-bottom: 0; }
+  .membre-page .tab-content { padding: 20px 24px; }
+}

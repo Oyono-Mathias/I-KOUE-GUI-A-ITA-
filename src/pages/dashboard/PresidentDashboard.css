@@ -1,5 +1,5 @@
 /* ============================================
-    🎨 DESIGN SYSTEM - I KOUE GUI A ITA (PRESIDENT)
+     DESIGN SYSTEM - I KOUE GUI A ITA (PRESIDENT)
     ============================================ */
 .president-dashboard-container {
     --bleu-rca: #0A3D62;
@@ -38,7 +38,7 @@
 }
 
 /* ============================================
-    🧭 HEADER APP BAR
+     HEADER APP BAR
     ============================================ */
 .president-dashboard-container .dashboard-header-compact {
     background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
@@ -174,7 +174,7 @@
 }
 
 /* ============================================
-    📱 TAB NAVIGATION
+     TAB NAVIGATION
     ============================================ */
 .president-dashboard-container .tab-nav {
     display: none; /* Hide on mobile! */
@@ -218,7 +218,7 @@
 .president-dashboard-container .tab-btn:active { background: var(--fond-alterne); }
 
 /* ============================================
-    📄 TAB CONTENT
+     TAB CONTENT
     ============================================ */
 .president-dashboard-container .tab-content {
     display: none;
@@ -234,7 +234,7 @@
 }
 
 /* ============================================
-    🎴 CARDS
+     CARDS
     ============================================ */
 .president-dashboard-container .card {
     background: var(--blanc-pur);
@@ -272,7 +272,7 @@
 }
 
 /* ============================================
-    🌟 WELCOME CARD
+     WELCOME CARD
     ============================================ */
 .president-dashboard-container .welcome-card {
     background: linear-gradient(135deg, var(--bleu-rca) 0%, var(--bleu-ciel) 100%);
@@ -285,7 +285,7 @@
 }
 
 .president-dashboard-container .welcome-card::before {
-    content: '👔';
+    content: '';
     position: absolute;
     top: -20px;
     right: -20px;
@@ -324,7 +324,7 @@
 }
 
 /* ============================================
-    📊 STATS GRID
+     STATS GRID
     ============================================ */
 .president-dashboard-container .stats-grid {
     display: grid;
@@ -376,7 +376,7 @@
 .president-dashboard-container .stat-card.success .stat-value { color: var(--vert-espoir); }
 
 /* ============================================
-    🔘 BUTTONS
+     BUTTONS
     ============================================ */
 .president-dashboard-container .btn { min-height: 44px;
     padding: 10px 16px;
@@ -411,7 +411,7 @@
 .president-dashboard-container .btn-small { padding: 6px 12px; font-size: 12px; min-height: 40px; }
 
 /* ============================================
-    📝 FORMS
+     FORMS
     ============================================ */
 .president-dashboard-container .form-group { margin-bottom: 16px; }
 
@@ -512,7 +512,7 @@
 }
 
 /* ============================================
-    ️ ALERTS
+     ALERTS
     ============================================ */
 .president-dashboard-container .alert-box {
     border-radius: var(--radius-md);
@@ -544,7 +544,7 @@
 }
 
 /* ============================================
-    📋 MEETING ITEM
+     MEETING ITEM
     ============================================ */
 .president-dashboard-container .meeting-item {
     background: var(--blanc-pur);
@@ -601,7 +601,7 @@
 }
 
 /* ============================================
-    💰 TRANSACTION ITEM
+     TRANSACTION ITEM
     ============================================ */
 .president-dashboard-container .transaction-item {
     background: var(--blanc-pur);
@@ -639,7 +639,7 @@
 .president-dashboard-container .transaction-amount.pending { color: var(--orange-energie); }
 
 /* ============================================
-    🔍 FILTERS
+     FILTERS
     ============================================ */
 .president-dashboard-container .filters-bar {
     background: var(--blanc-pur);
@@ -662,7 +662,7 @@
 }
 
 /* ============================================
-    ⚡ QUICK ACTIONS
+     QUICK ACTIONS
     ============================================ */
 .president-dashboard-container .quick-actions {
     display: grid;
@@ -704,7 +704,7 @@
 }
 
 /* ============================================
-    📊 FINANCE SUMMARY
+     FINANCE SUMMARY
     ============================================ */
 .president-dashboard-container .finance-summary {
     display: grid;
@@ -740,7 +740,7 @@
 .president-dashboard-container .finance-card.expense .fin-amount { color: var(--rouge-solidarite); }
 
 /* ============================================
-    📱 BOTTOM NAV
+     BOTTOM NAV
     ============================================ */
 .president-dashboard-container .bottom-nav {
     position: fixed;
@@ -779,7 +779,7 @@
 .president-dashboard-container .bottom-nav a.active .nav-icon { color: var(--or-solaire); }
 
 /* ============================================
-    💬 WHATSAPP FAB
+     WHATSAPP FAB
     ============================================ */
 .president-dashboard-container .whatsapp-float {
     position: fixed;
@@ -803,7 +803,7 @@
 .president-dashboard-container .whatsapp-float:active { transform: scale(0.95); }
 
 /* ============================================
-    🔔 NOTIFICATION ITEM
+     NOTIFICATION ITEM
     ============================================ */
 .president-dashboard-container .notification-item {
     background: var(--blanc-pur);
@@ -840,7 +840,7 @@
 }
 
 /* ============================================
-    📋 SECTION HEADER
+     SECTION HEADER
     ============================================ */
 .president-dashboard-container .section-header { margin-bottom: 16px; }
 
@@ -859,7 +859,7 @@
 }
 
 /* ============================================
-    📊 BADGES
+     BADGES
     ============================================ */
 .president-dashboard-container .badge {
     display: inline-block;
@@ -890,7 +890,7 @@
 }
 
 /* ============================================
-    🔄 SKELETON LOADING
+     SKELETON LOADING
     ============================================ */
 .president-dashboard-container .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -905,7 +905,7 @@
 }
 
 /* ============================================
-    📋 EMPTY STATE
+     EMPTY STATE
     ============================================ */
 .president-dashboard-container .empty-state {
     text-align: center;
@@ -934,7 +934,7 @@
 }
 
 /* ============================================
-    📝 CHECKBOX GROUP
+     CHECKBOX GROUP
     ============================================ */
 .president-dashboard-container .checkbox-group {
     display: flex;
@@ -955,7 +955,7 @@
 }
 
 /* ============================================
-    📋 TABS SUB-NAV
+     TABS SUB-NAV
     ============================================ */
 .president-dashboard-container .sub-tabs {
     display: flex;
@@ -986,4 +986,448 @@
     background: var(--bleu-rca);
     color: var(--blanc-pur);
     border-color: var(--bleu-rca);
+}
+
+
+/* Mobile-first dashboard refinement */
+.president-dashboard-container {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+}
+
+.president-dashboard-container .welcome-card {
+    background: linear-gradient(135deg, #0A3D62 0%, #1a5a8a 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 16px;
+    color: #FFFFFF;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(10, 61, 98, 0.15);
+    min-height: 160px;
+}
+
+.president-dashboard-container .welcome-card h2 {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+    line-height: 1.25;
+    max-width: 42rem;
+}
+
+.president-dashboard-container .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 20px;
+}
+
+.president-dashboard-container .stat-card {
+    min-width: 0;
+    min-height: 132px;
+    padding: 16px;
+    border-radius: 12px;
+    border-top: 3px solid #D4A017;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.president-dashboard-container .quick-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 0;
+}
+
+.president-dashboard-container .quick-action {
+    min-height: 64px;
+    padding: 20px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.president-dashboard-container .bottom-nav {
+    display: flex;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+
+.president-dashboard-container .bottom-nav button,
+.president-dashboard-container .tab-btn,
+.president-dashboard-container .sub-tab,
+.president-dashboard-container .btn,
+.president-dashboard-container .header-btn {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.president-dashboard-container .btn-small {
+    min-height: 44px;
+}
+
+.president-dashboard-container .bottom-nav button {
+    flex: 1;
+}
+
+.president-dashboard-container .tab-nav {
+    display: none;
+}
+
+.president-dashboard-container .tab-content {
+    padding: 16px;
+}
+
+.president-dashboard-container .card {
+    min-width: 0;
+}
+
+.president-dashboard-container button:focus-visible,
+.president-dashboard-container a:focus-visible,
+.president-dashboard-container [role="button"]:focus-visible {
+    outline: 3px solid #D4A017;
+    outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .president-dashboard-container .stat-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .president-dashboard-container .quick-action:hover {
+        border-color: #0A3D62;
+        background: #f8f9fa;
+    }
+}
+
+@media (min-width: 768px) {
+    .president-dashboard-container {
+        padding-bottom: 0;
+    }
+
+    .president-dashboard-container .welcome-card {
+        padding: 32px;
+        margin: 24px;
+    }
+
+    .president-dashboard-container .stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        padding: 0 24px;
+    }
+
+    .president-dashboard-container .quick-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 0;
+    }
+
+    .president-dashboard-container .tab-nav {
+        display: flex;
+        top: 0;
+    }
+
+    .president-dashboard-container .tab-content {
+        padding: 24px;
+    }
+
+    .president-dashboard-container .bottom-nav {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .president-dashboard-container *,
+    .president-dashboard-container *::before,
+    .president-dashboard-container *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Decorative icon slots are omitted when no icon library is imported. */
+.president-dashboard-container .stat-icon:empty,
+.president-dashboard-container .qa-icon:empty,
+.president-dashboard-container .alert-icon:empty,
+.president-dashboard-container .nav-icon:empty,
+.president-dashboard-container .tab-icon:empty {
+    display: none;
+}
+
+.president-dashboard-container .header-btn {
+    width: auto;
+    min-width: 44px;
+    padding: 0 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* Urgent presidential dashboard refinements */
+.president-dashboard-container .bottom-nav {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 4px;
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+    background: #FFFFFF;
+}
+
+.president-dashboard-container .bottom-nav button {
+    flex: 1 1 0;
+    min-width: 60px;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 2px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #666666;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.president-dashboard-container .bottom-nav button.active {
+    color: #0A3D62;
+    font-weight: 700;
+}
+
+.president-dashboard-container .bottom-nav button svg {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+}
+
+.president-dashboard-container .welcome-card {
+    position: relative;
+}
+
+.president-dashboard-container .crisis-alert-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 50%;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.president-dashboard-container .welcome-card > div:first-child {
+    padding-right: 56px;
+}
+
+.president-dashboard-container .stat-card .stat-icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto 8px;
+    color: #0A3D62;
+    stroke: #0A3D62;
+}
+
+.president-dashboard-container .quick-action {
+    width: 100%;
+    min-height: 64px;
+    background: #FFFFFF;
+    color: #0A3D62;
+    font: inherit;
+    cursor: pointer;
+}
+
+.president-dashboard-container .quick-action .qa-title {
+    color: inherit;
+}
+
+.president-dashboard-container .header-compact-left {
+    position: relative;
+}
+
+.president-dashboard-container .header-profile-trigger {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.president-dashboard-container .header-profile-trigger .header-titles {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.president-dashboard-container .header-profile-trigger .header-titles strong {
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.president-dashboard-container .user-context-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 1100;
+    min-width: 190px;
+    padding: 6px;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    background: #FFFFFF;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.president-dashboard-container .user-context-menu button {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #0A3D62;
+    text-align: left;
+    cursor: pointer;
+}
+
+.president-dashboard-container .user-context-menu button:hover {
+    background: #F5F7FA;
+}
+
+@media (min-width: 768px) {
+    .president-dashboard-container .bottom-nav {
+        display: none;
+    }
+}
+
+
+/* Mobile secondary navigation drawer */
+.president-dashboard-container .mobile-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    margin-left: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.president-dashboard-container .mobile-sidebar-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+}
+
+.president-dashboard-container .mobile-sidebar-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(15, 23, 42, 0.48);
+}
+
+.president-dashboard-container .mobile-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min( min(340px, 88vw), 100%);
+    padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    background: #FFFFFF;
+    box-shadow: -8px 0 28px rgba(0, 0, 0, 0.18);
+}
+
+.president-dashboard-container .mobile-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #E5E7EB;
+    color: #0A3D62;
+    font-size: 17px;
+}
+
+.president-dashboard-container .mobile-sidebar-header button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 10px;
+    background: #F5F7FA;
+    color: #0A3D62;
+}
+
+.president-dashboard-container .mobile-sidebar-links {
+    display: grid;
+    gap: 8px;
+    padding-top: 16px;
+}
+
+.president-dashboard-container .mobile-sidebar-links button {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 14px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #334155;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.president-dashboard-container .mobile-sidebar-links button.active {
+    background: #EAF2F8;
+    color: #0A3D62;
+    font-weight: 700;
+}
+
+.president-dashboard-container .mobile-sidebar-links button svg {
+    flex: 0 0 20px;
+}
+
+@media (min-width: 768px) {
+    .president-dashboard-container .mobile-menu-trigger,
+    .president-dashboard-container .mobile-sidebar-layer {
+        display: none;
+    }
 }
