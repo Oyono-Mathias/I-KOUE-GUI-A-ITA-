@@ -980,12 +980,13 @@
 
 /* Navigation mobile publique : ancrage stable et respect des zones sûres. */
 .landing-page-container {
-  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  /* Réserve la hauteur de la navigation fixe et de la zone sûre mobile. */
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 .landing-page-container .bottom-nav {
   position: fixed !important;
   inset: auto 0 0 !important;
-  z-index: 1200 !important;
+  z-index: 50 !important;
   display: flex !important;
   align-items: stretch;
   justify-content: space-around;
@@ -1021,6 +1022,22 @@
 }
 .landing-page-container .bottom-nav .nav-icon {
   line-height: 1;
+}
+.landing-page-container .footer {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+.landing-page-container .footer-col a {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 2rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.landing-page-container .footer-col a:focus-visible {
+  outline: 2px solid var(--or-clair);
+  outline-offset: 4px;
+  border-radius: 3px;
 }
 .landing-page-container .membership-section {
   padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
@@ -1087,8 +1104,15 @@
   margin: clamp(2rem, 5vw, 3rem) auto 0 !important;
   padding: clamp(1.4rem, 4vw, 2.5rem);
 }
+@media (max-width: 767px) {
+  .landing-page-container .whatsapp-float {
+    bottom: calc(6.25rem + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+  }
+}
 @media (min-width: 768px) {
   .landing-page-container { padding-bottom: 0; }
+  .landing-page-container .footer { padding-bottom: 40px !important; }
   .landing-page-container .bottom-nav { display: none !important; }
   .membership-contact-bridge { padding-inline: 2rem; }
 }
