@@ -351,3 +351,44 @@
 /* PROGRESS BAR */
 .cons-dashboard-container .progress-bar { width: 100%; height: 8px; background: var(--fond-alterne); border-radius: 4px; overflow: hidden; margin-top: 8px; }
 .cons-dashboard-container .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--or-solaire), var(--or-clair)); border-radius: 4px; transition: width 0.5s ease; }
+
+
+/* Shared advisor navigation and compact mobile dashboard */
+.cons-dashboard-container .cons-shared-header-wrap { position: sticky; top: 0; z-index: 100; }
+.cons-dashboard-container .cons-notification-panel {
+  position: absolute; top: calc(100% + 8px); right: 12px; z-index: 120;
+  width: min(300px, calc(100vw - 24px)); padding: 14px;
+  border: 1px solid #E5E7EB; border-radius: 12px; background: #fff;
+  color: #1F2937; box-shadow: 0 8px 24px rgba(15,23,42,.16);
+}
+.cons-dashboard-container .cons-notification-panel h4 { margin: 0 0 8px; color: #0A3D62; }
+.cons-dashboard-container .cons-notification-panel button {
+  display: block; width: 100%; padding: 10px 4px; border: 0;
+  border-bottom: 1px solid #E5E7EB; background: transparent;
+  color: #334155; text-align: left; cursor: pointer;
+}
+.cons-dashboard-container .cons-notification-panel p { margin: 4px 0; font-size: 13px; }
+@media (max-width: 767px) {
+  .cons-dashboard-container { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .cons-dashboard-container > .dashboard-header,
+  .cons-dashboard-container > .tab-nav,
+  .cons-dashboard-container > .bottom-nav { display: none !important; }
+  .cons-dashboard-container .stats-grid { gap: 8px; margin-bottom: 12px; }
+  .cons-dashboard-container .stat-card { min-height: 0; padding: 10px 8px; }
+  .cons-dashboard-container .stat-card .stat-icon { font-size: 22px; margin-bottom: 4px; }
+  .cons-dashboard-container .stat-card .stat-value { font-size: 20px; line-height: 1.2; }
+  .cons-dashboard-container .stat-card .stat-label { margin-top: 3px; font-size: 12px; }
+  .cons-dashboard-container .stat-card .stat-sublabel { font-size: 10px; }
+  .cons-dashboard-container .card { padding: 12px; margin-bottom: 12px; }
+  .cons-dashboard-container .card-header { margin-bottom: 10px; gap: 8px; }
+  .cons-dashboard-container .card-title { font-size: 16px; }
+  .cons-dashboard-container .quick-actions { gap: 8px; margin-bottom: 12px; }
+  .cons-dashboard-container .quick-action { min-height: 76px; padding: 10px 8px; }
+  .cons-dashboard-container .quick-action .qa-icon { font-size: 22px; margin-bottom: 3px; }
+  .cons-dashboard-container .quick-action .qa-title { font-size: 11px; line-height: 1.25; }
+  .cons-dashboard-container .avis-item,
+  .cons-dashboard-container .partner-item { padding: 12px; }
+}
+@media (min-width: 768px) {
+  .cons-dashboard-container { padding-bottom: 0; }
+}
