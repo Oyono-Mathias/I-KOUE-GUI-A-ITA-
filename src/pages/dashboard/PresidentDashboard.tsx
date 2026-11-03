@@ -32,6 +32,7 @@ export const PresidentDashboard = () => {
   const [memberModal, setMemberModal] = useState<any>(null);
   const [activeMemberMenuId, setActiveMemberMenuId] = useState<string | null>(null);
   const [roleEditModal, setRoleEditModal] = useState<{ member: any; role: InstitutionalRole } | null>(null);
+  const canManageRoles = ['president', 'super_admin', 'admin'].includes(userData?.role || '');
   const [roleSaving, setRoleSaving] = useState(false);
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
@@ -224,7 +225,7 @@ export const PresidentDashboard = () => {
   };
 
   const saveMemberRole = async () => {
-    if (!roleEditModal || roleSaving) return;
+    if (!canManageRoles || !roleEditModal || roleSaving) return;
     const { member, role } = roleEditModal;
     const memberId = member.uid || member.id;
     if (!memberId || memberId === userData?.uid) {
@@ -616,7 +617,7 @@ export const PresidentDashboard = () => {
                                     {activeMemberMenuId === m.id && (
                                         <div className="member-action-menu" role="menu" aria-label="Actions du membre">
                                             <button type="button" role="menuitem" onClick={() => { setMemberModal(m); setActiveMemberMenuId(null); }}><Eye size={16} /> Voir le profil</button>
-                                            <button type="button" role="menuitem" onClick={() => { setRoleEditModal({ member: m, role: (ROLE_DEFINITIONS.some((item) => item.id === m.role) ? m.role : 'membre') as InstitutionalRole }); setActiveMemberMenuId(null); }}><Pencil size={16} /> Modifier le rôle</button>
+                                            {canManageRoles && <button type="button" role="menuitem" onClick={() => { setRoleEditModal({ member: m, role: (ROLE_DEFINITIONS.some((item) => item.id === m.role) ? m.role : 'membre') as InstitutionalRole }); setActiveMemberMenuId(null); }}><Pencil size={16} /> Modifier le rôle</button>}
                                             {m.statut !== 'suspendu' && m.statut !== 'refuse' && (
                                                 <button type="button" role="menuitem" onClick={() => { suspendMember(m.id); setActiveMemberMenuId(null); }}><UserRoundX size={16} /> Suspendre</button>
                                             )}
@@ -1034,7 +1035,7 @@ export const PresidentDashboard = () => {
 
     {/* MODALS & CONFIRM DIALOG */}
     
-    {roleEditModal && (
+    {canManageRoles && roleEditModal && (
       <div className="fixed inset-0 z-[11000] flex items-center justify-center overflow-y-auto bg-slate-950/45 p-4 backdrop-blur-sm" onClick={() => setRoleEditModal(null)}>
         <section role="dialog" aria-modal="true" aria-labelledby="role-editor-title" className="my-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-7" onClick={(event) => event.stopPropagation()}>
           <div className="mb-5 flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wide text-blue-700">Gestion des membres</p><h2 id="role-editor-title" className="mt-1 text-xl font-bold text-slate-900">Modifier le rôle d'un membre</h2><p className="mt-1 text-sm text-slate-500">{roleEditModal.member.nom || roleEditModal.member.displayName || 'Membre'}</p></div><button type="button" onClick={() => setRoleEditModal(null)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100" aria-label="Fermer">✕</button></div>
