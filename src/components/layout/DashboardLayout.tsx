@@ -37,6 +37,7 @@ export const DashboardLayout = () => {
   if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !isSystemAdmin && userRole !== 'tresorier') {
     return <Navigate to="/dashboard" replace />;
   }
+  if (path.endsWith('/membre') && !isSystemAdmin && !['membre', 'member'].includes(userRole)) return <Navigate to="/dashboard" replace />;
   if (path.includes('/admin_conseiller') && !isSystemAdmin && userRole !== 'conseiller') {
     return <Navigate to="/dashboard" replace />;
   }
