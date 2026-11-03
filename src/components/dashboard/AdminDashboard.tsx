@@ -409,20 +409,20 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                         {ROLE_DEFINITIONS.map((role) => {
                             const Icon = role.icon;
-                            return { id: role.id, role: role.label, desc: role.description, color: role.iconClass, count: users.filter(u => u.role === role.id).length, Icon };
-                        }).map((r) => (
-
-                            <div key={r.id} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', borderTop: `4px solid ${r.color}` }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                    <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--texte-principal)', display: 'flex', alignItems: 'center', gap: '8px' }}><r.Icon size={18} />{r.role}</h4>
-                                    <span style={{ background: '#f5f5f5', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold' }}>{r.count} actif(s)</span>
+                            const count = users.filter(user => user.role === role.id).length;
+                            return (
+                                <div key={role.id} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', border: '1px solid #E5E7EB' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                        <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--texte-principal)', display: 'flex', alignItems: 'center', gap: '8px' }}><Icon size={18} className={role.iconClass} />{role.label}</h4>
+                                        <span className={role.badgeClass} style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold', whiteSpace: 'nowrap' }}>{count} actif(s)</span>
+                                    </div>
+                                    <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>{role.description}</p>
+                                    <button onClick={() => { setActiveTab('membres'); setRoleFilter(role.id); }} style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid #CBD5E1', color: '#334155', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
+                                        Gérer les attributions
+                                    </button>
                                 </div>
-                                <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#666' }}>{r.desc}</p>
-                                <button onClick={() => { setActiveTab('membres'); setRoleFilter(r.id); }} style={{ width: '100%', padding: '10px', background: 'transparent', border: `1px solid ${r.color}`, color: r.color, borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                                    Gérer les attributions
-                                </button>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

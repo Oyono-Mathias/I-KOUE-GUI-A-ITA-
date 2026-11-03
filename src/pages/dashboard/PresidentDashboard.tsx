@@ -1055,13 +1055,7 @@ export const PresidentDashboard = () => {
                         <div className="form-group">
                             <label>Rôle</label>
                             <select id="newMemRole" style={{ width: '100%', padding: '8px' }}>
-                                <option value="member">Membre standard</option>
-                                <option value="president">Président</option>
-                                <option value="vice_president">Vice-Président</option>
-                                <option value="secretaire">Secrétaire Général</option>
-                                <option value="tresorier">Trésorier</option>
-                                <option value="communicateur">Communicateur</option>
-                                <option value="conseiller">Conseiller</option>
+                                {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                             </select>
                         </div>
                         <div className="form-group">
