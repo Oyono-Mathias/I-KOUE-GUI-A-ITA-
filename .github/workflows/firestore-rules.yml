@@ -7,6 +7,7 @@ on:
       - preview/rbac-navigation-11-roles
   pull_request:
     branches:
+      - main
       - preview/rbac-navigation-11-roles
 
 permissions:
