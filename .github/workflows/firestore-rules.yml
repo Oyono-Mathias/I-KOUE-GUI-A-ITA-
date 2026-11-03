@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - preview/rbac-navigation-11-roles
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -52,3 +53,4 @@ jobs:
         env:
           GCLOUD_PROJECT: demo-i-koue-gui-a-ita
           FIREBASE_CONFIG: '{"projectId":"demo-i-koue-gui-a-ita"}'
+          FIREBASE_DATABASE_ID: ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5

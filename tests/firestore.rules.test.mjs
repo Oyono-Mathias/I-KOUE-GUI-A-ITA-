@@ -21,7 +21,7 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ID = 'demo-i-koue-gui-a-ita';
-const DATABASE_ID = 'ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5';
+const DATABASE_ID = process.env.FIREBASE_DATABASE_ID || 'ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5';
 const EMULATOR_HOST = '127.0.0.1';
 const EMULATOR_PORT = 8080;
 const RULES_PATH = resolve(__dirname, '../firestore.rules');
