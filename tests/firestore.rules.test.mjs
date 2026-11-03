@@ -52,22 +52,23 @@ beforeEach(async () => {
   assert.equal(response.ok, true, 'Unable to clear the named Firestore emulator database');
 });
 
-function namedDbForContext(context) {
-  // Reuse the authenticated app created by rules-unit-testing, but select the
-  // exact named database used by the production application.
+function namedDbForContext(context, mockUserToken) {
+  // Reuse the isolated test app, select the production database ID, and pass
+  // the same emulator-only mock token explicitly to this named Firestore client.
   const contextFirestore = context.firestore();
   const db = getFirestore(contextFirestore.app, DATABASE_ID);
-  connectFirestoreEmulator(db, EMULATOR_HOST, EMULATOR_PORT);
+  connectFirestoreEmulator(db, EMULATOR_HOST, EMULATOR_PORT, { mockUserToken });
   return db;
 }
 
 function dbFor(uid) {
-  return namedDbForContext(testEnv.authenticatedContext(uid));
+  const context = testEnv.authenticatedContext(uid);
+  return namedDbForContext(context, { sub: uid, user_id: uid });
 }
 
 async function seedUser(uid, role, extra = {}) {
   await testEnv.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(namedDbForContext(context), 'users', uid), {
+    await setDoc(doc(namedDbForContext(context, 'owner'), 'users', uid), {
       role,
       statut: 'actif',
       ...extra,
@@ -77,7 +78,7 @@ async function seedUser(uid, role, extra = {}) {
 
 async function seedDocument(path, id, data) {
   await testEnv.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(namedDbForContext(context), path, id), data);
+    await setDoc(doc(namedDbForContext(context, 'owner'), path, id), data);
   });
 }
 
