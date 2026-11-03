@@ -415,7 +415,7 @@ service cloud.firestore {
         && request.resource.data.assignedTo in [
           'president', 'vice_president', 'secretaire', 'secretaire_general',
           'secretaire_adjoint', 'tresorier', 'treasurer', 'tresorier_adjoint',
-          'communicateur', 'conseiller', 'commissaire_aux_comptes', 'membre', 'member'
+          'communicateur', 'conseiller', 'membre', 'member'
         ]
         && request.resource.data.createdAt == request.time;
 
