@@ -1,0 +1,54 @@
+name: Deploy Firestore Rules (named production database)
+
+on:
+  push:
+    branches:
+      - preview/rbac-navigation-11-roles
+    paths:
+      - .github/workflows/deploy-firestore-rules.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-firestore-rules:
+    name: Publish rules to the explicitly named Firestore database
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FIREBASE_PROJECT_ID: gen-lang-client-0982990158
+      FIRESTORE_DATABASE_ID: ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5
+
+    steps:
+      - name: Checkout reviewed preview branch
+        uses: actions/checkout@v4
+
+      - name: Require Firebase deployment credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Missing GitHub Actions secret FIREBASE_SERVICE_ACCOUNT. No Firebase deployment was attempted."
+            exit 1
+          fi
+
+      - name: Authenticate to the exact Firebase project
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pinned Firebase CLI
+        run: npm install --global firebase-tools@15.3.0
+
+      - name: Deploy rules to the named database only
+        run: |
+          firebase deploy \
+            --only "firestore:${FIRESTORE_DATABASE_ID}" \
+            --project "${FIREBASE_PROJECT_ID}" \
+            --non-interactive

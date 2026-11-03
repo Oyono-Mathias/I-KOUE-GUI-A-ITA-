@@ -14,8 +14,8 @@ export const ProtectedCommunicateur: React.FC = () => {
   }
   if (!userData) return <Navigate to="/login" replace />;
   
-  // Contrôle de rôle RBAC strict : seuls le communicateur et la présidence ont accès
-  const isAllowed = ['communicateur', 'super_admin', 'president', 'president_fondateur'].includes(userData.role || '');
+  // Accès réservé au communicateur et aux administrateurs techniques.
+  const isAllowed = ['communicateur', 'super_admin', 'admin'].includes(userData.role || '');
   if (!isAllowed) {
     return <Navigate to="/dashboard" replace />;
   }

@@ -18,30 +18,30 @@ export const DashboardLayout = () => {
   if (!userData) return <Navigate to="/login" replace />;
 
   const userRole = userData.role || 'membre';
-  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(userRole);
+  const isSystemAdmin = ['super_admin', 'admin'].includes(userRole);
   const path = location.pathname;
 
-  // Contrôle d'accès RBAC strict sur chaque sous-route de tableau de bord
-  if (path.includes('/super_admin') && !isSuper) {
+  // Les rôles institutionnels n'héritent jamais des droits d'administration technique.
+  if (path.includes('/super_admin') && !isSystemAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_vice_president') && !isSuper && userRole !== 'vice_president') {
+  if (path.includes('/admin_vice_president') && !isSystemAdmin && userRole !== 'vice_president') {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_secretaire') && !isSuper && userRole !== 'secretaire') {
+  if (path.includes('/admin_secretaire') && !isSystemAdmin && !['secretaire_general', 'secretaire'].includes(userRole)) {
     return <Navigate to="/dashboard" replace />;
   }
-  if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !isSuper && userRole !== 'tresorier') {
+  if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !isSystemAdmin && userRole !== 'tresorier') {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_conseiller') && !isSuper && userRole !== 'conseiller') {
+  if (path.includes('/admin_conseiller') && !isSystemAdmin && userRole !== 'conseiller') {
     return <Navigate to="/dashboard" replace />;
   }
-  if ((path.includes('/dashboard/communicateur') || path.includes('/dashboard/news')) && !isSuper && userRole !== 'communicateur') {
+  if ((path.includes('/dashboard/communicateur') || path.includes('/dashboard/news')) && !isSystemAdmin && userRole !== 'communicateur') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  // Tous les tableaux de bord sont désormais des vues autonomes Mobile-First avec leur propre Header et Bottom Nav.
+  // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
     <>
       <DashboardSwitcher />
