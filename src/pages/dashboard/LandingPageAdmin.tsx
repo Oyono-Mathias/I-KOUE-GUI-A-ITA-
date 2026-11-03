@@ -154,19 +154,24 @@ export const LandingPageAdmin: React.FC = () => {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <h2 className="mb-3 text-lg font-bold text-slate-900">Chiffres clés</h2>
-            <p className="text-sm text-slate-500">Les statistiques existantes sont préservées pour cette première migration. Leur édition structurée sera ajoutée sans modifier les sources de données des autres modules.</p>
+            <p className="text-sm text-slate-500">Ajoutez, modifiez ou retirez les indicateurs affichés sur la page d'accueil. Les domaines, actualités et rapports restent connectés à leurs collections et modules existants.</p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {content.statistics.map((stat, index) => (
-                <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3">
+                <div key={index} className="grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wide text-slate-500">Indicateur {index + 1}</span>
+                    <button type="button" onClick={() => setContent((current) => ({ ...current, statistics: current.statistics.filter((_, itemIndex) => itemIndex !== index) }))} className="rounded-lg px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50">Retirer</button>
+                  </div>
                   <label className="text-xs font-semibold text-slate-600">Valeur
-                    <input value={stat.value} onChange={(event) => updateStatistic(index, 'value', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-sm" />
+                    <input value={stat.value} onChange={(event) => updateStatistic(index, 'value', event.target.value)} maxLength={32} className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
                   </label>
                   <label className="text-xs font-semibold text-slate-600">Libellé
-                    <input value={stat.label} onChange={(event) => updateStatistic(index, 'label', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-sm" />
+                    <input value={stat.label} onChange={(event) => updateStatistic(index, 'label', event.target.value)} maxLength={80} className="mt-1 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
                   </label>
                 </div>
               ))}
             </div>
+            <button type="button" onClick={() => setContent((current) => ({ ...current, statistics: [...current.statistics, { label: '', value: '' }] }))} disabled={content.statistics.length >= 8} className="mt-4 rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-400 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50">+ Ajouter un chiffre clé</button>
           </section>
 
           {feedback && <p role="status" className="rounded-xl bg-blue-50 p-4 text-sm text-blue-800">{feedback}</p>}
