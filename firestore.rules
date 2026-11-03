@@ -368,12 +368,12 @@ service cloud.firestore {
     // 8. GOUVERNANCE, ADMINISTRATION ET SECRÉTARIAT
     // =========================================================================
     match /documents/{docId} {
-      allow read: if isMember() || isBureau() || isSecretaireAdjoint();
+      allow read: if isMember() || isBureau() || isSecretaireAdjoint() || isPresidentFondateur();
       allow create, update, delete: if isSecretaire() || isPresident() || isSystemAdmin();
     }
 
     match /pv/{docId} {
-      allow read: if isBureau() || isMember() || isSecretaireAdjoint();
+      allow read: if isBureau() || isMember() || isSecretaireAdjoint() || isPresidentFondateur();
       allow write: if isSecretaire() || isSystemAdmin();
     }
 
@@ -463,11 +463,13 @@ service cloud.firestore {
     }
 
     match /rapports/{docId} {
-      allow read, write: if isBureau();
+      allow read: if isBureau() || isPresidentFondateur();
+      allow write: if isBureau();
     }
 
     match /rapports_delegues/{docId} {
-      allow read, write: if isBureau();
+      allow read: if isBureau() || isPresidentFondateur();
+      allow write: if isBureau();
     }
 
     // =========================================================================
