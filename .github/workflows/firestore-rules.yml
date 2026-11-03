@@ -1,0 +1,46 @@
+name: Firestore Rules Tests
+
+on:
+  push:
+    branches:
+      - preview/rbac-navigation-11-roles
+  pull_request:
+    branches:
+      - preview/rbac-navigation-11-roles
+
+permissions:
+  contents: read
+
+jobs:
+  firestore-rules:
+    name: Firestore Emulator security suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout preview branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java for Firestore Emulator
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install application dependencies
+        run: npm ci
+
+      - name: Install ephemeral Firebase test tools
+        run: npm install --no-save --package-lock=false firebase-tools @firebase/rules-unit-testing
+
+      - name: Run rules tests against demo project only
+        run: npm run test:rules
+        env:
+          GCLOUD_PROJECT: demo-i-koue-gui-a-ita
+          FIREBASE_CONFIG: '{"projectId":"demo-i-koue-gui-a-ita"}'
