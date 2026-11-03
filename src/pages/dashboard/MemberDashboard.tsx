@@ -210,6 +210,29 @@ export const MemberDashboard = () => {
         </div>
       </div>
 
+      {/* ASSEMBLÉES */}
+      <div className={`tab-content ${activeTab === 'assemblees' ? 'active' : ''}`}>
+        <div className="section-header"><h2>🏛️ Assemblées & rencontres</h2><p>Calendrier des activités de l'association</p></div>
+        <div className="card">
+          {events.length === 0 ? <div className="empty-state">Aucune assemblée ou rencontre publiée.</div> : events.map((event: any) => (
+            <article className="transaction-item" key={event.id}>
+              <div className="transaction-icon">📅</div>
+              <div className="transaction-info">
+                <div className="transaction-title">{event.title || event.titre || event.name || 'Rencontre de l’association'}</div>
+                <div className="transaction-meta">{formatDate(event.date || event.createdAt)}{event.location || event.lieu ? ` · ${event.location || event.lieu}` : ''}</div>
+                {(event.description || event.details) && <p>{event.description || event.details}</p>}
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* ANNUAIRE — aucune source membres n'est actuellement exposée dans ce dashboard */}
+      <div className={`tab-content ${activeTab === 'annuaire' ? 'active' : ''}`}>
+        <div className="section-header"><h2>👥 Annuaire des membres</h2><p>Répertoire de l’association</p></div>
+        <div className="card"><p>L’annuaire n’est pas encore disponible dans cet espace. Aucune liste de membres n’est chargée ici afin de ne pas exposer des données personnelles sans vérifier les autorisations Firestore dédiées.</p></div>
+      </div>
+
       {/* TAB 1: DASHBOARD */}
       <div className={`tab-content ${activeTab === 'dashboard' ? 'active' : ''}`}>
         
