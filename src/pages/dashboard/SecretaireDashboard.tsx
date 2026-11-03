@@ -827,7 +827,7 @@ export const SecretaireDashboard = () => {
                     
                     if(nom && email && password) {
                         try {
-                            await createMemberAccount({ nom, email, password, telephone: tel, categorie: cat });
+                            await createMemberAccount({ nom, email, password, telephone: tel, categorie: cat === 'bienfaiteur' || cat === 'fondateur' ? cat : 'actif' });
                             setAddMemberModalOpen(false);
                         } catch(err: any) {
                             alert("Erreur lors de la création du compte : " + err.message);
