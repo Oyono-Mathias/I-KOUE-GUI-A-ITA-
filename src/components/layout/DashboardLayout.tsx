@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { DashboardSwitcher } from './DashboardSwitcher';
-import { Link } from 'react-router-dom';
 
 export const DashboardLayout = () => {
   const { userData, loading } = useAuth();
@@ -43,16 +42,15 @@ export const DashboardLayout = () => {
   }
 
   const canManageLanding = isSystemAdmin || ['communicateur', 'president', 'president_fondateur'].includes(userRole);
+  const usesDashboardSidebarTools = path === '/dashboard' && ['president', 'president_fondateur', 'super_admin', 'admin'].includes(userRole);
 
   // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
     <>
-      {canManageLanding && (
-        <Link to="/dashboard/landing-cms" className="fixed bottom-20 right-4 z-[900] rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-slate-700">
-          Gérer le site public
-        </Link>
+      {canManageLanding && !usesDashboardSidebarTools && (
+        <div className="sr-only">Gestion du site public disponible depuis le menu du tableau de bord.</div>
       )}
-      <DashboardSwitcher />
+      {!usesDashboardSidebarTools && <DashboardSwitcher />}
       <Outlet />
     </>
   );

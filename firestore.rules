@@ -128,6 +128,16 @@ service cloud.firestore {
       // L'utilisateur peut modifier ses coordonnées, jamais son rôle, statut ou privilèges.
       // Les changements de rôle sont réservés à l'administration technique.
       allow update: if isSystemAdmin() || (
+        isPresident()
+        && userId != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        && request.resource.data.role in [
+          'president_fondateur', 'president', 'vice_president',
+          'secretaire_general', 'secretaire_adjoint', 'tresorier',
+          'tresorier_adjoint', 'conseiller', 'commissaire_aux_comptes',
+          'communicateur', 'membre'
+        ]
+      ) || (
         isOwner(userId) && isNotSuspended()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
