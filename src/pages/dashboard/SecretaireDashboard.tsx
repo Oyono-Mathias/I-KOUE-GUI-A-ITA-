@@ -8,8 +8,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, storage, secondaryAuth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
+import { db, auth, storage } from '../../lib/firebase';
+import { createOrdinaryMember } from '../../services/memberCreation';
 import './SecretaireDashboard.css';
 
 export const SecretaireDashboard = () => {
@@ -818,53 +819,31 @@ export const SecretaireDashboard = () => {
                 <h3 style={{ marginTop: 0, color: 'var(--bleu-rca)' }}>Ajouter un nouveau membre</h3>
                 <form onSubmit={async (e) => {
                     e.preventDefault();
-                    const nom = (document.getElementById('secNewMemNom') as HTMLInputElement).value;
-                    const email = (document.getElementById('secNewMemEmail') as HTMLInputElement).value;
-                    const password = (document.getElementById('secNewMemPwd') as HTMLInputElement).value;
-                    const tel = (document.getElementById('secNewMemTel') as HTMLInputElement).value;
-                    const role = (document.getElementById('secNewMemRole') as HTMLSelectElement).value;
-                    const cat = (document.getElementById('secNewMemCat') as HTMLSelectElement).value;
-                    
-                    if(nom && email && password) {
-                        try {
-                            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-                            await setDoc(doc(db, 'users', userCred.user.uid), {
-                                nom, email, telephone: tel, role, categorie: cat, statut: 'actif', createdAt: serverTimestamp()
-                            });
-                            setAddMemberModalOpen(false);
-                        } catch(err: any) {
-                            alert("Erreur lors de la création du compte : " + err.message);
-                        }
+                    const form = e.currentTarget;
+                    const data = new FormData(form);
+                    try {
+                        await createOrdinaryMember({
+                            nom: String(data.get('nom') || ''),
+                            email: String(data.get('email') || ''),
+                            password: String(data.get('password') || ''),
+                            telephone: String(data.get('telephone') || ''),
+                            categorie: String(data.get('categorie') || 'actif') as 'actif' | 'bienfaiteur' | 'fondateur',
+                        });
+                        setAddMemberModalOpen(false);
+                        form.reset();
+                        alert('Compte membre créé avec succès.');
+                    } catch (err: any) {
+                        alert("Erreur lors de la création du membre : " + (err?.message || 'Veuillez réessayer.'));
                     }
                 }}>
-                    <div className="form-group"><label>Nom complet</label><input type="text" id="secNewMemNom" required style={{ width: '100%', padding: '8px' }} /></div>
-                    <div className="form-group"><label>Email</label><input type="email" id="secNewMemEmail" required style={{ width: '100%', padding: '8px' }} /></div>
-                    <div className="form-group"><label>Mot de passe</label><input type="password" id="secNewMemPwd" required style={{ width: '100%', padding: '8px' }} minLength={6} /></div>
-                    <div className="form-group"><label>Téléphone</label><input type="text" id="secNewMemTel" style={{ width: '100%', padding: '8px' }} /></div>
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Rôle</label>
-                            <select id="secNewMemRole" style={{ width: '100%', padding: '8px' }}>
-                                <option value="member">Membre standard</option>
-                                <option value="president">Président</option>
-                                <option value="vice_president">Vice-Président</option>
-                                <option value="secretaire">Secrétaire Général</option>
-                                <option value="tresorier">Trésorier</option>
-                                <option value="communicateur">Communicateur</option>
-                                <option value="conseiller">Conseiller</option>
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Catégorie</label>
-                            <select id="secNewMemCat" style={{ width: '100%', padding: '8px' }}>
-                                <option value="actif">Actif</option>
-                                <option value="bienfaiteur">Bienfaiteur</option>
-                                <option value="fondateur">Fondateur</option>
-                            </select>
-                        </div>
-                    </div>
+                    <div className="form-group"><label>Nom complet</label><input name="nom" type="text" required maxLength={120} style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Email</label><input name="email" type="email" required style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Mot de passe temporaire</label><input name="password" type="password" required minLength={6} maxLength={128} autoComplete="new-password" style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Téléphone</label><input name="telephone" type="text" maxLength={40} style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Rôle</label><input type="text" value="Membre" readOnly disabled style={{ width: '100%', padding: '8px' }} /></div>
+                    <div className="form-group"><label>Catégorie</label><select name="categorie" style={{ width: '100%', padding: '8px' }}><option value="actif">Actif</option><option value="bienfaiteur">Bienfaiteur</option><option value="fondateur">Fondateur</option></select></div>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '16px' }}>
-                        <button type="submit" className="btn btn-primary">Créer le compte</button>
+                        <button type="submit" className="btn btn-primary">Créer le compte membre</button>
                         <button type="button" className="btn btn-outline" onClick={() => setAddMemberModalOpen(false)}>Annuler</button>
                     </div>
                 </form>
