@@ -249,6 +249,23 @@ test('Président Fondateur: lecture des archives sans écriture', async () => {
   await assertFails(setDoc(doc(db, 'documents', 'archive-2'), { title: 'Écriture interdite' }));
 });
 
+test('Président: peut attribuer un rôle institutionnel à un autre membre sans modifier son statut', async () => {
+  await seedUser('president-1', 'president');
+  await seedUser('member-2', 'membre');
+  const presidentDb = dbFor('president-1');
+
+  await assertSucceeds(updateDoc(doc(presidentDb, 'users', 'member-2'), {
+    role: 'commissaire_aux_comptes',
+  }));
+  await assertFails(updateDoc(doc(presidentDb, 'users', 'member-2'), {
+    role: 'tresorier',
+    statut: 'suspendu',
+  }));
+  await assertFails(updateDoc(doc(presidentDb, 'users', 'president-1'), {
+    role: 'tresorier',
+  }));
+});
+
 test('Un utilisateur ne peut pas s’attribuer un rôle privilégié', async () => {
   await seedUser('member-1', 'membre');
   const db = dbFor('member-1');

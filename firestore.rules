@@ -125,9 +125,20 @@ service cloud.firestore {
         && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
       );
 
-      // L'utilisateur peut modifier ses coordonnées, jamais son rôle, statut ou privilèges.
-      // Les changements de rôle sont réservés à l'administration technique.
+      // L'administration technique conserve tous les droits de gestion des profils.
+      // Le Président peut attribuer l'un des 11 rôles institutionnels à un autre membre,
+      // sans modifier son statut, ses permissions techniques ou ses données financières.
       allow update: if isSystemAdmin() || (
+        isPresident()
+        && userId != request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role'])
+        && request.resource.data.role in [
+          'president_fondateur', 'president', 'vice_president',
+          'secretaire_general', 'secretaire_adjoint', 'tresorier',
+          'tresorier_adjoint', 'conseiller', 'commissaire_aux_comptes',
+          'communicateur', 'membre'
+        ]
+      ) || (
         isOwner(userId) && isNotSuspended()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'

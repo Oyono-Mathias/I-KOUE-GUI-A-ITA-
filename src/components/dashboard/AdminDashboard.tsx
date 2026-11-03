@@ -3,11 +3,18 @@ import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverT
 import { db } from '../../firebase';
 import { UserData } from '../../hooks/useAuth';
 import { ROLE_DEFINITIONS } from '../../constants/roles';
-import { ShieldCheck, X } from 'lucide-react';
+import { ShieldCheck, X, Crown, Landmark, Handshake, ClipboardList, NotebookPen, Wallet, Calculator, Scale, FileSearch, Megaphone, Users as UsersIcon } from 'lucide-react';
 import { 
     Home, Users, Banknote, CalendarDays, Newspaper, FileText, 
     Search, Plus, CheckCircle, AlertTriangle, XCircle, Download, Send 
 } from 'lucide-react';
+
+const ROLE_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+    president_fondateur: Crown, president: Landmark, vice_president: Handshake,
+    secretaire_general: ClipboardList, secretaire_adjoint: NotebookPen,
+    tresorier: Wallet, tresorier_adjoint: Calculator, conseiller: Scale,
+    commissaire_aux_comptes: FileSearch, communicateur: Megaphone, membre: UsersIcon,
+};
 
 export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [activeTab, setActiveTab] = useState('accueil');
@@ -357,7 +364,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                     <div>
                                         <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{user.displayName || 'Sans nom'}</h4>
                                         <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{user.email}</p>
-                                        {currentUser.role === 'super_admin' ? (
+                                        {['super_admin', 'president'].includes(currentUser.role) ? (
                                             <button
                                                 type="button"
                                                 onClick={() => setEditingMember(user)}
@@ -704,8 +711,8 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                         }}
                                         className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
                                     >
-                                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                                            {role.label.slice(0, 1)}
+                                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                            {React.createElement(ROLE_ICONS[role.id] ?? ShieldCheck, { size: 18 })}
                                         </span>
                                         <span className="min-w-0 flex-1">
                                             <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900">
