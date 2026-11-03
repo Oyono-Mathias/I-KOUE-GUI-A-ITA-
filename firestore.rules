@@ -145,6 +145,22 @@ service cloud.firestore {
       allow write: if isSystemAdmin() || isCommunicateur();
     }
 
+    // CMS public : contenu de la Landing Page réservé aux trois rôles éditoriaux.
+    // Les documents contiennent uniquement des informations destinées à être publiques.
+    match /landing_content/{docId} {
+      allow read: if docId == 'main';
+      allow create, update: if docId == 'main'
+        && isActiveUser()
+        && getUserRole() in ['communicateur', 'president', 'president_fondateur', 'super_admin', 'admin']
+        && request.resource.data.keys().hasOnly([
+          'hero', 'statistics', 'about', 'donation', 'banners', 'contact',
+          'updatedAt', 'updatedBy'
+        ])
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.updatedBy == request.auth.uid;
+      allow delete: if false;
+    }
+
     match /domains/{docId} {
       allow read: if true;
       allow write: if isSystemAdmin() || isCommunicateur();
