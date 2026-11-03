@@ -15,10 +15,15 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
+  getFirestore,
+  connectFirestoreEmulator,
 } from 'firebase/firestore';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ID = 'demo-i-koue-gui-a-ita';
+const DATABASE_ID = 'ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5';
+const EMULATOR_HOST = '127.0.0.1';
+const EMULATOR_PORT = 8080;
 const RULES_PATH = resolve(__dirname, '../firestore.rules');
 
 let testEnv;
@@ -28,8 +33,8 @@ before(async () => {
   testEnv = await initializeTestEnvironment({
     projectId: PROJECT_ID,
     firestore: {
-      host: '127.0.0.1',
-      port: 8080,
+      host: EMULATOR_HOST,
+      port: EMULATOR_PORT,
       rules,
     },
   });
@@ -40,16 +45,29 @@ after(async () => {
 });
 
 beforeEach(async () => {
-  await testEnv.clearFirestore();
+  const response = await fetch(
+    `http://${EMULATOR_HOST}:${EMULATOR_PORT}/emulator/v1/projects/${PROJECT_ID}/databases/${DATABASE_ID}/documents`,
+    { method: 'DELETE' },
+  );
+  assert.equal(response.ok, true, 'Unable to clear the named Firestore emulator database');
 });
 
+function namedDbForContext(context) {
+  // Reuse the authenticated app created by rules-unit-testing, but select the
+  // exact named database used by the production application.
+  const contextFirestore = context.firestore();
+  const db = getFirestore(contextFirestore.app, DATABASE_ID);
+  connectFirestoreEmulator(db, EMULATOR_HOST, EMULATOR_PORT);
+  return db;
+}
+
 function dbFor(uid) {
-  return testEnv.authenticatedContext(uid).firestore();
+  return namedDbForContext(testEnv.authenticatedContext(uid));
 }
 
 async function seedUser(uid, role, extra = {}) {
   await testEnv.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(context.firestore(), 'users', uid), {
+    await setDoc(doc(namedDbForContext(context), 'users', uid), {
       role,
       statut: 'actif',
       ...extra,
@@ -59,7 +77,7 @@ async function seedUser(uid, role, extra = {}) {
 
 async function seedDocument(path, id, data) {
   await testEnv.withSecurityRulesDisabled(async (context) => {
-    await setDoc(doc(context.firestore(), path, id), data);
+    await setDoc(doc(namedDbForContext(context), path, id), data);
   });
 }
 
