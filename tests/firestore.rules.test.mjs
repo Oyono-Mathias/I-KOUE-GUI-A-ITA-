@@ -249,6 +249,28 @@ test('Président Fondateur: lecture des archives sans écriture', async () => {
   await assertFails(setDoc(doc(db, 'documents', 'archive-2'), { title: 'Écriture interdite' }));
 });
 
+test('Président et Président-Fondateur peuvent créer uniquement des profils membre', async () => {
+  await seedUser('president-create', 'president');
+  await seedUser('founder-create', 'president_fondateur');
+  await seedUser('admin-create', 'admin');
+  const presidentDb = dbFor('president-create');
+  const founderDb = dbFor('founder-create');
+  const adminDb = dbFor('admin-create');
+
+  for (const [db, uid] of [[presidentDb, 'president'], [founderDb, 'founder'], [adminDb, 'admin']]) {
+    await assertSucceeds(setDoc(doc(db, 'users', 'new-member-' + uid), {
+      role: 'membre', nom: 'Nouveau membre', email: 'membre@example.org', statut: 'actif', isAdmin: false,
+    }));
+  }
+
+  await assertFails(setDoc(doc(presidentDb, 'users', 'privileged-by-president'), {
+    role: 'tresorier', nom: 'Compte privilégié',
+  }));
+  await assertFails(setDoc(doc(founderDb, 'users', 'privileged-by-founder'), {
+    role: 'admin', nom: 'Compte administrateur',
+  }));
+});
+
 test('Un utilisateur ne peut pas s’attribuer un rôle privilégié', async () => {
   await seedUser('member-1', 'membre');
   const db = dbFor('member-1');

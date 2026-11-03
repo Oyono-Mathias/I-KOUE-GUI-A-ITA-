@@ -111,13 +111,18 @@ service cloud.firestore {
       // Secrétaire Général et Vice-Président.
       allow read: if isOwner(userId) || isSystemAdmin() || isPresident() || isSecretaire() || isVicePresident();
 
-      // Le Secrétaire Général peut créer un profil membre, jamais un compte privilégié.
-      // L'attribution des rôles institutionnels sensibles reste réservée à l'administration technique.
-      allow create: if isSystemAdmin() || (
-        isSecretaire()
-        && request.resource.data.role in ['membre', 'member']
+      // Les créations depuis le client sont limitées aux profils ordinaires.
+      // Les comptes Auth créés par l'administration passent par la Cloud Function.
+      allow create: if (
+        (isSystemAdmin() || isPresident() || isPresidentFondateur() || isSecretaire())
+        && request.resource.data.role == 'membre'
+        && request.resource.data.keys().hasOnly([
+          'uid', 'nom', 'displayName', 'email', 'telephone', 'role', 'categorie',
+          'statut', 'createdAt', 'createdBy', 'isAdmin'
+        ])
         && (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente', 'a_jour'])
         && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+        && !request.resource.data.keys().hasAny(['permissions', 'admin', 'superAdmin'])
       ) || (
         isOwner(userId)
         && (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member'])

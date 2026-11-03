@@ -21,10 +21,13 @@ export const DashboardLayout = () => {
   const isSystemAdmin = ['super_admin', 'admin'].includes(userRole);
   const path = location.pathname;
 
-  // Les rôles institutionnels n'héritent jamais des droits d'administration technique.
-  if (path.includes('/super_admin') && !isSystemAdmin) {
+  // Les administrateurs techniques peuvent consulter les vues de rôle sans usurper le rôle Firestore.
+  // Chaque rôle institutionnel reste limité à sa propre route.
+  if ((path.endsWith('/super_admin')) && !isSystemAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
+  if (path.endsWith('/president') && !isSystemAdmin && userRole !== 'president') return <Navigate to="/dashboard" replace />;
+  if (path.endsWith('/president_fondateur') && !isSystemAdmin && userRole !== 'president_fondateur') return <Navigate to="/dashboard" replace />;
   if (path.includes('/admin_vice_president') && !isSystemAdmin && userRole !== 'vice_president') {
     return <Navigate to="/dashboard" replace />;
   }
@@ -34,6 +37,7 @@ export const DashboardLayout = () => {
   if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !isSystemAdmin && userRole !== 'tresorier') {
     return <Navigate to="/dashboard" replace />;
   }
+  if (path.endsWith('/membre') && !isSystemAdmin && !['membre', 'member'].includes(userRole)) return <Navigate to="/dashboard" replace />;
   if (path.includes('/admin_conseiller') && !isSystemAdmin && userRole !== 'conseiller') {
     return <Navigate to="/dashboard" replace />;
   }
