@@ -803,11 +803,7 @@ export const PresidentDashboard = () => {
                 <div className="form-group"><label>Description</label><textarea id="taskDesc" rows={2} required></textarea></div>
                 <div className="form-group"><label>Assigner à (Rôle)</label>
                     <select id="taskAssignee" required>
-                        <option value="secretaire">Secrétaire</option>
-                        <option value="tresorier">Trésorier</option>
-                        <option value="communicateur">Communicateur</option>
-                        <option value="vice_president">Vice-Président</option>
-                        <option value="conseiller">Conseiller</option>
+                        {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
                     </select>
                 </div>
                 <button type="submit" className="btn btn-gold">Assigner</button>

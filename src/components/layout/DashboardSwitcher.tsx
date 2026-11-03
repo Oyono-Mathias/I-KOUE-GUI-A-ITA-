@@ -6,8 +6,8 @@ import {ROLE_DEFINITIONS,type InstitutionalRole} from '../../constants/roles';
 const ROLE_DASHBOARD_PATHS:Record<InstitutionalRole,string>={president_fondateur:'/dashboard',president:'/dashboard',vice_president:'/dashboard/admin_vice_president',secretaire_general:'/dashboard/admin_secretaire',secretaire_adjoint:'/dashboard',tresorier:'/dashboard/admin_tresorier',tresorier_adjoint:'/dashboard',conseiller:'/dashboard/admin_conseiller',commissaire_aux_comptes:'/dashboard',communicateur:'/dashboard/communicateur',membre:'/dashboard/membre'};
 export const DashboardSwitcher=()=>{
  const [isOpen,setIsOpen]=useState(false);const navigate=useNavigate();const location=useLocation();const {userData}=useAuth();
- const currentRole=userData?.role||'membre';const canViewAll=['super_admin','president','president_fondateur','admin'].includes(currentRole);
- const authorized=ROLE_DEFINITIONS.filter(role=>canViewAll||role.id===currentRole||role.id==='membre');
+ const currentRole=userData?.role||'membre';const normalizedRole=currentRole==='secretaire'||currentRole==='admin_bureau'?'secretaire_general':currentRole;const canViewAll=['super_admin','president','president_fondateur','admin'].includes(normalizedRole);
+ const authorized=ROLE_DEFINITIONS.filter(role=>canViewAll||role.id===normalizedRole||role.id==='membre');
  if(authorized.length<=1)return null;
  return <div className="fixed right-4 top-[calc(76px+env(safe-area-inset-top))] z-[99999]">
   <button type="button" onClick={()=>setIsOpen(v=>!v)} className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-slate-900/85 text-white shadow-lg backdrop-blur-md transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400" title="Changer de tableau de bord" aria-label="Changer de tableau de bord" aria-expanded={isOpen}><LayoutGrid size={19}/></button>
