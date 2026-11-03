@@ -92,7 +92,8 @@ service cloud.firestore {
         assignedTo == role ||
         (role == 'secretaire_general' && assignedTo == 'secretaire') ||
         (role == 'tresorier' && assignedTo == 'treasurer') ||
-        (role == 'membre' && assignedTo == 'member')
+        (role == 'membre' && assignedTo == 'member') ||
+        (role == 'member' && assignedTo == 'membre')
       );
     }
 
