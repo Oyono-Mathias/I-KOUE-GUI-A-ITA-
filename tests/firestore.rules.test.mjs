@@ -265,7 +265,7 @@ test('CMS Landing Page: le document principal est lisible publiquement', async (
     updatedAt: new Date(),
     updatedBy: 'editor',
   });
-  const publicDb = testEnv.unauthenticatedContext().firestore();
+  const publicDb = namedDbForContext(testEnv.unauthenticatedContext(), undefined);
   const { getDoc: readDoc } = await import('firebase/firestore');
   await assertSucceeds(readDoc(doc(publicDb, 'landing_content', 'main')));
 });
