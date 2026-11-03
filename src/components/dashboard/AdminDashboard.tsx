@@ -418,14 +418,14 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                        {[
-                            { role: 'Président Fondateur', desc: 'Représente l’association. Veille à l\'application des statuts (Art. 17).', color: 'var(--or-solaire)', count: users.filter(u => u.role === 'super_admin').length },
-                            { role: 'Vice-Président', desc: 'Assiste le Président et le remplace en cas d\'empêchement.', color: '#9C27B0', count: users.filter(u => u.role === 'vice_president').length },
-                            { role: 'Secrétaire Général', desc: 'Rédige les PV, gère les archives et coordonne l\'administration.', color: 'var(--bleu-rca)', count: users.filter(u => u.role === 'admin_bureau').length },
-                            { role: 'Trésorier', desc: 'Responsable des fonds, recouvre les cotisations et prépare le bilan.', color: 'var(--vert-espoir)', count: users.filter(u => u.role === 'tresorier').length },
-                            { role: 'Communicateur', desc: 'Gère la communication interne et externe (Relations Publiques).', color: 'var(--orange-energie)', count: users.filter(u => u.role === 'communicateur').length },
-                            { role: 'Conseillers', desc: 'Assiste le bureau par ses conseils et son expertise.', color: '#607D8B', count: users.filter(u => u.role === 'conseiller').length }
-                        ].map((r, i) => (
+                        {ROLE_DEFINITIONS.map((role, i) => ({
+                            role: role.label,
+                            desc: role.description,
+                            color: ['#D97706', '#2563EB', '#7C3AED', '#0284C7', '#0891B2', '#059669', '#0D9488', '#64748B', '#EA580C', '#DB2777', '#64748B'][i],
+                            count: users.filter((user) => user.role === role.id ||
+                                (role.id === 'president_fondateur' && user.role === 'super_admin') ||
+                                (role.id === 'secretaire_general' && ['admin_bureau', 'secretaire'].includes(user.role))).length
+                        })).map((r, i) => (
                             <div key={i} style={{ background: 'var(--blanc-pur)', padding: '20px', borderRadius: '12px', boxShadow: 'var(--shadow)', borderTop: `4px solid ${r.color}` }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                     <h4 style={{ margin: 0, fontSize: '16px', color: 'var(--texte-principal)' }}>{r.role}</h4>
