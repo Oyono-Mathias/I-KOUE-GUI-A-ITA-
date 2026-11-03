@@ -3,6 +3,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { DashboardSwitcher } from './DashboardSwitcher';
 import { Link } from 'react-router-dom';
+import './dashboard-navigation.css';
 
 export const DashboardLayout = () => {
   const { userData, loading } = useAuth();
@@ -53,7 +54,9 @@ export const DashboardLayout = () => {
         </Link>
       )}
       <DashboardSwitcher />
-      <Outlet />
+      <div className="dashboard-app-shell">
+        <Outlet />
+      </div>
     </>
   );
 };
