@@ -107,32 +107,34 @@ service cloud.firestore {
     // 3. PROTECTION CRITIQUE DES PROFILS UTILISATEURS (/users/{userId})
     // =========================================================================
     match /users/{userId} {
-      // Lecture : L'utilisateur pour son propre compte, ou le bureau habilité pour la gestion des membres
+      // Lecture : propriétaire, administration technique, Président (consultation),
+      // Secrétaire Général et Vice-Président.
       allow read: if isOwner(userId) || isSystemAdmin() || isPresident() || isSecretaire() || isVicePresident();
 
-      // Création :
-      // - Par le bureau habilité (Président ou Secrétaire Général via secondaryAuth)
-      // - Auto-inscription : rôle strictement forcé à membre / member et statut non privilégié
-      allow create: if isSystemAdmin() || isSecretaire() || (
-        isOwner(userId) &&
-        (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member']) &&
-        (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente']) &&
-        (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+      // Le Secrétaire Général peut créer un profil membre, jamais un compte privilégié.
+      // L'attribution des rôles institutionnels sensibles reste réservée à l'administration technique.
+      allow create: if isSystemAdmin() || (
+        isSecretaire()
+        && request.resource.data.role in ['membre', 'member']
+        && (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente', 'a_jour'])
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
+      ) || (
+        isOwner(userId)
+        && (!('role' in request.resource.data) || request.resource.data.role in ['membre', 'member'])
+        && (!('statut' in request.resource.data) || request.resource.data.statut in ['actif', 'en_attente'])
+        && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == false)
       );
 
-      // Modification :
-      // - Le bureau habilité peut administrer les rôles et statuts
-      // - L'utilisateur propriétaire peut mettre à jour ses coordonnées personnelles,
-      //   mais IL NE PEUT JAMAIS modifier son rôle, son statut, son solde ou ses privilèges
-      allow update: if isSystemAdmin() || isSecretaire() || (
-        isOwner(userId) && isNotSuspended() &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+      // L'utilisateur peut modifier ses coordonnées, jamais son rôle, statut ou privilèges.
+      // Les changements de rôle sont réservés à l'administration technique.
+      allow update: if isSystemAdmin() || (
+        isOwner(userId) && isNotSuspended()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'role', 'statut', 'status', 'permissions', 'isAdmin', 'solde', 'cotisation'
         ])
       );
 
-      // Suppression : Strictement réservée à la haute administration
-      allow delete: if isSystemAdmin() || isSecretaire();
+      allow delete: if isSystemAdmin();
     }
 
     // =========================================================================
