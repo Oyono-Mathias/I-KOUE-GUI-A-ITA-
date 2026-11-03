@@ -19,31 +19,34 @@ export const DashboardLayout = () => {
 
   const userRole = userData.role || 'membre';
   const isSystemAdmin = ['super_admin', 'admin'].includes(userRole);
+  // Les dirigeants peuvent consulter les espaces exécutifs depuis le sélecteur.
+  // Les permissions réelles restent appliquées par les règles Firestore.
+  const canSuperviseDashboards = ['president', 'president_fondateur', 'super_admin', 'admin'].includes(userRole);
   const path = location.pathname;
 
   // Les rôles institutionnels n'héritent jamais des droits d'administration technique.
   if (path.includes('/super_admin') && !isSystemAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_vice_president') && !isSystemAdmin && userRole !== 'vice_president') {
+  if (path.includes('/admin_vice_president') && !canSuperviseDashboards && userRole !== 'vice_president') {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_secretaire') && !isSystemAdmin && !['secretaire_general', 'secretaire'].includes(userRole)) {
+  if (path.includes('/admin_secretaire') && !canSuperviseDashboards && !['secretaire_general', 'secretaire'].includes(userRole)) {
     return <Navigate to="/dashboard" replace />;
   }
-  if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !isSystemAdmin && userRole !== 'tresorier') {
+  if ((path.includes('/admin_tresorier') || path.includes('/finances')) && !canSuperviseDashboards && userRole !== 'tresorier') {
     return <Navigate to="/dashboard" replace />;
   }
-  if (path.includes('/admin_conseiller') && !isSystemAdmin && userRole !== 'conseiller') {
+  if (path.includes('/admin_conseiller') && !canSuperviseDashboards && userRole !== 'conseiller') {
     return <Navigate to="/dashboard" replace />;
   }
-  if ((path.includes('/dashboard/communicateur') || path.includes('/dashboard/news')) && !isSystemAdmin && userRole !== 'communicateur') {
+  if ((path.includes('/dashboard/communicateur') || path.includes('/dashboard/news')) && !canSuperviseDashboards && userRole !== 'communicateur') {
     return <Navigate to="/dashboard" replace />;
   }
 
   const canManageLanding = isSystemAdmin || ['communicateur', 'president', 'president_fondateur'].includes(userRole);
   if (path === '/dashboard/landing-cms' && !canManageLanding) return <Navigate to="/dashboard" replace />;
-  const usesDashboardSidebarTools = path === '/dashboard' && ['president', 'president_fondateur', 'super_admin', 'admin'].includes(userRole);
+  const usesDashboardSidebarTools = path === '/dashboard' && ['president', 'super_admin', 'admin'].includes(userRole);
 
   // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
