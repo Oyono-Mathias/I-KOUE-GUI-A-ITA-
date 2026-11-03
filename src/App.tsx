@@ -56,6 +56,8 @@ export const App = () => {
             <Route path="finances" element={<TresorierDashboard />} />
             <Route path="voting" element={<MemberVoting />} />
             <Route path="super_admin" element={<PresidentDashboard />} />
+            <Route path="president" element={<PresidentDashboard />} />
+            <Route path="president_fondateur" element={<DashboardHome />} />
             <Route path="admin_vice_president" element={<VicePresidentDashboard />} />
             <Route path="admin_secretaire" element={<SecretaireDashboard />} />
             <Route path="admin_tresorier" element={<TresorierDashboard />} />
