@@ -13,6 +13,8 @@ const ProtectedCommunicateur = lazy(() => import('./pages/communication/Protecte
 
 // Chargement dynamique des dashboards et pages lourdes
 const DashboardHome = lazy(() => import('./pages/dashboard/DashboardHome').then(m => ({ default: m.DashboardHome })));
+const PresidentDashboard = lazy(() => import('./pages/dashboard/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
+const PresidentFondateurDashboard = lazy(() => import('./pages/dashboard/PresidentFondateurDashboard').then(m => ({ default: m.PresidentFondateurDashboard })));
 const MemberVoting = lazy(() => import('./pages/member/MemberVoting').then(m => ({ default: m.MemberVoting })));
 const CommunicateurDashboard = lazy(() => import('./pages/communication/CommunicateurDashboard').then(m => ({ default: m.CommunicateurDashboard })));
 const PresidentDashboard = lazy(() => import('./pages/dashboard/PresidentDashboard').then(m => ({ default: m.PresidentDashboard })));
@@ -51,6 +53,8 @@ export const App = () => {
           {/* ESPACE MEMBRES & ADMIN */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<DashboardHome />} />
+            <Route path="president" element={<PresidentDashboard />} />
+            <Route path="president_fondateur" element={<PresidentFondateurDashboard />} />
             <Route path="news" element={<CommunicateurDashboard />} />
             <Route path="communicateur" element={<CommunicateurDashboard />} />
             <Route path="finances" element={<TresorierDashboard />} />
