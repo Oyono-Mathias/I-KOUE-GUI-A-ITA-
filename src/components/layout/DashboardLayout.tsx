@@ -49,7 +49,9 @@ export const DashboardLayout = () => {
 
   const canManageLanding = isSystemAdmin || ['communicateur', 'president', 'president_fondateur'].includes(userRole);
   if (path === '/dashboard/landing-cms' && !canManageLanding) return <Navigate to="/dashboard" replace />;
-  const usesDashboardSidebarTools = ['/dashboard', '/dashboard/president'].includes(path) && ['president', 'super_admin', 'admin'].includes(userRole);
+  const usesDashboardSidebarTools = (
+    ['/dashboard', '/dashboard/president'].includes(path) && ['president', 'super_admin', 'admin'].includes(userRole)
+  ) || (path === '/dashboard/president_fondateur' && canSuperviseDashboards);
 
   // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
