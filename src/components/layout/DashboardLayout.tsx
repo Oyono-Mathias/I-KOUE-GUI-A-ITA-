@@ -18,11 +18,11 @@ export const DashboardLayout = () => {
   if (!userData) return <Navigate to="/login" replace />;
 
   const userRole = userData.role || 'membre';
-  const isSuper = ['super_admin', 'president', 'president_fondateur', 'admin'].includes(userRole);
+  const isSystemAdmin = ['super_admin', 'admin'].includes(userRole);
   const path = location.pathname;
 
   // Contrôle d'accès RBAC strict sur chaque sous-route de tableau de bord
-  if (path.includes('/super_admin') && !isSuper) {
+  if (path.includes('/super_admin') && !isSystemAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
   if (path.includes('/admin_vice_president') && !isSuper && userRole !== 'vice_president') {
