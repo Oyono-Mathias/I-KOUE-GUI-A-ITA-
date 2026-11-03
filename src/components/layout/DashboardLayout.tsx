@@ -25,6 +25,9 @@ export const DashboardLayout = () => {
   const path = location.pathname;
 
   // Les rôles institutionnels n'héritent jamais des droits d'administration technique.
+  if (['/dashboard/president', '/dashboard/president_fondateur'].includes(path) && !canSuperviseDashboards) {
+    return <Navigate to="/dashboard" replace />;
+  }
   if (path.includes('/super_admin') && !isSystemAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
@@ -46,7 +49,7 @@ export const DashboardLayout = () => {
 
   const canManageLanding = isSystemAdmin || ['communicateur', 'president', 'president_fondateur'].includes(userRole);
   if (path === '/dashboard/landing-cms' && !canManageLanding) return <Navigate to="/dashboard" replace />;
-  const usesDashboardSidebarTools = path === '/dashboard' && ['president', 'super_admin', 'admin'].includes(userRole);
+  const usesDashboardSidebarTools = ['/dashboard', '/dashboard/president'].includes(path) && ['president', 'super_admin', 'admin'].includes(userRole);
 
   // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
