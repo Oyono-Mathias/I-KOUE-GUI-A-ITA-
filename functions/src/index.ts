@@ -2,19 +2,13 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { FieldValue, getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { canCreateMember } from './authorization';
 
 const app = initializeApp();
 const FIRESTORE_DATABASE_ID = 'ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5';
 const db = getFirestore(app, FIRESTORE_DATABASE_ID);
 const auth = getAuth(app);
 
-const ALLOWED_CREATOR_ROLES = new Set([
-  'president',
-  'president_fondateur',
-  'secretaire_general',
-  'secretaire',
-  'super_admin',
-]);
 const ALLOWED_CATEGORIES = new Set(['actif', 'bienfaiteur', 'fondateur']);
 
 interface CreateUserInput {
@@ -53,7 +47,7 @@ export const createUser = onCall(
     const caller = callerSnapshot.data();
     const callerRole = caller?.role;
     const callerStatus = caller?.statut ?? caller?.status;
-    if (callerStatus === 'suspendu' || typeof callerRole !== 'string' || !ALLOWED_CREATOR_ROLES.has(callerRole)) {
+    if (!canCreateMember(callerRole, callerStatus)) {
       throw new HttpsError('permission-denied', 'Votre rôle ne permet pas de créer un membre.');
     }
 
