@@ -3,10 +3,13 @@ name: Firestore Rules Tests
 on:
   push:
     branches:
+      - main
       - preview/rbac-navigation-11-roles
   pull_request:
     branches:
+      - main
       - preview/rbac-navigation-11-roles
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -36,6 +39,12 @@ jobs:
       - name: Install application dependencies
         run: npm ci
 
+      - name: TypeScript validation
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
       - name: Install ephemeral Firebase test tools
         run: npm install --no-save --package-lock=false firebase-tools @firebase/rules-unit-testing
 
@@ -44,3 +53,4 @@ jobs:
         env:
           GCLOUD_PROJECT: demo-i-koue-gui-a-ita
           FIREBASE_CONFIG: '{"projectId":"demo-i-koue-gui-a-ita"}'
+          FIREBASE_DATABASE_ID: ai-studio-associationikoue-fd6a3bd0-f950-4d83-a060-f13ee4c4c3a5

@@ -950,3 +950,211 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+/* CMS refresh: spacious, mobile-first sections and consistent elevated surfaces. */
+.landing-page-container .lp-section { padding: clamp(3.5rem, 8vw, 6rem) 1.25rem; }
+.landing-page-container .lp-container { width: min(100%, 1120px); margin-inline: auto; }
+.landing-page-container .lp-section-header { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.landing-page-container .about-card,
+.landing-page-container .mission-box,
+.landing-page-container .value-card,
+.landing-page-container .domain-card,
+.landing-page-container .news-card,
+.landing-page-container .stat-card,
+.landing-page-container .mobile-money-card,
+.landing-page-container .report-item {
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .07);
+}
+.landing-page-container .hero-section { padding: clamp(4.5rem, 10vw, 8rem) 1.25rem; }
+.landing-page-container .hero-buttons { gap: .875rem; }
+.landing-page-container .btn-lp { border-radius: 999px; padding-inline: 1.5rem; }
+.landing-page-container .stats-grid,
+.landing-page-container .mobile-money-grid { gap: 1rem; }
+@media (min-width: 768px) {
+  .landing-page-container .lp-section { padding-inline: 2rem; }
+  .landing-page-container .stats-grid,
+  .landing-page-container .mobile-money-grid { gap: 1.5rem; }
+}
+
+
+/* Navigation mobile publique : ancrage stable et respect des zones sûres. */
+.landing-page-container {
+  /* Réserve la hauteur de la navigation fixe et de la zone sûre mobile. */
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+.landing-page-container .bottom-nav {
+  position: fixed !important;
+  inset: auto 0 0 !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: .25rem;
+  width: 100%;
+  min-height: 4.25rem;
+  padding: .45rem max(.5rem, env(safe-area-inset-left, 0px))
+    max(.5rem, env(safe-area-inset-bottom, 0px))
+    max(.5rem, env(safe-area-inset-right, 0px)) !important;
+  box-sizing: border-box;
+  background: #fff !important;
+  border-top: 1px solid rgba(10, 61, 98, .14);
+  box-shadow: 0 -8px 28px rgba(15, 23, 42, .12) !important;
+  overflow: visible !important;
+  white-space: normal;
+  isolation: isolate;
+}
+.landing-page-container .bottom-nav a {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 3.25rem;
+  justify-content: center;
+  gap: .1rem;
+  padding: .25rem .15rem !important;
+  border-radius: .75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.landing-page-container .bottom-nav a.active {
+  background: rgba(212, 160, 23, .10);
+}
+.landing-page-container .bottom-nav .nav-icon {
+  line-height: 1;
+}
+.landing-page-container .footer {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+.landing-page-container .footer-col a {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 2rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.landing-page-container .footer-col a:focus-visible {
+  outline: 2px solid var(--or-clair);
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+.landing-page-container .membership-section {
+  padding-bottom: clamp(3.5rem, 7vw, 5.5rem);
+}
+.landing-page-container .membership-section .form-card {
+  max-width: 760px;
+  padding: clamp(1.4rem, 4vw, 2.5rem);
+}
+.membership-contact-bridge {
+  position: relative;
+  padding: clamp(2.75rem, 6vw, 4.5rem) 1.25rem;
+  color: #fff;
+  text-align: center;
+  background: linear-gradient(125deg, #0A3D62 0%, #14577f 58%, #1b6b91 100%);
+  overflow: hidden;
+}
+.membership-contact-bridge::before,
+.membership-contact-bridge::after {
+  content: "";
+  position: absolute;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.membership-contact-bridge::before { top: -10rem; left: -4rem; }
+.membership-contact-bridge::after { right: -5rem; bottom: -11rem; }
+.membership-contact-bridge__inner {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+.membership-contact-bridge__eyebrow {
+  display: inline-block;
+  margin-bottom: .75rem;
+  color: #F4C430;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.membership-contact-bridge h2 {
+  margin: 0 0 .8rem;
+  color: #fff;
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+  line-height: 1.2;
+}
+.membership-contact-bridge p {
+  max-width: 610px;
+  margin: 0 auto 1.5rem;
+  color: rgba(255,255,255,.82);
+  line-height: 1.7;
+}
+.membership-contact-bridge .btn-lp { display: inline-flex; align-items: center; gap: .6rem; }
+.landing-page-container .contact-section {
+  padding-top: clamp(3.5rem, 7vw, 5.5rem);
+  padding-bottom: clamp(4rem, 8vw, 6rem);
+}
+.landing-page-container .contact-section .contact-grid { gap: 1rem; }
+.landing-page-container .contact-section .form-card {
+  max-width: 760px;
+  margin: clamp(2rem, 5vw, 3rem) auto 0 !important;
+  padding: clamp(1.4rem, 4vw, 2.5rem);
+}
+@media (max-width: 767px) {
+  .landing-page-container .whatsapp-float {
+    bottom: calc(6.25rem + env(safe-area-inset-bottom, 0px));
+    z-index: 60;
+  }
+}
+@media (min-width: 768px) {
+  .landing-page-container { padding-bottom: 0; }
+  .landing-page-container .footer { padding-bottom: 40px !important; }
+  .landing-page-container .bottom-nav { display: none !important; }
+  .membership-contact-bridge { padding-inline: 2rem; }
+}
+@media (max-width: 380px) {
+  .landing-page-container .bottom-nav a { font-size: 9px !important; }
+  .landing-page-container .bottom-nav .nav-icon { font-size: 20px !important; }
+}
+
+
+/* Landing page multi-view navigation: one exclusive content panel at a time. */
+.landing-page-container .landing-view {
+  display: block;
+  width: 100%;
+  min-height: 55vh;
+  animation: landing-view-enter .24s ease-out both;
+}
+@keyframes landing-view-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.landing-page-container .landing-view--accueil { min-height: 60vh; }
+.landing-page-container .landing-view--don {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.landing-page-container .bottom-nav a { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  .landing-page-container .landing-view { animation: none; }
+}
+
+
+/* Premium responsive design system refinement. */
+.landing-page-container .hero-section { position: relative; isolation: isolate; overflow: hidden; background-image: linear-gradient(118deg, rgba(5,35,61,.96), rgba(10,61,98,.82) 58%, rgba(20,87,127,.76)); }
+.landing-page-container .hero-section h1 { max-width: 16ch; margin-inline: auto; font-size: clamp(2.25rem,7vw,4.75rem); line-height: 1.04; letter-spacing: -.045em; text-wrap: balance; }
+.landing-page-container .hero-section p { max-width: min(100%,46rem); margin-inline: auto; line-height: 1.8; text-wrap: pretty; }
+.landing-page-container .btn-lp { min-height: 3.1rem; display: inline-flex; align-items: center; justify-content: center; gap: .55rem; font-weight: 750; letter-spacing: .01em; box-shadow: 0 8px 22px rgba(7,28,48,.14); transition: transform .2s ease,box-shadow .2s ease,background-color .2s ease; }
+.landing-page-container .btn-lp:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(7,28,48,.2); }
+.landing-page-container .about-card,.landing-page-container .value-card,.landing-page-container .domain-card,.landing-page-container .news-card,.landing-page-container .stat-card,.landing-page-container .mobile-money-card,.landing-page-container .report-item,.landing-page-container .contact-card,.landing-page-container .form-card { border: 1px solid rgba(148,163,184,.18); box-shadow: 0 10px 30px rgba(15,23,42,.065),0 2px 6px rgba(15,23,42,.035); }
+.landing-page-container .domain-card,.landing-page-container .news-card,.landing-page-container .contact-card { transition: transform .22s ease,box-shadow .22s ease; }
+.landing-page-container .domain-card:hover,.landing-page-container .news-card:hover,.landing-page-container .contact-card:hover { transform: translateY(-4px); box-shadow: 0 18px 42px rgba(15,23,42,.11); }
+.landing-page-container :is(a,button,input,select,textarea):focus-visible { outline: 3px solid rgba(244,196,48,.9); outline-offset: 3px; }
+@media(max-width:767px) { .landing-page-container .hero-section { padding-block: 4rem; } .landing-page-container .hero-buttons { display: grid; grid-template-columns: 1fr; width: min(100%,24rem); margin-inline: auto; } .landing-page-container .hero-buttons .btn-lp { width: 100%; } .landing-page-container .lp-section { padding-inline: 1.15rem; } }
+@media(prefers-reduced-motion:reduce) { .landing-page-container .btn-lp,.landing-page-container .domain-card,.landing-page-container .news-card,.landing-page-container .contact-card { transition: none; } }
