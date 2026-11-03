@@ -950,3 +950,29 @@
         grid-template-columns: repeat(3, 1fr);
     }
 }
+
+/* CMS refresh: spacious, mobile-first sections and consistent elevated surfaces. */
+.landing-page-container .lp-section { padding: clamp(3.5rem, 8vw, 6rem) 1.25rem; }
+.landing-page-container .lp-container { width: min(100%, 1120px); margin-inline: auto; }
+.landing-page-container .lp-section-header { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+.landing-page-container .about-card,
+.landing-page-container .mission-box,
+.landing-page-container .value-card,
+.landing-page-container .domain-card,
+.landing-page-container .news-card,
+.landing-page-container .stat-card,
+.landing-page-container .mobile-money-card,
+.landing-page-container .report-item {
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .07);
+}
+.landing-page-container .hero-section { padding: clamp(4.5rem, 10vw, 8rem) 1.25rem; }
+.landing-page-container .hero-buttons { gap: .875rem; }
+.landing-page-container .btn-lp { border-radius: 999px; padding-inline: 1.5rem; }
+.landing-page-container .stats-grid,
+.landing-page-container .mobile-money-grid { gap: 1rem; }
+@media (min-width: 768px) {
+  .landing-page-container .lp-section { padding-inline: 2rem; }
+  .landing-page-container .stats-grid,
+  .landing-page-container .mobile-money-grid { gap: 1.5rem; }
+}

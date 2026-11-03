@@ -37,6 +37,12 @@ jobs:
       - name: Install application dependencies
         run: npm ci
 
+      - name: TypeScript validation
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
       - name: Install ephemeral Firebase test tools
         run: npm install --no-save --package-lock=false firebase-tools @firebase/rules-unit-testing
 

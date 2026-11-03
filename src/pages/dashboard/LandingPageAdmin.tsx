@@ -145,6 +145,14 @@ export const LandingPageAdmin: React.FC = () => {
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <h2 className="mb-3 text-lg font-bold text-slate-900">Bannières supplémentaires</h2>
+            <label className="block space-y-2">
+              <span className="text-sm font-semibold text-slate-700">URLs d'images publiques (une URL HTTPS par ligne)</span>
+              <textarea rows={3} value={content.banners.join(String.fromCharCode(10))} onChange={(event) => setContent((current) => ({ ...current, banners: event.target.value.split(String.fromCharCode(10)).map((url) => url.trim()).filter(Boolean) }))} className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
+            </label>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <h2 className="mb-3 text-lg font-bold text-slate-900">Chiffres clés</h2>
             <p className="text-sm text-slate-500">Les statistiques existantes sont préservées pour cette première migration. Leur édition structurée sera ajoutée sans modifier les sources de données des autres modules.</p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">

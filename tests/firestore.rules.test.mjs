@@ -257,3 +257,15 @@ test('Un utilisateur ne peut pas s’attribuer un rôle privilégié', async () 
     role: 'tresorier',
   }));
 });
+
+
+test('CMS Landing Page: le document principal est lisible publiquement', async () => {
+  await seedDocument('landing_content', 'main', {
+    hero: { title: 'Information publique' },
+    updatedAt: new Date(),
+    updatedBy: 'editor',
+  });
+  const publicDb = testEnv.unauthenticatedContext().firestore();
+  const { getDoc: readDoc } = await import('firebase/firestore');
+  await assertSucceeds(readDoc(doc(publicDb, 'landing_content', 'main')));
+});
