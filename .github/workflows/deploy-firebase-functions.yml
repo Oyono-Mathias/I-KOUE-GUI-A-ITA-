@@ -1,0 +1,29 @@
+name: Deploy Firebase Cloud Functions
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+      - name: Install and build Functions
+        working-directory: functions
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0982990158 }}
+      - name: Deploy createUser callable
+        run: firebase deploy --only functions:createUser --project gen-lang-client-0982990158 --non-interactive

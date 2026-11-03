@@ -8,8 +8,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, storage, secondaryAuth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
+import { db, auth, storage } from '../../lib/firebase';
+import { createMemberAccount } from '../../lib/memberProvisioning';
 import './SecretaireDashboard.css';
 
 export const SecretaireDashboard = () => {
@@ -822,15 +823,11 @@ export const SecretaireDashboard = () => {
                     const email = (document.getElementById('secNewMemEmail') as HTMLInputElement).value;
                     const password = (document.getElementById('secNewMemPwd') as HTMLInputElement).value;
                     const tel = (document.getElementById('secNewMemTel') as HTMLInputElement).value;
-                    const role = (document.getElementById('secNewMemRole') as HTMLSelectElement).value;
                     const cat = (document.getElementById('secNewMemCat') as HTMLSelectElement).value;
                     
                     if(nom && email && password) {
                         try {
-                            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-                            await setDoc(doc(db, 'users', userCred.user.uid), {
-                                nom, email, telephone: tel, role, categorie: cat, statut: 'actif', createdAt: serverTimestamp()
-                            });
+                            await createMemberAccount({ nom, email, password, telephone: tel, categorie: cat === 'bienfaiteur' || cat === 'fondateur' ? cat : 'actif' });
                             setAddMemberModalOpen(false);
                         } catch(err: any) {
                             alert("Erreur lors de la création du compte : " + err.message);
@@ -843,16 +840,8 @@ export const SecretaireDashboard = () => {
                     <div className="form-group"><label>Téléphone</label><input type="text" id="secNewMemTel" style={{ width: '100%', padding: '8px' }} /></div>
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Rôle</label>
-                            <select id="secNewMemRole" style={{ width: '100%', padding: '8px' }}>
-                                <option value="member">Membre standard</option>
-                                <option value="president">Président</option>
-                                <option value="vice_president">Vice-Président</option>
-                                <option value="secretaire">Secrétaire Général</option>
-                                <option value="tresorier">Trésorier</option>
-                                <option value="communicateur">Communicateur</option>
-                                <option value="conseiller">Conseiller</option>
-                            </select>
+                            <label>Rôle attribué automatiquement</label>
+                            <input type="text" value="Membre" readOnly style={{ width: '100%', padding: '8px', background: '#f3f4f6' }} />
                         </div>
                         <div className="form-group">
                             <label>Catégorie</label>
