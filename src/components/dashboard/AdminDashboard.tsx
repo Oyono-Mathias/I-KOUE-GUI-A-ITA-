@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, query, orderBy, addDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { UserData } from '../../hooks/useAuth';
+import { ROLE_DEFINITIONS } from '../../constants/roles';
+import { ShieldCheck, X } from 'lucide-react';
 import { 
     Home, Users, Banknote, CalendarDays, Newspaper, FileText, 
     Search, Plus, CheckCircle, AlertTriangle, XCircle, Download, Send 
@@ -24,6 +26,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [showAddMember, setShowAddMember] = useState(false);
+    const [editingMember, setEditingMember] = useState<UserData | null>(null);
     const [newMember, setNewMember] = useState({ displayName: '', email: '', role: 'membre', phone: '' });
 
     const [showFinanceForm, setShowFinanceForm] = useState(false);
@@ -76,9 +79,11 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
         try {
             await updateDoc(doc(db, 'users', uid), { role: newRole });
             alert('Rôle mis à jour avec succès !');
+            return true;
         } catch (error) {
             console.error("Erreur lors de la mise à jour du rôle:", error);
             alert("Erreur lors de la mise à jour du rôle.");
+            return false;
         }
     };
 
@@ -304,13 +309,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             style={{ padding: '14px', borderRadius: '12px', border: '1px solid var(--bordure)', fontSize: '16px', flex: '0 1 200px', background: 'white' }}
                         >
                             <option value="all">Tous les rôles</option>
-                            <option value="membre">Membres</option>
-                            <option value="conseiller">Conseillers</option>
-                            <option value="communicateur">Communicateurs</option>
-                            <option value="tresorier">Trésoriers</option>
-                            <option value="admin_bureau">Secrétaires Généraux</option>
-                            <option value="vice_president">Vice-Présidents</option>
-                            <option value="super_admin">Président</option>
+                            {ROLE_DEFINITIONS.map((role) => <option key={role.id} value={role.id}>{role.label}</option>)}
                         </select>
                         {['super_admin', 'vice_president', 'admin_bureau'].includes(currentUser.role) && (
                             <button 
@@ -341,12 +340,7 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                 <div>
                                     <label style={{ display: 'block', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px' }}>Rôle initial</label>
                                     <select value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--bordure)', fontSize: '16px', background: 'white' }}>
-                                        <option value="membre">Membre</option>
-                                        <option value="conseiller">Conseiller</option>
-                                        <option value="communicateur">Communicateur</option>
-                                        <option value="tresorier">Trésorier</option>
-                                        <option value="admin_bureau">Secrétaire Général</option>
-                                        <option value="vice_president">Vice-Président</option>
+                                        {ROLE_DEFINITIONS.map((role) => <option key={role.id} value={role.id}>{role.label}</option>)}
                                     </select>
                                 </div>
                             </div>
@@ -364,19 +358,13 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                                         <h4 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>{user.displayName || 'Sans nom'}</h4>
                                         <p style={{ margin: 0, fontSize: '12px', color: '#666' }}>{user.email}</p>
                                         {currentUser.role === 'super_admin' ? (
-                                            <select 
-                                                value={user.role} 
-                                                onChange={(e) => handleRoleChange(user.uid, e.target.value)}
-                                                style={{ marginTop: '8px', padding: '4px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold', background: 'var(--fond-alterne)', border: '1px solid var(--bordure)', cursor: 'pointer' }}
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingMember(user)}
+                                                className="mt-2 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-800 transition hover:bg-blue-100"
                                             >
-                                                <option value="membre">MEMBRE</option>
-                                                <option value="conseiller">CONSEILLER</option>
-                                                <option value="communicateur">COMMUNICATEUR</option>
-                                                <option value="tresorier">TRÉSORIER</option>
-                                                <option value="admin_bureau">SECRÉTAIRE GÉNÉRAL</option>
-                                                <option value="vice_president">VICE-PRÉSIDENT</option>
-                                                <option value="super_admin">PRÉSIDENT FONDATEUR</option>
-                                            </select>
+                                                <ShieldCheck size={14} /> {ROLE_DEFINITIONS.find((role) => role.id === user.role)?.label ?? user.role} · Modifier
+                                            </button>
                                         ) : (
                                             <span style={{ display: 'inline-block', marginTop: '4px', fontSize: '11px', padding: '2px 8px', background: 'var(--fond-alterne)', borderRadius: '12px', fontWeight: 'bold' }}>
                                                 {user.role.toUpperCase()}
@@ -678,6 +666,62 @@ export function AdminDashboard({ currentUser }: { currentUser: UserData }) {
                             ))
                         )}
                     </div>
+                </div>
+            )}
+
+            {editingMember && (
+                <div
+                    className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm"
+                    role="presentation"
+                    onMouseDown={(event) => { if (event.target === event.currentTarget) setEditingMember(null); }}
+                >
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="edit-member-role-title"
+                        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-7"
+                    >
+                        <div className="mb-5 flex items-start justify-between gap-4">
+                            <div>
+                                <p className="text-xs font-bold uppercase tracking-wider text-blue-600">Gestion des accès</p>
+                                <h3 id="edit-member-role-title" className="mt-1 text-xl font-bold text-slate-900">Modifier le rôle</h3>
+                                <p className="mt-1 text-sm text-slate-500">{editingMember.displayName || editingMember.email}</p>
+                            </div>
+                            <button type="button" onClick={() => setEditingMember(null)} className="rounded-full p-2 text-slate-500 hover:bg-slate-100" aria-label="Fermer">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {ROLE_DEFINITIONS.map((role) => {
+                                const selected = editingMember.role === role.id;
+                                return (
+                                    <button
+                                        key={role.id}
+                                        type="button"
+                                        onClick={async () => {
+                                            const saved = await handleRoleChange(editingMember.uid, role.id);
+                                            if (saved) setEditingMember(null);
+                                        }}
+                                        className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                                    >
+                                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${selected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                            {role.label.slice(0, 1)}
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="flex flex-wrap items-center gap-2 text-sm font-bold text-slate-900">
+                                                {role.label}
+                                                {selected && <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">Actuel</span>}
+                                            </span>
+                                            <span className="mt-1 block text-xs leading-relaxed text-slate-500">{role.description}</span>
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        <div className="mt-5 flex justify-end">
+                            <button type="button" onClick={() => setEditingMember(null)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Annuler</button>
+                        </div>
+                    </section>
                 </div>
             )}
 

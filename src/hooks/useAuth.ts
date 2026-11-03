@@ -2,22 +2,12 @@ import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { INSTITUTIONAL_ROLES, type InstitutionalRole } from '../constants/roles';
 
-export const INSTITUTIONAL_ROLES = [
-    'president_fondateur',
-    'president',
-    'vice_president',
-    'secretaire_general',
-    'secretaire_adjoint',
-    'tresorier',
-    'tresorier_adjoint',
-    'conseiller',
-    'commissaire_aux_comptes',
-    'communicateur',
-    'membre',
-] as const;
+export { INSTITUTIONAL_ROLES } from '../constants/roles';
+export type { InstitutionalRole } from '../constants/roles';
 
-export type InstitutionalRole = typeof INSTITUTIONAL_ROLES[number];
+
 export type LegacyRole = 'secretaire' | 'admin_bureau';
 export type SystemRole = 'super_admin' | 'admin';
 export type UserRole = InstitutionalRole | LegacyRole | SystemRole;
