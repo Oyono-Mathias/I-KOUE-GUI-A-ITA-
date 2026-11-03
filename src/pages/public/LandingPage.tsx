@@ -526,7 +526,7 @@ export const LandingPage = () => {
       </section>
 
       {/* ADHÉSION */}
-      <section className="lp-section" id="adhesion">
+      <section className="lp-section membership-section" id="adhesion">
           <div className="lp-container">
               <div className="lp-section-header reveal">
                   <span className="lp-section-eyebrow">Article 9 des Statuts</span>
@@ -588,8 +588,18 @@ export const LandingPage = () => {
           </div>
       </section>
 
+      {/* TRANSITION ADHÉSION → CONTACT */}
+      <section className="membership-contact-bridge" aria-label="Suite de votre démarche">
+          <div className="membership-contact-bridge__inner">
+              <span className="membership-contact-bridge__eyebrow">Construisons ensemble</span>
+              <h2>Une question avant de nous rejoindre ?</h2>
+              <p>Notre équipe est à votre écoute pour vous accompagner dans votre démarche et répondre à vos questions.</p>
+              <a href="#contact" className="btn-lp btn-lp-primary" onClick={(e) => scrollToSection(e, 'contact')}>Parlons de votre engagement <span aria-hidden="true">→</span></a>
+          </div>
+      </section>
+
       {/* CONTACT */}
-      <section className="lp-section lp-section-alt" id="contact">
+      <section className="lp-section lp-section-alt contact-section" id="contact">
           <div className="lp-container">
               <div className="lp-section-header reveal">
                   <span className="lp-section-eyebrow">Nous joindre</span>
