@@ -316,7 +316,11 @@ test('CMS Landing Page: seuls les trois rôles autorisés peuvent modifier le co
     hero: { title: 'Modification interdite' }, updatedAt: serverTimestamp(), updatedBy: 'cms-member-update',
   }));
   await assertSucceeds(setDoc(doc(dbFor('cms-communicator-update'), 'landing_content', 'main'), {
-    hero: { title: 'Modification autorisée' }, updatedAt: serverTimestamp(), updatedBy: 'cms-communicator-update',
+    hero: { title: 'Modification autorisée par le communicateur' }, updatedAt: serverTimestamp(), updatedBy: 'cms-communicator-update',
+  }));
+  await seedUser('cms-president-update', 'president');
+  await assertSucceeds(setDoc(doc(dbFor('cms-president-update'), 'landing_content', 'main'), {
+    hero: { title: 'Modification autorisée par le président' }, updatedAt: serverTimestamp(), updatedBy: 'cms-president-update',
   }));
 });
 
