@@ -1430,3 +1430,33 @@
         display: none;
     }
 }
+
+
+/* Compact, accessible member action menu (mobile-first) */
+.president-dashboard-container .member-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:nowrap; }
+.president-dashboard-container .member-action-menu-wrap { position:relative; display:flex; justify-content:flex-end; }
+.president-dashboard-container .member-action-trigger {
+ display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:44px; min-height:44px;
+ padding:0 13px; border:1px solid #D7E1EA; border-radius:12px; background:#FFFFFF; color:#0A3D62;
+ font:inherit; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 2px 6px rgba(10,61,98,.06);
+ transition:background .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.president-dashboard-container .member-action-trigger:hover,
+.president-dashboard-container .member-action-trigger[aria-expanded="true"] { border-color:#0A3D62; background:#F1F6FA; box-shadow:0 4px 12px rgba(10,61,98,.1); }
+.president-dashboard-container .member-action-menu {
+ position:absolute; top:calc(100% + 8px); right:0; z-index:1050; display:grid; gap:3px;
+ width:min(220px,calc(100vw - 64px)); padding:6px; border:1px solid #E2E8F0; border-radius:14px;
+ background:#FFFFFF; box-shadow:0 12px 32px rgba(15,23,42,.18); animation:member-menu-in .16s ease-out;
+}
+.president-dashboard-container .member-action-menu button {
+ display:flex; align-items:center; gap:10px; width:100%; min-height:44px; padding:10px 12px;
+ border:0; border-radius:9px; background:transparent; color:#243B53; font:inherit; font-size:13px;
+ font-weight:600; text-align:left; cursor:pointer;
+}
+.president-dashboard-container .member-action-menu button:hover,
+.president-dashboard-container .member-action-menu button:focus-visible { outline:none; background:#F1F5F9; }
+.president-dashboard-container .member-action-menu button.danger { color:#DC2626; }
+.president-dashboard-container .member-action-menu button.danger:hover,
+.president-dashboard-container .member-action-menu button.danger:focus-visible { background:#FEF2F2; }
+@keyframes member-menu-in { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+@media (prefers-reduced-motion:reduce) { .president-dashboard-container .member-action-menu { animation:none; } }
