@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { initializeFirestore, setLogLevel } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCXZLTvYx5lIz0SVQQt_fvPdsjAzRszGLI",
@@ -23,5 +24,4 @@ export const db = initializeFirestore(app, {
 
 export const auth = getAuth(app);
 
-export const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
-export const secondaryAuth = getAuth(secondaryApp);
+export const functions = getFunctions(app, 'us-central1');
