@@ -67,6 +67,11 @@ export const DashboardHome = () => {
     case 'membre':
       dashboard = <MemberDashboard />;
       break;
+    case 'secretaire_adjoint':
+    case 'tresorier_adjoint':
+    case 'commissaire_aux_comptes':
+      dashboard = <RoleAccessFallback message={`Votre profil « ${String(userData.role)} » est reconnu. Son espace dédié sera activé après validation de ses permissions spécifiques.`} />;
+      break;
     default:
       dashboard = <RoleAccessFallback message={`Le rôle « ${String(userData.role)} » n'est pas reconnu par l'application.`} />;
       break;
