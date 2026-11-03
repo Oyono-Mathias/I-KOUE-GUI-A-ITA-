@@ -54,7 +54,11 @@ export const createUser = onCall(
     const input = (request.data ?? {}) as CreateUserInput;
     const nom = requiredString(input.nom, 'nom', 120);
     const email = requiredString(input.email, 'email', 254).toLowerCase();
-    const password = requiredString(input.password, 'mot de passe', 128);
+    if (typeof input.password !== 'string' || input.password.length < 6 || input.password.length > 128) {
+      throw new HttpsError('invalid-argument', 'Le mot de passe doit contenir entre 6 et 128 caractères.');
+    }
+    // Ne pas trim() le mot de passe : les espaces peuvent en faire partie.
+    const password = input.password;
     const telephone = typeof input.telephone === 'string' ? input.telephone.trim().slice(0, 30) : '';
     const categorie = typeof input.categorie === 'string' && ALLOWED_CATEGORIES.has(input.categorie)
       ? input.categorie
@@ -63,10 +67,6 @@ export const createUser = onCall(
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new HttpsError('invalid-argument', 'Adresse e-mail invalide.');
     }
-    if (password.length < 6) {
-      throw new HttpsError('invalid-argument', 'Le mot de passe doit contenir au moins 6 caractères.');
-    }
-
     let createdUid: string | undefined;
     try {
       const userRecord = await auth.createUser({
