@@ -422,6 +422,60 @@ export const ConseillerDashboard = () => {
             </div>
         </div>
 
+        {/* TAB: PROJETS */}
+        <div className={`tab-content ${activeTab === 'projets' ? 'active' : ''}`}>
+          <div className="section-header"><h2>📁 Projets</h2><p>Suivi des projets de l'association</p></div>
+          {projets.length === 0 ? <div className="card"><p>Aucun projet disponible.</p></div> : projets.map((projet) => (
+            <article key={projet.id} className="card">
+              <h3 className="card-title">{projet.title || projet.name || 'Projet'}</h3>
+              <p>{projet.description || projet.summary || 'Aucune description renseignée.'}</p>
+              <small>{projet.status || projet.statut || 'Statut non précisé'}</small>
+            </article>
+          ))}
+        </div>
+
+        {/* TAB: TÂCHES */}
+        <div className={`tab-content ${activeTab === 'tasks' ? 'active' : ''}`}>
+          <div className="section-header"><h2>📋 Tâches</h2><p>Consultation des tâches accessibles au conseiller</p></div>
+          {tasks.length === 0 ? <div className="card"><p>Aucune tâche disponible.</p></div> : tasks.map((task) => (
+            <article key={task.id} className="card">
+              <h3 className="card-title">{task.title || task.name || task.titre || 'Tâche'}</h3>
+              <p>{task.description || task.details || 'Aucun détail renseigné.'}</p>
+              <small>{task.status || task.statut || 'Statut non précisé'}</small>
+            </article>
+          ))}
+        </div>
+
+        {/* TAB: MESSAGES DU BUREAU */}
+        <div className={`tab-content ${activeTab === 'messages' ? 'active' : ''}`}>
+          <div className="section-header"><h2>💬 Messages du Bureau</h2><p>Messages institutionnels consultables</p></div>
+          <div className="card">
+            {boardMessages.length === 0 ? <p>Aucun message disponible.</p> : boardMessages.map((message) => (
+              <article key={message.id} className="notification-item">
+                <strong>{message.sender || message.author || 'Membre du Bureau'}</strong>
+                <p>{message.text || message.message || 'Message sans contenu.'}</p>
+                <small>{formatDate(message.timestamp || message.date)}</small>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* TAB: SUPPLÉANCE */}
+        {isSuppleanceActive && (
+          <div className={`tab-content ${activeTab === 'suppleance' ? 'active' : ''}`}>
+            <div className="section-header"><h2>⚡ Historique de suppléance</h2><p>Consultation du dispositif institutionnel</p></div>
+            <div className="card">
+              {suppleanceHistory.length === 0 ? <p>Aucun événement de suppléance enregistré.</p> : suppleanceHistory.map((entry) => (
+                <article key={entry.id} className="notification-item">
+                  <strong>{entry.title || entry.action || entry.type || 'Événement de suppléance'}</strong>
+                  <p>{entry.description || entry.reason || entry.details || 'Aucun détail renseigné.'}</p>
+                  <small>{formatDate(entry.date || entry.createdAt)}</small>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
         <DashboardBottomNavigation
           activeSection={activeTab}
           onNavigate={navigateToSection}
