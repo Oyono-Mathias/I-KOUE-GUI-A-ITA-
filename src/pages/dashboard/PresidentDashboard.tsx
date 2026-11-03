@@ -7,8 +7,9 @@ import '../../components/layout/dashboard-navigation.css';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardSwitcher } from '../../components/layout/DashboardSwitcher';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
-import { db, auth, secondaryAuth } from '../../firebase';
+import { signOut } from 'firebase/auth';
+import { db, auth } from '../../firebase';
+import { createMemberAccount } from '../../lib/memberProvisioning';
 import { useAuth } from '../../hooks/useAuth';
 import './PresidentDashboard.css';
 import { ROLE_DEFINITIONS, type InstitutionalRole } from '../../constants/roles';
@@ -1060,18 +1061,11 @@ export const PresidentDashboard = () => {
                     const email = (document.getElementById('newMemEmail') as HTMLInputElement).value;
                     const password = (document.getElementById('newMemPwd') as HTMLInputElement).value;
                     const tel = (document.getElementById('newMemTel') as HTMLInputElement).value;
-                    const role = (document.getElementById('newMemRole') as HTMLSelectElement).value;
                     const cat = (document.getElementById('newMemCat') as HTMLSelectElement).value;
                     
                     if(nom && email && password) {
                         try {
-                            // Create user in Firebase Auth without logging out current admin
-                            const userCred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-                            
-                            // Save to Firestore with the same UID
-                            await setDoc(doc(db, 'users', userCred.user.uid), {
-                                nom, email, telephone: tel, role, categorie: cat, statut: 'actif', createdAt: serverTimestamp()
-                            });
+                            await createMemberAccount({ nom, email, password, telephone: tel, categorie: cat });
                             setAddMemberModalOpen(false);
                         } catch(err: any) {
                             alert("Erreur lors de la création du compte : " + err.message);
@@ -1084,10 +1078,8 @@ export const PresidentDashboard = () => {
                     <div className="form-group"><label>Téléphone</label><input type="text" id="newMemTel" style={{ width: '100%', padding: '8px' }} /></div>
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Rôle</label>
-                            <select id="newMemRole" style={{ width: '100%', padding: '8px' }}>
-                                {ROLE_DEFINITIONS.map(role => <option key={role.id} value={role.id}>{role.label}</option>)}
-                            </select>
+                            <label>Rôle attribué automatiquement</label>
+                            <input type="text" value="Membre" readOnly style={{ width: '100%', padding: '8px', background: '#f3f4f6' }} />
                         </div>
                         <div className="form-group">
                             <label>Catégorie</label>
