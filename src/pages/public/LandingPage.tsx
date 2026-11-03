@@ -92,18 +92,24 @@ export const LandingPage = () => {
       const cms = snapshot.data();
       setSiteConfig((prev: any) => ({
         ...prev,
-        heroTitle: cms.hero?.title ?? prev.heroTitle,
-        heroSubtitle: cms.hero?.subtitle ?? prev.heroSubtitle,
-        aboutHistory: cms.about?.history ?? prev.aboutHistory,
-        aboutMission: cms.about?.mission ?? prev.aboutMission,
-        contactAddress: cms.contact?.address ?? prev.contactAddress,
-        contactPhone1: cms.donation?.mobileMoney?.orangeMoneyNumber ?? cms.contact?.phone1 ?? prev.contactPhone1,
-        contactPhone2: cms.donation?.mobileMoney?.moovMoneyNumber ?? cms.contact?.phone2 ?? prev.contactPhone2,
-        contactEmail: cms.contact?.email ?? prev.contactEmail,
-        contactFacebook: cms.contact?.facebookUrl ?? prev.contactFacebook,
+        heroTitle: cms.hero?.title || prev.heroTitle,
+        heroSubtitle: cms.hero?.subtitle || prev.heroSubtitle,
+        aboutHistory: cms.about?.history || prev.aboutHistory,
+        aboutMission: cms.about?.mission || prev.aboutMission,
+        contactAddress: cms.contact?.address || prev.contactAddress,
+        contactPhone1: cms.donation?.mobileMoney?.orangeMoneyNumber || cms.contact?.phone1 || prev.contactPhone1,
+        contactPhone2: cms.donation?.mobileMoney?.moovMoneyNumber || cms.contact?.phone2 || prev.contactPhone2,
+        contactEmail: cms.contact?.email || prev.contactEmail,
+        contactFacebook: cms.contact?.facebookUrl || prev.contactFacebook,
         donationTitle: cms.donation?.title,
         donationDescription: cms.donation?.description,
         airtelMoneyNumber: cms.donation?.mobileMoney?.airtelMoneyNumber,
+        heroBannerUrl: cms.hero?.bannerUrl || prev.heroBannerUrl,
+        primaryCtaLabel: cms.hero?.primaryCtaLabel || prev.primaryCtaLabel,
+        primaryCtaUrl: cms.hero?.primaryCtaUrl || prev.primaryCtaUrl,
+        secondaryCtaLabel: cms.hero?.secondaryCtaLabel || prev.secondaryCtaLabel,
+        secondaryCtaUrl: cms.hero?.secondaryCtaUrl || prev.secondaryCtaUrl,
+        statistics: cms.statistics?.length ? cms.statistics : prev.statistics,
       }));
     }, (error) => console.warn('Erreur chargement CMS landing:', error));
 
@@ -276,35 +282,30 @@ export const LandingPage = () => {
       </nav>
 
       {/* HERO SECTION */}
-      <section className="hero-section" id="accueil">
+      <section className="hero-section" id="accueil" style={siteConfig.heroBannerUrl ? { backgroundImage: `linear-gradient(135deg, rgba(10,61,98,.9), rgba(52,152,219,.82)), url("${siteConfig.heroBannerUrl}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}>
           <span className="badge-legal">Reconnue d'Utilité Publique (Loi N° 61/233)</span>
           <h2 id="heroTitle">{siteConfig.heroTitle}</h2>
           <p className="subtitle" id="heroSubtitle">{siteConfig.heroSubtitle}</p>
           <div className="hero-buttons">
-              <a href="#don" className="btn-lp btn-lp-primary">💛 FAIRE UN DON</a>
-              <a href="#domaines" className="btn-lp btn-lp-secondary">🌍 NOS DOMAINES</a>
+              <a href={siteConfig.primaryCtaUrl || "#don"} className="btn-lp btn-lp-primary">💛 {siteConfig.primaryCtaLabel || "FAIRE UN DON"}</a>
+              <a href={siteConfig.secondaryCtaUrl || "#domaines"} className="btn-lp btn-lp-secondary">🌍 {siteConfig.secondaryCtaLabel || "NOS DOMAINES"}</a>
           </div>
       </section>
 
       {/* STATS */}
       <section className="stats-section">
           <div className="stats-grid">
-              <div className="stat-card reveal">
-                  <span className="stat-value" data-count="500">500+</span>
-                  <span className="stat-label">Bénéficiaires</span>
-              </div>
-              <div className="stat-card reveal">
-                  <span className="stat-value">6</span>
-                  <span className="stat-label">Domaines d'action</span>
-              </div>
-              <div className="stat-card reveal">
-                  <span className="stat-value">8ème</span>
-                  <span className="stat-label">Arrondissement</span>
-              </div>
-              <div className="stat-card reveal">
-                  <span className="stat-value">100%</span>
-                  <span className="stat-label">Transparence</span>
-              </div>
+              {(siteConfig.statistics?.length ? siteConfig.statistics : [
+                { value: '500+', label: 'Bénéficiaires' },
+                { value: '6', label: "Domaines d'action" },
+                { value: '8ème', label: 'Arrondissement' },
+                { value: '100%', label: 'Transparence' },
+              ]).map((stat: any, index: number) => (
+                <div className="stat-card reveal" key={stat.label || index}>
+                  <span className="stat-value">{stat.value}</span>
+                  <span className="stat-label">{stat.label}</span>
+                </div>
+              ))}
           </div>
       </section>
 

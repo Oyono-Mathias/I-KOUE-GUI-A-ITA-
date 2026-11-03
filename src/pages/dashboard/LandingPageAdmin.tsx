@@ -37,6 +37,13 @@ export const LandingPageAdmin: React.FC = () => {
   if (!userData || !allowedRoles.includes(userData.role)) return <Navigate to="/dashboard" replace />;
   if (loadingContent) return <div className="p-8 text-center">Chargement du CMS…</div>;
 
+  const updateStatistic = (index: number, key: 'label' | 'value', value: string) => {
+    setContent((current) => ({
+      ...current,
+      statistics: current.statistics.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item),
+    }));
+  };
+
   const update = (section: 'hero' | 'about' | 'contact' | 'donation', field: string, value: string) => {
     setContent((current) => {
       if (section === 'donation' && field.startsWith('mobileMoney.')) {
@@ -140,8 +147,17 @@ export const LandingPageAdmin: React.FC = () => {
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <h2 className="mb-3 text-lg font-bold text-slate-900">Chiffres clés</h2>
             <p className="text-sm text-slate-500">Les statistiques existantes sont préservées pour cette première migration. Leur édition structurée sera ajoutée sans modifier les sources de données des autres modules.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {content.statistics.map((stat, index) => <div key={stat.label} className="rounded-xl bg-slate-50 p-3 text-sm"><strong>{stat.value}</strong> · {stat.label}</div>)}
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              {content.statistics.map((stat, index) => (
+                <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3">
+                  <label className="text-xs font-semibold text-slate-600">Valeur
+                    <input value={stat.value} onChange={(event) => updateStatistic(index, 'value', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-sm" />
+                  </label>
+                  <label className="text-xs font-semibold text-slate-600">Libellé
+                    <input value={stat.label} onChange={(event) => updateStatistic(index, 'label', event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white p-2 text-sm" />
+                  </label>
+                </div>
+              ))}
             </div>
           </section>
 

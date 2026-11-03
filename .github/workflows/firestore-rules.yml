@@ -3,6 +3,7 @@ name: Firestore Rules Tests
 on:
   push:
     branches:
+      - main
       - preview/rbac-navigation-11-roles
   pull_request:
     branches:

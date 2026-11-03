@@ -2,7 +2,6 @@ import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { DashboardSwitcher } from './DashboardSwitcher';
-import { Link } from 'react-router-dom';
 
 export const DashboardLayout = () => {
   const { userData, loading } = useAuth();
@@ -42,16 +41,9 @@ export const DashboardLayout = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const canManageLanding = isSystemAdmin || ['communicateur', 'president', 'president_fondateur'].includes(userRole);
-
   // Tous les tableaux de bord sont des vues autonomes Mobile-First.
   return (
     <>
-      {canManageLanding && (
-        <Link to="/dashboard/landing-cms" className="fixed bottom-20 right-4 z-[900] rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-slate-700">
-          Gérer le site public
-        </Link>
-      )}
       <DashboardSwitcher />
       <Outlet />
     </>

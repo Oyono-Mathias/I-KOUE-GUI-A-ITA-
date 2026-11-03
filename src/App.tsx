@@ -21,7 +21,6 @@ const SecretaireDashboard = lazy(() => import('./pages/dashboard/SecretaireDashb
 const TresorierDashboard = lazy(() => import('./pages/dashboard/TresorierDashboard').then(m => ({ default: m.TresorierDashboard })));
 const ConseillerDashboard = lazy(() => import('./pages/dashboard/ConseillerDashboard').then(m => ({ default: m.ConseillerDashboard })));
 const MemberDashboard = lazy(() => import('./pages/dashboard/MemberDashboard').then(m => ({ default: m.MemberDashboard })));
-const LandingPageAdmin = lazy(() => import('./pages/dashboard/LandingPageAdmin').then(m => ({ default: m.LandingPageAdmin })));
 
 const PageLoading = () => (
   <div role="status" aria-live="polite" className="min-h-screen flex items-center justify-center bg-gray-50 text-bleu-rca font-bold">
@@ -62,7 +61,6 @@ export const App = () => {
             <Route path="admin_conseiller" element={<ConseillerDashboard />} />
             <Route path="membre" element={<MemberDashboard />} />
             <Route path="members" element={<div className="p-8 text-center text-gray-500">Gestion des membres en cours de migration...</div>} />
-            <Route path="landing-cms" element={<LandingPageAdmin />} />
           </Route>
 
           {/* FALLBACK */}
