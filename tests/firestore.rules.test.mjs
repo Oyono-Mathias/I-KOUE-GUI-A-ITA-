@@ -334,3 +334,26 @@ test('CMS Landing Page: document main uniquement et suppression interdite', asyn
   const { deleteDoc } = await import('firebase/firestore');
   await assertFails(deleteDoc(doc(db, 'landing_content', 'main')));
 });
+
+
+test('Président: peut modifier uniquement le rôle institutionnel d’un autre membre', async () => {
+  await seedUser('president-role-manager', 'president');
+  await seedUser('target-member', 'membre');
+  const db = dbFor('president-role-manager');
+
+  await assertSucceeds(updateDoc(doc(db, 'users', 'target-member'), { role: 'tresorier' }));
+  await assertFails(updateDoc(doc(db, 'users', 'target-member'), { role: 'admin' }));
+  await assertFails(updateDoc(doc(db, 'users', 'target-member'), { role: 'super_admin' }));
+  await assertFails(updateDoc(doc(db, 'users', 'target-member'), { role: 'tresorier', statut: 'suspendu' }));
+  await assertFails(updateDoc(doc(db, 'users', 'president-role-manager'), { role: 'membre' }));
+});
+
+test('Président Fondateur et autres rôles institutionnels: ne peuvent pas attribuer les rôles', async () => {
+  await seedUser('founder-role-manager', 'president_fondateur');
+  await seedUser('ordinary-member', 'membre');
+  await seedUser('treasurer-role-manager', 'tresorier');
+  await seedUser('role-target', 'membre');
+
+  await assertFails(updateDoc(doc(dbFor('founder-role-manager'), 'users', 'role-target'), { role: 'president' }));
+  await assertFails(updateDoc(doc(dbFor('treasurer-role-manager'), 'users', 'role-target'), { role: 'communicateur' }));
+});

@@ -4,7 +4,8 @@ import { DashboardHeader } from '../../components/layout/DashboardHeader';
 import { DashboardSidebar, type DashboardSection } from '../../components/layout/DashboardSidebar';
 import { DashboardBottomNavigation } from '../../components/layout/DashboardBottomNavigation';
 import '../../components/layout/dashboard-navigation.css';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { DashboardSwitcher } from '../../components/layout/DashboardSwitcher';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { signOut, createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth, secondaryAuth } from '../../firebase';
@@ -30,6 +31,7 @@ export const PresidentDashboard = () => {
   // Modals
   const [memberModal, setMemberModal] = useState<any>(null);
   const [roleEditModal, setRoleEditModal] = useState<{ member: any; role: InstitutionalRole } | null>(null);
+  const [roleSaving, setRoleSaving] = useState(false);
   const [addMemberModalOpen, setAddMemberModalOpen] = useState(false);
   const [meetingModalOpen, setMeetingModalOpen] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, message: '', onConfirm: () => {} });
@@ -221,15 +223,28 @@ export const PresidentDashboard = () => {
   };
 
   const saveMemberRole = async () => {
-    if (!roleEditModal) return;
+    if (!roleEditModal || roleSaving) return;
     const { member, role } = roleEditModal;
+    const memberId = member.uid || member.id;
+    if (!memberId || memberId === userData?.uid) {
+      alert('Vous ne pouvez pas modifier votre propre rôle depuis cet écran.');
+      return;
+    }
+    setRoleSaving(true);
     try {
-      await updateDoc(doc(db, 'users', member.id), { role });
-      await logDecision('CHANGEMENT_ROLE', `Rôle du membre ${member.id} changé en ${role}`);
+      await updateDoc(doc(db, 'users', memberId), { role });
+      await logDecision('CHANGEMENT_ROLE', `Rôle du membre ${memberId} changé en ${role}`);
       setRoleEditModal(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erreur lors du changement de rôle :', error);
-      alert('Impossible de mettre à jour le rôle. Réessayez.');
+      const message = error?.code === 'permission-denied'
+        ? 'Votre rôle ne vous autorise pas à attribuer ce niveau d’accès.'
+        : error?.code === 'not-found'
+          ? 'Ce compte membre est introuvable. Actualisez la liste puis réessayez.'
+          : 'La mise à jour du rôle a échoué. Vérifiez votre connexion puis réessayez.';
+      alert(message);
+    } finally {
+      setRoleSaving(false);
     }
   };
 
@@ -360,6 +375,14 @@ export const PresidentDashboard = () => {
       />
       <DashboardSidebar
         open={showMobileSidebar}
+        footerActions={(
+          <div className="grid gap-2 px-1 pb-3">
+            {['communicateur', 'president', 'president_fondateur', 'super_admin', 'admin'].includes(userData?.role || '') && (
+              <Link to="/dashboard/landing-cms" onClick={() => setShowMobileSidebar(false)} className="flex min-h-11 items-center rounded-xl bg-slate-900 px-3 text-sm font-semibold text-white shadow-sm hover:bg-slate-700">Gérer le site public</Link>
+            )}
+            <DashboardSwitcher inline />
+          </div>
+        )}
         activeSection={activeTab as DashboardSection}
         userName={userData?.displayName || 'Président'}
         roleLabel="Président"
@@ -1011,7 +1034,7 @@ export const PresidentDashboard = () => {
               </button>
             ); })}
           </div>
-          <div className="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row"><button type="button" onClick={() => setRoleEditModal(null)} className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Annuler</button><button type="button" onClick={saveMemberRole} className="rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800">Enregistrer le rôle</button></div>
+          <div className="mt-6 flex flex-col-reverse justify-end gap-2 sm:flex-row"><button type="button" onClick={() => setRoleEditModal(null)} className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Annuler</button><button type="button" onClick={saveMemberRole} disabled={roleSaving} className="rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60">{roleSaving ? "Enregistrement..." : "Enregistrer le rôle"}</button></div>
         </section>
       </div>
     )}
