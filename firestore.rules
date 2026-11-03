@@ -339,7 +339,24 @@ service cloud.firestore {
     // =========================================================================
     match /members/{docId} {
       allow read: if isTresorier() || isTresorierAdjoint() || isSecretaire() || isSecretaireAdjoint() || isVicePresident() || isSystemAdmin();
-      allow create, update, delete: if isTresorier() || isSecretaire() || isSystemAdmin();
+
+      allow create: if isSecretaire() || isSystemAdmin();
+
+      // Le Trésorier ne peut actualiser que le statut de cotisation et sa date.
+      // Le Secrétaire peut maintenir les données administratives, sans modifier les champs financiers.
+      allow update: if isSystemAdmin() || (
+        isTresorier()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statut', 'dernierPaiement'])
+        && request.resource.data.statut == 'a_jour'
+        && request.resource.data.dernierPaiement == request.time
+      ) || (
+        isSecretaire()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+          'statut', 'dernierPaiement', 'cotisationAnnuelle', 'exonere', 'userId', 'uid'
+        ])
+      );
+
+      allow delete: if isSecretaire() || isSystemAdmin();
     }
 
     match /validations/{docId} {
