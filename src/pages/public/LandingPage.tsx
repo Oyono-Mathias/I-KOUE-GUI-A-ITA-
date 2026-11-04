@@ -438,11 +438,9 @@ export const LandingPage = () => {
 
               <div className="domains-grid" id="domainsGrid">
                   {domains.length === 0 ? (
-                    <>
-                      <div className="skeleton" style={{ height: '200px' }}></div>
-                      <div className="skeleton" style={{ height: '200px' }}></div>
-                      <div className="skeleton" style={{ height: '200px' }}></div>
-                    </>
+                    <div className="lp-data-state" role={dataLoading.domains ? 'status' : undefined}>
+                      {dataLoading.domains ? 'Chargement de nos domaines d’intervention…' : 'Les domaines seront bientôt disponibles.'}
+                    </div>
                   ) : (
                     domains.map((domain, index) => (
                       <div key={domain.id || index} className={`domain-card ${domain.color || ''} reveal`}>
@@ -483,11 +481,9 @@ export const LandingPage = () => {
 
               <div className="news-grid" id="newsGrid">
                 {news.length === 0 ? (
-                   <>
-                    <div className="skeleton" style={{ height: '300px' }}></div>
-                    <div className="skeleton" style={{ height: '300px' }}></div>
-                    <div className="skeleton" style={{ height: '300px' }}></div>
-                  </>
+                  <div className="lp-data-state" role={dataLoading.news ? 'status' : undefined}>
+                    {dataLoading.news ? 'Chargement des actualités…' : 'Aucune actualité publiée pour le moment.'}
+                  </div>
                 ) : (
                   news.map((item) => (
                     <div key={item.id} className="news-card reveal">
@@ -565,11 +561,9 @@ export const LandingPage = () => {
 
               <div className="reports-grid" id="reportsGrid">
                 {reports.length === 0 ? (
-                  <>
-                    <div className="skeleton" style={{ height: '80px' }}></div>
-                    <div className="skeleton" style={{ height: '80px' }}></div>
-                    <div className="skeleton" style={{ height: '80px' }}></div>
-                  </>
+                  <div className="lp-data-state" role={dataLoading.reports ? 'status' : undefined}>
+                    {dataLoading.reports ? 'Chargement des rapports…' : 'Aucun rapport public disponible pour le moment.'}
+                  </div>
                 ) : (
                   reports.map(report => (
                     <div key={report.id} className="report-item">
