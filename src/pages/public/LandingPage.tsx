@@ -67,6 +67,7 @@ export const LandingPage = () => {
   const [domains, setDomains] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [dataLoading, setDataLoading] = useState({ domains: true, news: true, reports: true });
   const [activeView, setActiveView] = useState('accueil');
   const [selectedNews, setSelectedNews] = useState<any | null>(null);
 
@@ -121,66 +122,83 @@ export const LandingPage = () => {
   }, [domains, news, reports, activeView]);
 
   useEffect(() => {
-    // Legacy configuration remains the fallback during progressive CMS migration.
-    const unsubConfig = onSnapshot(doc(db, 'site_config', 'main'), (docSnap) => {
-      if (docSnap.exists()) setSiteConfig(prev => ({ ...prev, ...docSnap.data() }));
-    });
-    const unsubLandingContent = onSnapshot(doc(db, 'landing_content', 'main'), (snapshot) => {
-      if (!snapshot.exists()) return;
-      const cms = snapshot.data();
-      setSiteConfig((prev: any) => ({
-        ...prev,
-        heroTitle: cms.hero?.title || prev.heroTitle,
-        heroSubtitle: cms.hero?.subtitle || prev.heroSubtitle,
-        aboutHistory: cms.about?.history || prev.aboutHistory,
-        aboutMission: cms.about?.mission || prev.aboutMission,
-        contactAddress: cms.contact?.address || prev.contactAddress,
-        contactPhone1: cms.donation?.mobileMoney?.orangeMoneyNumber || cms.contact?.phone1 || prev.contactPhone1,
-        contactPhone2: cms.donation?.mobileMoney?.moovMoneyNumber || cms.contact?.phone2 || prev.contactPhone2,
-        contactEmail: cms.contact?.email || prev.contactEmail,
-        contactFacebook: cms.contact?.facebookUrl || prev.contactFacebook,
-        donationTitle: cms.donation?.title,
-        donationDescription: cms.donation?.description,
-        airtelMoneyNumber: cms.donation?.mobileMoney?.airtelMoneyNumber,
-        heroBannerUrl: cms.hero?.bannerUrl || prev.heroBannerUrl,
-        primaryCtaLabel: cms.hero?.primaryCtaLabel || prev.primaryCtaLabel,
-        primaryCtaUrl: cms.hero?.primaryCtaUrl || prev.primaryCtaUrl,
-        secondaryCtaLabel: cms.hero?.secondaryCtaLabel || prev.secondaryCtaLabel,
-        secondaryCtaUrl: cms.hero?.secondaryCtaUrl || prev.secondaryCtaUrl,
-        statistics: cms.statistics?.length ? cms.statistics : prev.statistics,
-      }));
-    }, (error) => console.warn('Erreur chargement CMS landing:', error));
+    let active = true;
+    const timers: number[] = [];
+    const markLoaded = (key: 'domains' | 'news' | 'reports') => {
+      if (active) setDataLoading((current) => ({ ...current, [key]: false }));
+    };
+    const addFallback = (key: 'domains' | 'news' | 'reports') => {
+      const timer = window.setTimeout(() => markLoaded(key), 8000);
+      timers.push(timer);
+      return () => window.clearTimeout(timer);
+    };
+    const finishDomains = addFallback('domains');
+    const finishNews = addFallback('news');
+    const finishReports = addFallback('reports');
 
-    // Fetch domains
-    const qDomains = query(collection(db, 'domains'), orderBy('order', 'asc'));
-    const unsubDomains = onSnapshot(qDomains, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setDomains(data);
-    });
+    const unsubConfig = onSnapshot(doc(db, 'site_config', 'main'),
+      (snapshot) => { if (active && snapshot.exists()) setSiteConfig((prev: any) => ({ ...prev, ...snapshot.data() })); },
+      (error) => console.warn('Erreur de lecture site_config:', error)
+    );
+    const unsubLandingContent = onSnapshot(doc(db, 'landing_content', 'main'),
+      (snapshot) => {
+        if (!active || !snapshot.exists()) return;
+        const cms = snapshot.data();
+        setSiteConfig((prev: any) => ({
+          ...prev,
+          heroTitle: cms.hero?.title || prev.heroTitle,
+          heroSubtitle: cms.hero?.subtitle || prev.heroSubtitle,
+          aboutHistory: cms.about?.history || prev.aboutHistory,
+          aboutMission: cms.about?.mission || prev.aboutMission,
+          contactAddress: cms.contact?.address || prev.contactAddress,
+          contactPhone1: cms.donation?.mobileMoney?.orangeMoneyNumber || cms.contact?.phone1 || prev.contactPhone1,
+          contactPhone2: cms.donation?.mobileMoney?.moovMoneyNumber || cms.contact?.phone2 || prev.contactPhone2,
+          contactEmail: cms.contact?.email || prev.contactEmail,
+          contactFacebook: cms.contact?.facebookUrl || prev.contactFacebook,
+          donationTitle: cms.donation?.title,
+          donationDescription: cms.donation?.description,
+          airtelMoneyNumber: cms.donation?.mobileMoney?.airtelMoneyNumber,
+          heroBannerUrl: cms.hero?.bannerUrl || prev.heroBannerUrl,
+          primaryCtaLabel: cms.hero?.primaryCtaLabel || prev.primaryCtaLabel,
+          primaryCtaUrl: cms.hero?.primaryCtaUrl || prev.primaryCtaUrl,
+          secondaryCtaLabel: cms.hero?.secondaryCtaLabel || prev.secondaryCtaLabel,
+          secondaryCtaUrl: cms.hero?.secondaryCtaUrl || prev.secondaryCtaUrl,
+          statistics: cms.statistics?.length ? cms.statistics : prev.statistics,
+        }));
+      },
+      (error) => console.warn('Erreur chargement CMS landing:', error)
+    );
 
-    // Fetch news
-    // Note: If 'status' requires a composite index that doesn't exist, this might throw an error.
-    // If it does, we can filter client side.
-    const qNews = query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(6));
-    const unsubNews = onSnapshot(qNews, (snap) => {
-      let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      data = data.filter((n: any) => n.status === 'publie');
-      setNews(data);
-    });
-
-    // Fetch reports
-    const qReports = query(collection(db, 'public_reports'), orderBy('createdAt', 'desc'));
-    const unsubReports = onSnapshot(qReports, (snap) => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setReports(data);
-    });
+    const unsubDomains = onSnapshot(query(collection(db, 'domains'), orderBy('order', 'asc')),
+      (snapshot) => {
+        if (!active) return;
+        finishDomains(); markLoaded('domains');
+        setDomains(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+      },
+      (error) => { console.warn('Erreur chargement domaines:', error); finishDomains(); markLoaded('domains'); setDomains([]); }
+    );
+    const unsubNews = onSnapshot(query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(6)),
+      (snapshot) => {
+        if (!active) return;
+        finishNews(); markLoaded('news');
+        const data = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
+        setNews(data.filter((item: any) => item.status === 'publie'));
+      },
+      (error) => { console.warn('Erreur chargement actualités:', error); finishNews(); markLoaded('news'); setNews([]); }
+    );
+    const unsubReports = onSnapshot(query(collection(db, 'public_reports'), orderBy('createdAt', 'desc'), limit(8)),
+      (snapshot) => {
+        if (!active) return;
+        finishReports(); markLoaded('reports');
+        setReports(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
+      },
+      (error) => { console.warn('Erreur chargement rapports publics:', error); finishReports(); markLoaded('reports'); setReports([]); }
+    );
 
     return () => {
-      unsubConfig();
-      unsubLandingContent();
-      unsubDomains();
-      unsubNews();
-      unsubReports();
+      active = false;
+      timers.forEach((timer) => window.clearTimeout(timer));
+      unsubConfig(); unsubLandingContent(); unsubDomains(); unsubNews(); unsubReports();
     };
   }, []);
 
