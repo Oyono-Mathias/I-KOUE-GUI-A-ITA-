@@ -40,7 +40,7 @@ export const NewsInteractions: React.FC<NewsInteractionsProps> = ({ newsId, titl
       if (auth.currentUser?.uid !== user.uid || !profile.exists()) return;
       const data = profile.data();
       setAuthorName(user.displayName || data.displayName || data.nom || 'Membre');
-      setIsCommunicator(data.role === 'communicateur' && data.statut !== 'suspendu');
+      setIsCommunicator(data.role === 'communicateur' && data.statut !== 'suspendu' && data.status !== 'suspendu');
     } catch (error) { console.warn('Impossible de vérifier le rôle éditorial:', error); }
   }), []);
 
