@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { db, auth } from '../../firebase';
 import { 
   collection, 
@@ -18,6 +18,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Home, Newspaper, Images, Menu, X, Bell, LogOut, Plus, Upload, Eye, MessageCircle, FileText, Video, Image as ImageIcon, Copy, Check, List, LayoutGrid, ArrowUpDown, Clock3, Megaphone } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import '../../styles/communicateur.css';
+import { ExternalMedia, ExternalMediaField, parseExternalMediaUrl } from '../../components/media/ExternalMedia';
 
 // Types
 interface NewsItem {
@@ -62,6 +63,7 @@ interface MediaItem {
   name: string;
   type: string;
   size?: number;
+  provider?: string;
   uploadedAt?: any;
 }
 
@@ -127,6 +129,8 @@ export const CommunicateurDashboard: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [messageFilter, setMessageFilter] = useState<string>('');
   const [mediaSearch, setMediaSearch] = useState<string>('');
+  const [mediaUrl, setMediaUrl] = useState<string>('');
+  const [mediaName, setMediaName] = useState<string>('');
 
   // News Editor state
   const [editingNewsId, setEditingNewsId] = useState<string | null>(null);
@@ -137,14 +141,9 @@ export const CommunicateurDashboard: React.FC = () => {
   const [formStatus, setFormStatus] = useState<'publie' | 'brouillon' | 'en_attente_validation' | 'archive'>('brouillon');
   const [formFeatured, setFormFeatured] = useState<boolean>(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [uploadText, setUploadText] = useState<string>('Cliquez pour uploader une image');
 
   // Active message modal
   const [selectedMessage, setSelectedMessage] = useState<MessageItem | null>(null);
-
-  // File input refs
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaInputRef = useRef<HTMLInputElement>(null);
 
   // -------------------------------------------------------------
   // 🔥 FIRESTORE REAL-TIME SUBSCRIPTIONS
@@ -306,7 +305,7 @@ export const CommunicateurDashboard: React.FC = () => {
     const search = mediaSearch.toLowerCase();
     return media.filter(item => {
       const type = item.type || (item.name?.toLowerCase().endsWith('.pdf') ? 'document' : 'image');
-      return (!search || item.name.toLowerCase().includes(search)) && (mediaTypeFilter === 'all' || type === mediaTypeFilter);
+      return (!search || (item.name || '').toLowerCase().includes(search) || (item.url || '').toLowerCase().includes(search)) && (mediaTypeFilter === 'all' || type === mediaTypeFilter);
     });
   }, [media, mediaSearch, mediaTypeFilter]);
 
@@ -384,7 +383,6 @@ export const CommunicateurDashboard: React.FC = () => {
         setFormStatus(existing.status || 'brouillon');
         setFormFeatured(existing.featured || false);
         setUploadedImageUrl(existing.imageUrl || null);
-        setUploadText(existing.imageUrl ? '✓ Image attachée' : 'Cliquez pour uploader une image');
       }
     } else {
       setFormTitle('');
@@ -394,34 +392,31 @@ export const CommunicateurDashboard: React.FC = () => {
       setFormStatus('brouillon');
       setFormFeatured(false);
       setUploadedImageUrl(null);
-      setUploadText('Cliquez pour uploader une image');
     }
     setActiveTab('news-editor');
     window.scrollTo(0, 0);
   };
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  const removeImage = () => setUploadedImageUrl(null);
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("⚠️ L'image ne doit pas dépasser 5 MB");
-      return;
+  const handleSaveMedia = async () => {
+    const name = mediaName.trim();
+    const parsed = parseExternalMediaUrl(mediaUrl);
+    if (!name) { alert('Veuillez donner un nom au média.'); return; }
+    if (!parsed) { alert('Lien invalide. Utilisez une adresse HTTPS publique.'); return; }
+    try {
+      await addDoc(collection(db, 'media'), {
+        url: parsed.url, name, type: parsed.kind === 'pdf' ? 'document' : parsed.kind,
+        kind: parsed.kind, provider: parsed.provider,
+        uploadedAt: serverTimestamp(), uploadedBy: userData?.uid || 'communicateur', uploadedByRole: 'communicateur',
+      });
+      setMediaName('');
+      setMediaUrl('');
+      alert('Lien média ajouté à la médiathèque.');
+    } catch (error: any) {
+      console.error('Erreur ajout média externe:', error);
+      alert('Impossible d’ajouter ce média : ' + (error?.message || 'erreur inconnue'));
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setUploadedImageUrl(dataUrl);
-      setUploadText(file.name);
-    };
-    reader.readAsDataURL(file as File);
-  };
-
-  const removeImage = () => {
-    setUploadedImageUrl(null);
-    setUploadText('Cliquez pour uploader une image');
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const saveNewsData = async (statusOverride?: 'publie' | 'brouillon' | 'en_attente_validation' | 'archive') => {
@@ -496,40 +491,6 @@ export const CommunicateurDashboard: React.FC = () => {
     } catch (err: any) {
       alert('❌ Erreur: ' + err.message);
     }
-  };
-
-  // Media upload
-  const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []) as File[];
-    files.forEach(file => {
-      // Les médias sont actuellement stockés en data URL dans Firestore (limite de 1 Mio/document).
-      // Refuser les fichiers trop volumineux évite les écritures impossibles et la surcharge du document.
-      if (file.size > 700 * 1024) {
-        alert(`Le fichier « ${file.name} » dépasse la limite sûre de 700 Ko. Le stockage Firebase Storage sera nécessaire pour les gros fichiers et les vidéos.`);
-        return;
-      }
-      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        alert(`Le format « ${file.type || 'inconnu'} » n’est pas encore pris en charge pour l’envoi.`);
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        const url = evt.target?.result as string;
-        try {
-          await addDoc(collection(db, 'media'), {
-            url,
-            name: (file as File).name,
-            type: (file as File).type.startsWith('image/') ? 'image' : (file as File).type.startsWith('video/') ? 'video' : 'document',
-            size: (file as File).size,
-            uploadedAt: serverTimestamp(),
-            uploadedBy: 'communicateur'
-          });
-        } catch (err) {
-          console.error("Erreur ajout média:", err);
-        }
-      };
-      reader.readAsDataURL(file as File);
-    });
   };
 
   // Messages management
@@ -857,7 +818,7 @@ export const CommunicateurDashboard: React.FC = () => {
             <button type="button" className="quick-action" onClick={() => { openNewsEditor(); setFormCategory('urgence'); }}>
               <div className="qa-icon"><Plus size={24} /></div><div className="qa-title">Créer une alerte</div><div className="qa-subtitle">Nouvelle actualité urgente</div>
             </button>
-            <button type="button" className="quick-action" onClick={() => { setActiveTab('media'); setMediaTypeFilter('all'); mediaInputRef.current?.click(); }}>
+            <button type="button" className="quick-action" onClick={() => { setActiveTab('media'); setMediaTypeFilter('all'); window.scrollTo(0, 0); }}>
               <div className="qa-icon"><Upload size={24} /></div><div className="qa-title">Uploader un média</div><div className="qa-subtitle">Image, vidéo ou PDF</div>
             </button>
             <div className="quick-action" onClick={() => openNewsEditor()}>
@@ -1127,26 +1088,13 @@ export const CommunicateurDashboard: React.FC = () => {
           <div className="card">
             <div className="form-group">
               <label>Image de couverture</label>
-              <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
-                <div className="upload-icon">📤</div>
-                <p>{uploadText}</p>
-                <small>JPG, PNG (max 5 MB)</small>
-              </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                accept="image/*" 
-                style={{ display: 'none' }} 
-                onChange={handleImageFileChange}
+              <ExternalMediaField
+                label="Lien du média de couverture"
+                value={uploadedImageUrl || ''}
+                onChange={setUploadedImageUrl}
+                helperText="Collez un lien HTTPS vers une image, une vidéo, YouTube, Facebook ou Google Drive."
               />
-              {uploadedImageUrl && (
-                <div style={{ marginTop: '12px' }}>
-                  <img src={uploadedImageUrl} alt="Aperçu" style={{ width: '100%', borderRadius: '8px', maxHeight: '200px', objectFit: 'cover' }} />
-                  <button type="button" className="btn btn-danger btn-small" onClick={removeImage} style={{ marginTop: '8px' }}>
-                    🗑️ Supprimer l'image
-                  </button>
-                </div>
-              )}
+              {uploadedImageUrl && <button type="button" className="btn btn-danger btn-small" onClick={removeImage} style={{ marginTop: '8px' }}>🗑️ Retirer le média</button>}
             </div>
 
             <div className="form-row">
@@ -1368,19 +1316,14 @@ export const CommunicateurDashboard: React.FC = () => {
         </div>
 
         <div className="communicator-storage-card"><div><strong>Stockage utilisé</strong><span>{formatBytes(mediaStorageBytes)} répertoriés</span></div><div className="communicator-storage-track"><span style={{ width: `${storagePercent}%` }} /></div><small>Repère visuel indicatif de 100 Mo · ce n’est pas le quota Firebase du projet.</small></div>
-        <div className="upload-zone" onClick={() => mediaInputRef.current?.click()} style={{ marginBottom: '16px' }}>
-          <div className="upload-icon">📤</div>
-          <p>Cliquez pour uploader des médias</p>
-          <small>JPG, PNG, PDF (max 700 Ko actuellement)</small>
-        </div>
-        <input 
-          type="file" 
-          ref={mediaInputRef} 
-          accept="image/*,.pdf" 
-          multiple 
-          style={{ display: 'none' }} 
-          onChange={handleMediaUpload}
-        />
+        <form onSubmit={(event) => { event.preventDefault(); void handleSaveMedia(); }} className="card" style={{ marginBottom: '16px', padding: '16px', display: 'grid', gap: '14px' }}>
+          <div className="form-group">
+            <label htmlFor="externalMediaName">Nom du média</label>
+            <input id="externalMediaName" value={mediaName} onChange={(event) => setMediaName(event.target.value)} maxLength={120} required placeholder="Ex. Présentation de l’association" />
+          </div>
+          <ExternalMediaField label="Lien du média (Google Drive, YouTube, Facebook, image, vidéo, audio…)" value={mediaUrl} onChange={setMediaUrl} />
+          <button type="submit" className="btn btn-primary" disabled={!mediaName.trim() || !parseExternalMediaUrl(mediaUrl)}>Ajouter à la médiathèque</button>
+        </form>
 
         <div className="filters-bar">
           <input 
@@ -1398,24 +1341,12 @@ export const CommunicateurDashboard: React.FC = () => {
             <div className="empty-state" style={{ gridColumn: '1/-1' }}>
               <div className="empty-icon">🖼️</div>
               <h3>Aucun média</h3>
-              <p>Uploadez votre première image</p>
+              <p>Ajoutez le lien de votre premier média externe</p>
             </div>
           ) : (
             filteredMedia.map(item => (
-              <div 
-                className="media-item" 
-                key={item.id} 
-                onClick={() => {
-                  if (item.url) window.open(item.url, '_blank');
-                }}
-              >
-                {item.type === 'video' ? <video src={item.url} muted playsInline /> : item.type === 'image' ? (
-                  <img src={item.url} alt={item.name} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
-                    🖼️
-                  </div>
-                )}
+              <div className="media-item" key={item.id} style={{ cursor: 'default' }}>
+                <ExternalMedia url={item.url} title={item.name} compact fit="cover" />
                 <div className="media-item-overlay">{item.name}</div>
                 <button type="button" className="media-copy-url" title="Copier l’URL" aria-label={`Copier l’URL de ${item.name}`} onClick={async e => { e.stopPropagation(); try { await navigator.clipboard.writeText(item.url); setCopiedMediaId(item.id); window.setTimeout(() => setCopiedMediaId(current => current === item.id ? null : current), 1800); } catch { alert('Impossible de copier cette URL sur cet appareil.'); } }}>{copiedMediaId === item.id ? <Check size={15} /> : <Copy size={15} />}</button>
               </div>

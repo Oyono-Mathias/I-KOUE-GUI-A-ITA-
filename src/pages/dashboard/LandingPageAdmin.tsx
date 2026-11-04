@@ -3,6 +3,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { saveLandingContent, subscribeLandingContent } from '../../services/landingContent';
 import { DEFAULT_LANDING_CONTENT, type LandingContent } from '../../types/landing';
+import { ExternalMediaField } from '../../components/media/ExternalMedia';
 import { Image, Info, HeartHandshake, MapPin, BarChart3, ChevronRight, ExternalLink, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
 const allowedRoles = ['communicateur', 'president', 'president_fondateur', 'super_admin', 'admin'];
@@ -144,7 +145,7 @@ export const LandingPageAdmin: React.FC = () => {
             <div className="grid gap-5">
               {field('Titre principal', 'hero', 'title', content.hero.title)}
               {field('Sous-titre', 'hero', 'subtitle', content.hero.subtitle, true)}
-              {field('URL de la bannière (image publique)', 'hero', 'bannerUrl', content.hero.bannerUrl)}
+              <div className="space-y-2"><ExternalMediaField label="Média de bannière (URL externe)" value={content.hero.bannerUrl || ''} onChange={(value) => setContent((current) => ({ ...current, hero: { ...current.hero, bannerUrl: value } }))} /></div>
               <div className="grid gap-5 sm:grid-cols-2">
                 {field('Texte du bouton principal', 'hero', 'primaryCtaLabel', content.hero.primaryCtaLabel)}
                 {field('Lien du bouton principal', 'hero', 'primaryCtaUrl', content.hero.primaryCtaUrl)}
@@ -188,7 +189,7 @@ export const LandingPageAdmin: React.FC = () => {
             <h2 className="mb-3 text-lg font-bold text-slate-900">Bannières supplémentaires</h2>
             <label className="block space-y-2">
               <span className="text-sm font-semibold text-slate-700">URLs d'images publiques (une URL HTTPS par ligne)</span>
-              <textarea rows={3} value={content.banners.join(String.fromCharCode(10))} onChange={(event) => setContent((current) => ({ ...current, banners: event.target.value.split(String.fromCharCode(10)).map((url) => url.trim()).filter(Boolean) }))} className="w-full rounded-xl border border-slate-200 p-3 text-sm" />
+              <div className="space-y-4">{content.banners.map((url, index) => <div key={index} className="space-y-2 rounded-xl border border-slate-200 p-3"><div className="flex items-center justify-between"><span className="text-sm font-semibold">Média {index + 1}</span><button type="button" onClick={() => setContent((current) => ({ ...current, banners: current.banners.filter((_, i) => i !== index) }))} className="text-sm text-rose-600">Retirer</button></div><ExternalMediaField label="Lien externe" value={url} onChange={(value) => setContent((current) => ({ ...current, banners: current.banners.map((item, i) => i === index ? value : item) }))} /></div>)}<button type="button" onClick={() => setContent((current) => ({ ...current, banners: [...current.banners, ''] }))} className="rounded-lg border border-dashed px-4 py-2 text-sm">+ Ajouter un média</button></div>
             </label>
           </section></div>)}
             {activeSection === 'statistics' && (<div className="space-y-5"><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
