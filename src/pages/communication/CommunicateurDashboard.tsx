@@ -500,7 +500,7 @@ export const CommunicateurDashboard: React.FC = () => {
 
   // Media upload
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     files.forEach(file => {
       // Les médias sont actuellement stockés en data URL dans Firestore (limite de 1 Mio/document).
       // Refuser les fichiers trop volumineux évite les écritures impossibles et la surcharge du document.
