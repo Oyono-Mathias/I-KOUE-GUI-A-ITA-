@@ -70,6 +70,13 @@ export const LandingPage = () => {
   const [activeView, setActiveView] = useState('accueil');
   const [selectedNews, setSelectedNews] = useState<any | null>(null);
 
+  useEffect(() => {
+    if (!selectedNews) return;
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setSelectedNews(null); };
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [selectedNews]);
+
   // Refs for animation
   const revealRefs = useRef<Element[]>([]);
 
@@ -766,7 +773,7 @@ export const LandingPage = () => {
           <article className="news-article-dialog" role="dialog" aria-modal="true" aria-labelledby="newsArticleTitle">
             <header><div><span className="lp-section-eyebrow">JOURNAL DE L’ASSOCIATION</span><h2 id="newsArticleTitle">{selectedNews.title}</h2><p>{formatDate(selectedNews.createdAt)} · {categoryLabels[selectedNews.category] || selectedNews.category || 'Actualité'}</p></div><button type="button" onClick={() => setSelectedNews(null)} aria-label="Fermer l’actualité">×</button></header>
             {(selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url) && <div className="news-article-media"><ExternalMedia url={selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url} title={selectedNews.title} lightbox /></div>}
-            <div className="news-article-copy">{selectedNews.description || 'Aucun détail supplémentaire n’est disponible pour cette actualité.'}</div>
+            <div className="news-article-copy">{selectedNews.content || selectedNews.fullText || selectedNews.description || 'Aucun détail supplémentaire n’est disponible pour cette actualité.'}</div>
             <footer>Association I KOUE GUI A ITA · Ensemble · Volonté · Engagement</footer>
           </article>
         </div>
