@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export type ExternalMediaKind = 'image' | 'video' | 'audio' | 'youtube' | 'facebook' | 'drive' | 'pdf' | 'link';
 export type ExternalMediaProvider = 'youtube' | 'facebook' | 'google-drive' | 'direct' | 'external';
@@ -46,19 +46,31 @@ export const parseExternalMediaUrl = (value: string): ParsedExternalMedia | null
 export const isValidExternalMediaUrl = (value: string): boolean => parseExternalMediaUrl(value) !== null;
 
 interface ExternalMediaProps { url?: string | null; title?: string; className?: string; compact?: boolean; fit?: 'cover' | 'contain'; }
+const ExternalMediaFallback: React.FC<{ url: string; message?: string }> = ({ url, message = "Si le contenu ne s’affiche pas, vous pouvez l’ouvrir directement sur sa plateforme." }) => (
+  <div className="flex flex-col items-center gap-2 px-4 py-3 text-center" style={{ background: '#f8fafc' }}>
+    <span style={{ color: '#64748b', fontSize: 12 }}>{message}</span>
+    <a href={url} target="_blank" rel="noopener noreferrer" role="button" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: 999, padding: '9px 16px', background: '#1d4ed8', color: '#fff', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+      Voir le contenu sur la plateforme ↗
+    </a>
+  </div>
+);
+
 export const ExternalMedia: React.FC<ExternalMediaProps> = ({ url, title = 'Média externe', className = '', compact = false, fit = 'contain' }) => {
+  const [loadError, setLoadError] = useState(false);
+  useEffect(() => { setLoadError(false); }, [url]);
   const legacyImage = typeof url === 'string' && /^data:image\/(?:jpeg|png|gif|webp);base64,/i.test(url);
   const media = url ? parseExternalMediaUrl(url) : null;
   const frameStyle: React.CSSProperties = { width: '100%', height: '100%', minHeight: compact ? 150 : 220, aspectRatio: '16 / 9', overflow: 'hidden', borderRadius: 12, background: '#f1f5f9' };
   const mediaStyle: React.CSSProperties = { display: 'block', width: '100%', height: '100%', minHeight: compact ? 150 : 220, objectFit: fit, border: 0 };
   if (legacyImage && url) return <div className={className} style={frameStyle}><img src={url} alt={title} loading="lazy" style={mediaStyle} /></div>;
   if (!media) return <div className={className} style={{ ...frameStyle, display: 'grid', placeItems: 'center', padding: 16, color: '#64748b', fontSize: 13 }}>Collez un lien HTTPS valide pour afficher l’aperçu.</div>;
-  if (media.kind === 'image') return <div className={className} style={frameStyle}><img src={media.url} alt={title} loading="lazy" referrerPolicy="no-referrer" style={mediaStyle} /></div>;
-  if (media.kind === 'video') return <div className={className} style={frameStyle}><video src={media.url} controls preload="metadata" playsInline style={mediaStyle}>Votre navigateur ne prend pas en charge la lecture vidéo.</video></div>;
-  if (media.kind === 'audio') return <div className={className} style={{ ...frameStyle, height: 'auto', minHeight: 90, aspectRatio: 'auto', display: 'flex', alignItems: 'center', padding: 16 }}><audio src={media.url} controls preload="metadata" style={{ width: '100%' }} /></div>;
-  if (media.embedUrl && ['youtube', 'facebook', 'drive'].includes(media.kind)) return <div className={className} style={frameStyle}><iframe src={media.embedUrl} title={title} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allow={media.kind === 'youtube' ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' : undefined} allowFullScreen style={mediaStyle} /></div>;
-  if (media.kind === 'pdf') return <div className={className} style={frameStyle}><iframe src={media.url} title={title} loading="lazy" style={mediaStyle} /></div>;
-  return <div className={className} style={{ ...frameStyle, minHeight: 110, height: 'auto', aspectRatio: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, padding: 16 }}><span style={{ color: '#475569', fontSize: 13, textAlign: 'center' }}>Aperçu intégré indisponible pour ce lien.</span><a href={media.url} target="_blank" rel="noopener noreferrer" style={{ color: '#1d4ed8', fontWeight: 700, fontSize: 13 }}>Ouvrir le média externe ↗</a></div>;
+  if (loadError) return <div className={className} style={{ ...frameStyle, height: 'auto', minHeight: 110, aspectRatio: 'auto' }}><ExternalMediaFallback url={media.url} message="Ce média ne peut pas être chargé ici." /></div>;
+  if (media.kind === 'image') return <div className={className} style={frameStyle}><img src={media.url} alt={title} loading="lazy" referrerPolicy="no-referrer" onError={() => setLoadError(true)} style={mediaStyle} /></div>;
+  if (media.kind === 'video') return <div className={className} style={frameStyle}><video src={media.url} controls preload="metadata" playsInline onError={() => setLoadError(true)} style={mediaStyle}>Votre navigateur ne prend pas en charge la lecture vidéo.</video></div>;
+  if (media.kind === 'audio') return <div className={className} style={{ ...frameStyle, height: 'auto', minHeight: 90, aspectRatio: 'auto', display: 'flex', alignItems: 'center', padding: 16 }}><audio src={media.url} controls preload="metadata" onError={() => setLoadError(true)} style={{ width: '100%' }} /></div>;
+  if (media.embedUrl && ['youtube', 'facebook', 'drive'].includes(media.kind)) return <div className={className} style={frameStyle}><iframe src={media.embedUrl} title={title} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allow={media.kind === 'youtube' ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' : undefined} allowFullScreen style={mediaStyle} /><ExternalMediaFallback url={media.url} message="Si le lecteur est bloqué par la plateforme ou ne se charge pas, ouvrez le contenu directement." /></div>;
+  if (media.kind === 'pdf') return <div className={className} style={frameStyle}><iframe src={media.url} title={title} loading="lazy" style={mediaStyle} /><ExternalMediaFallback url={media.url} message="Si le document ne s’affiche pas dans l’aperçu, ouvrez-le directement." /></div>;
+  return <div className={className} style={{ ...frameStyle, minHeight: 110, height: 'auto', aspectRatio: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 10, padding: 16 }}><span style={{ color: '#475569', fontSize: 13, textAlign: 'center' }}>Aperçu intégré indisponible pour ce lien.</span><ExternalMediaFallback url={media.url} message="Ce type de lien doit être consulté sur sa plateforme d’origine." /></div>;
 };
 
 interface ExternalMediaFieldProps { label: string; value: string; onChange: (value: string) => void; placeholder?: string; helperText?: string; }
