@@ -1158,3 +1158,72 @@
 .landing-page-container :is(a,button,input,select,textarea):focus-visible { outline: 3px solid rgba(244,196,48,.9); outline-offset: 3px; }
 @media(max-width:767px) { .landing-page-container .hero-section { padding-block: 4rem; } .landing-page-container .hero-buttons { display: grid; grid-template-columns: 1fr; width: min(100%,24rem); margin-inline: auto; } .landing-page-container .hero-buttons .btn-lp { width: 100%; } .landing-page-container .lp-section { padding-inline: 1.15rem; } }
 @media(prefers-reduced-motion:reduce) { .landing-page-container .btn-lp,.landing-page-container .domain-card,.landing-page-container .news-card,.landing-page-container .contact-card { transition: none; } }
+
+
+/* =========================================================
+   PREMIUM PUBLIC EXPERIENCE — association institutional UI
+   ========================================================= */
+.landing-page-container { color:#24364b; background:#fbfcfe; }
+.landing-page-container .header { backdrop-filter:blur(16px); background:rgba(10,61,98,.96)!important; }
+.landing-page-container .stats-section { padding:clamp(3rem,7vw,5rem) 1.25rem; background:linear-gradient(135deg,#082f4d,#0a3d62 62%,#14577f); color:#fff; }
+.landing-page-container .stats-section .lp-section-header { text-align:center; }
+.landing-page-container .stats-section .lp-section-title { color:#fff; }
+.landing-page-container .stats-section .lp-section-subtitle { color:rgba(255,255,255,.76); }
+.landing-page-container .stats-section .lp-section-eyebrow { color:#f4c430; }
+.landing-page-container .stat-card { min-height:132px; padding:1.4rem 1rem; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; background:rgba(255,255,255,.09); border:1px solid rgba(244,196,48,.35); backdrop-filter:blur(10px); }
+.landing-page-container .stat-value { color:#f4c430; font-size:clamp(2rem,5vw,3rem); font-weight:850; letter-spacing:-.04em; line-height:1.1; }
+.landing-page-container .stat-label { margin-top:.55rem; color:rgba(255,255,255,.88); font-size:.82rem; font-weight:650; }
+.landing-page-container .lp-section-header { max-width:760px; margin-inline:auto; text-align:center; }
+.landing-page-container .lp-section-eyebrow { color:#b88712; letter-spacing:.14em; }
+.landing-page-container .lp-section-title { letter-spacing:-.035em; }
+.landing-page-container .news-card { display:flex; flex-direction:column; min-width:0; }
+.landing-page-container .news-image { min-height:210px; }
+.landing-page-container .news-image .external-media-trigger { width:100%; height:100%; min-height:210px; }
+.landing-page-container .news-body { display:flex; flex:1; flex-direction:column; align-items:flex-start; }
+.landing-page-container .news-desc { display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.landing-page-container .news-link { border:0; padding:.35rem 0; background:transparent; cursor:pointer; font:inherit; color:#0a3d62; font-weight:800; margin-top:auto; }
+.landing-page-container .news-link:hover { color:#a8790d; }
+.landing-page-container .report-item { align-items:center; gap:1rem; }
+.landing-page-container .report-preview { width:124px; flex:0 0 124px; text-align:center; }
+.landing-page-container .report-preview .external-media-trigger { min-height:74px; }
+.landing-page-container .report-preview .external-media-trigger > div { min-height:74px!important; }
+.landing-page-container .report-preview__label { display:block; margin-top:.35rem; color:#0a3d62; font-size:.72rem; font-weight:750; }
+.external-media-trigger { position:relative; display:block; width:100%; min-width:0; padding:0; overflow:hidden; border:0; border-radius:12px; background:#edf2f7; text-align:inherit; cursor:zoom-in; }
+.external-media-trigger:focus-visible { outline:3px solid #f4c430; outline-offset:3px; }
+.external-media-open-hint { position:absolute; right:12px; bottom:12px; display:flex; align-items:center; gap:6px; padding:7px 11px; border:1px solid rgba(255,255,255,.25); border-radius:999px; background:rgba(7,35,57,.86); color:white; font-size:12px; font-weight:750; box-shadow:0 5px 18px rgba(0,0,0,.2); }
+.external-media-unavailable { min-height:150px; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.45rem; padding:1.25rem; color:#526579; text-align:center; background:linear-gradient(145deg,#f7f9fc,#edf2f7); font-size:.85rem; }
+.external-media-unavailable > span:first-child { color:#b88712; font-size:1.6rem; }
+.external-media-unavailable strong { color:#0a3d62; }
+.external-media-unavailable small { max-width:100%; overflow-wrap:anywhere; opacity:.7; }
+.external-media-audio { display:flex; align-items:center; justify-content:center; width:100%; min-height:110px; padding:1rem; background:#eef3f8; }
+.external-media-audio audio { width:100%; }
+.external-media-modal,.news-article-modal { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:clamp(.5rem,3vw,2rem); background:rgba(3,17,30,.82); backdrop-filter:blur(10px); }
+.external-media-dialog,.news-article-dialog { width:min(100%,1080px); max-height:min(92vh,1000px); display:flex; flex-direction:column; overflow:hidden; border:1px solid rgba(244,196,48,.25); border-radius:20px; background:#fff; box-shadow:0 28px 90px rgba(0,0,0,.38); }
+.external-media-dialog__header,.news-article-dialog > header { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.25rem; color:white; background:#0a3d62; }
+.external-media-dialog__header span,.news-article-dialog .lp-section-eyebrow { color:#f4c430; font-size:.65rem; font-weight:800; letter-spacing:.14em; }
+.external-media-dialog__header h2,.news-article-dialog h2 { margin:.2rem 0 0; color:#fff; font-size:clamp(1rem,3vw,1.35rem); line-height:1.3; }
+.external-media-dialog__header button,.news-article-dialog > header button { flex:0 0 44px; width:44px; height:44px; border:1px solid rgba(255,255,255,.3); border-radius:50%; background:rgba(255,255,255,.1); color:white; font-size:1.8rem; cursor:pointer; }
+.external-media-dialog__content { display:flex; align-items:center; justify-content:center; min-height:180px; padding:clamp(.5rem,2vw,1.25rem); overflow:auto; background:#101c29; }
+.external-media-dialog__content > img,.external-media-dialog__content > video,.external-media-dialog__content > iframe { width:100%; max-width:100%; max-height:76vh; min-height:min(68vh,680px); border:0; border-radius:8px; object-fit:contain; background:#101c29; }
+.external-media-dialog__content .external-media-audio { max-width:700px; border-radius:12px; }
+.external-media-dialog > footer,.news-article-dialog > footer { padding:.8rem 1.2rem; color:#738195; background:#f7f9fc; font-size:.72rem; text-align:center; }
+.news-article-dialog { width:min(100%,820px); }
+.news-article-dialog > header p { margin:.4rem 0 0; color:rgba(255,255,255,.72); font-size:.78rem; }
+.news-article-media { max-height:42vh; padding:1rem 1.25rem 0; background:#f7f9fc; }
+.news-article-media .external-media-trigger { max-height:38vh; }
+.news-article-media .external-media-trigger > div { max-height:38vh; }
+.news-article-copy { padding:1.5rem clamp(1.1rem,4vw,2.2rem); overflow:auto; color:#405268; line-height:1.85; white-space:pre-line; }
+@media(max-width:640px) {
+ .external-media-modal,.news-article-modal { align-items:flex-end; padding:0; }
+ .external-media-dialog,.news-article-dialog { width:100%; max-height:94dvh; border-radius:18px 18px 0 0; }
+ .external-media-dialog__content { min-height:220px; padding:.45rem; }
+ .external-media-dialog__content > img,.external-media-dialog__content > video,.external-media-dialog__content > iframe { min-height:58vh; max-height:68vh; }
+ .news-article-dialog { max-height:92dvh; }
+ .news-article-dialog > header { padding:.9rem 1rem; }
+ .landing-page-container .report-item { align-items:flex-start; }
+ .landing-page-container .report-preview { width:96px; flex-basis:96px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .landing-page-container .reveal { opacity:1; transform:none; transition:none; }
+ .landing-page-container *, .landing-page-container *::before, .landing-page-container *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; }
+}
