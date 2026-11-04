@@ -393,7 +393,7 @@ export const CommunicateurDashboard: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon' | 'en_attente_validation') => {
+  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon' | 'en_attente_validation' | 'archive') => {
     const title = formTitle.trim();
     const description = formDescription.trim();
 
