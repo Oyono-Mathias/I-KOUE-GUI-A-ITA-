@@ -169,7 +169,7 @@ export const LandingPage = () => {
       (error) => console.warn('Erreur chargement CMS landing:', error)
     );
 
-    const unsubNews = onSnapshot(query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(6)),
+    const unsubNews = onSnapshot(query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(30)),
       (snapshot) => {
         if (!active) return;
         finishNews(); markLoaded('news');
@@ -434,7 +434,7 @@ export const LandingPage = () => {
                   </div>
                 ) : (
                   news.map((item) => (
-                    <div key={item.id} className="news-card reveal">
+                    <div key={item.id} id={`actualites-${item.id}`} className="news-card reveal">
                         <div className="news-image">
                             {(item.imageUrl || item.image_url || item.videoUrl || item.mediaUrl) ? (
                               <ExternalMedia url={item.videoUrl || item.mediaUrl || item.imageUrl || item.image_url} title={item.title} compact fit="cover" lightbox />
@@ -456,7 +456,7 @@ export const LandingPage = () => {
               </div>
 
               <div style={{ textAlign: 'center', marginTop: '32px' }} className="reveal">
-                  <a href="#contact" className="btn-lp btn-lp-blue">📰 Voir toutes les actualités</a>
+                  <span className="lp-section-subtitle">Les dernières publications de l’association</span>
               </div>
           </div>
       </section>
