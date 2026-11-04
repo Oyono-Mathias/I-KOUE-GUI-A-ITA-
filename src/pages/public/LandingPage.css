@@ -1234,3 +1234,7 @@
 .news-article-dialog > header > div { min-width:0; }
 .news-article-dialog > header h2 { overflow-wrap:anywhere; }
 @media(max-width:640px) { .landing-page-container .news-grid { gap:1rem; } .landing-page-container .news-image { min-height:190px; } }
+
+
+/* Explicit Firestore loading and empty states: never leave indefinite skeletons. */
+.landing-page-container .lp-data-state { grid-column: 1 / -1; display:flex; min-height:7rem; align-items:center; justify-content:center; padding:1.5rem; border:1px solid rgba(10,61,98,.1); border-radius:14px; background:#f4f7fa; color:#526579; text-align:center; font-size:.95rem; line-height:1.6; }
