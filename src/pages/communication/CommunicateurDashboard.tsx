@@ -15,6 +15,8 @@ import {
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { Home, Newspaper, Images, Menu, X, Bell, LogOut, Plus, Upload, Eye, MessageCircle, FileText, Video, Image as ImageIcon, Copy, Check, List, LayoutGrid, ArrowUpDown, Clock3, Megaphone } from 'lucide-react';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import '../../styles/communicateur.css';
 
 // Types
@@ -24,7 +26,7 @@ interface NewsItem {
   description: string;
   content?: string;
   category: string;
-  status: 'publie' | 'brouillon' | 'archive';
+  status: 'publie' | 'brouillon' | 'en_attente_validation' | 'archive';
   views?: number;
   featured?: boolean;
   imageUrl?: string;
@@ -102,6 +104,12 @@ export const CommunicateurDashboard: React.FC = () => {
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [newsViewMode, setNewsViewMode] = useState<'grid' | 'list'>('list');
+  const [newsSort, setNewsSort] = useState<'date' | 'views'>('date');
+  const [previewNews, setPreviewNews] = useState<NewsItem | null>(null);
+  const [mediaTypeFilter, setMediaTypeFilter] = useState<'all' | 'image' | 'video' | 'document'>('all');
+  const [copiedMediaId, setCopiedMediaId] = useState<string | null>(null);
 
   // Real-time collections state
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -126,7 +134,7 @@ export const CommunicateurDashboard: React.FC = () => {
   const [formDescription, setFormDescription] = useState<string>('');
   const [formContent, setFormContent] = useState<string>('');
   const [formCategory, setFormCategory] = useState<string>('education');
-  const [formStatus, setFormStatus] = useState<'publie' | 'brouillon' | 'archive'>('brouillon');
+  const [formStatus, setFormStatus] = useState<'publie' | 'brouillon' | 'en_attente_validation' | 'archive'>('brouillon');
   const [formFeatured, setFormFeatured] = useState<boolean>(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [uploadText, setUploadText] = useState<string>('Cliquez pour uploader une image');
@@ -275,7 +283,7 @@ export const CommunicateurDashboard: React.FC = () => {
   // 🔍 FILTERED LISTS
   // -------------------------------------------------------------
   const filteredNews = useMemo(() => {
-    return news.filter(item => {
+    const filtered = news.filter(item => {
       const search = newsSearch.toLowerCase();
       const matchSearch = !search || 
         item.title.toLowerCase().includes(search) || 
@@ -284,7 +292,10 @@ export const CommunicateurDashboard: React.FC = () => {
       const matchStat = !filterStatus || item.status === filterStatus;
       return matchSearch && matchCat && matchStat;
     });
-  }, [news, newsSearch, filterCategory, filterStatus]);
+    return filtered.sort((a, b) => newsSort === 'views'
+      ? (b.views || 0) - (a.views || 0)
+      : (b.createdAt?.seconds || new Date(b.createdAt || 0).getTime() / 1000) - (a.createdAt?.seconds || new Date(a.createdAt || 0).getTime() / 1000));
+  }, [news, newsSearch, filterCategory, filterStatus, newsSort]);
 
   const filteredMessages = useMemo(() => {
     if (!messageFilter) return messages;
@@ -293,9 +304,30 @@ export const CommunicateurDashboard: React.FC = () => {
 
   const filteredMedia = useMemo(() => {
     const search = mediaSearch.toLowerCase();
-    if (!search) return media;
-    return media.filter(m => m.name.toLowerCase().includes(search));
-  }, [media, mediaSearch]);
+    return media.filter(item => {
+      const type = item.type || (item.name?.toLowerCase().endsWith('.pdf') ? 'document' : 'image');
+      return (!search || item.name.toLowerCase().includes(search)) && (mediaTypeFilter === 'all' || type === mediaTypeFilter);
+    });
+  }, [media, mediaSearch, mediaTypeFilter]);
+
+  const mediaStorageBytes = useMemo(() => media.reduce((total, item) => total + (Number(item.size) || 0), 0), [media]);
+  const storageReferenceBytes = 100 * 1024 * 1024;
+  const storagePercent = Math.min(100, (mediaStorageBytes / storageReferenceBytes) * 100);
+  const formatBytes = (bytes: number) => bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} Ko` : `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+
+  const activityFeed = useMemo(() => [
+    ...news.map(item => ({ id: `news-${item.id}`, title: item.title, detail: item.status === 'publie' ? 'Actualité publiée' : item.status === 'en_attente_validation' ? 'En attente de validation' : 'Actualité mise à jour', date: item.updatedAt || item.createdAt, icon: 'news' })),
+    ...messages.map(item => ({ id: `message-${item.id}`, title: item.subject || 'Message visiteur', detail: `Message de ${item.name}`, date: item.createdAt, icon: 'message' })),
+    ...media.map(item => ({ id: `media-${item.id}`, title: item.name, detail: 'Média ajouté à la bibliothèque', date: item.uploadedAt, icon: 'media' }))
+  ].filter(item => item.date).sort((a, b) => {
+    const time = (value: any) => value?.seconds ? value.seconds * 1000 : new Date(value).getTime();
+    return time(b.date) - time(a.date);
+  }).slice(0, 6), [news, messages, media]);
+
+  const audienceData = useMemo(() => [
+    { label: 'Vues des actualités', value: stats.totalViews },
+    { label: 'Messages reçus', value: stats.totalMessages }
+  ], [stats.totalViews, stats.totalMessages]);
 
   // -------------------------------------------------------------
   // 🧭 HELPERS & ACTIONS
@@ -308,7 +340,9 @@ export const CommunicateurDashboard: React.FC = () => {
       juridique: '⚖️ Juridique',
       humanitaire: '🤝 Humanitaire',
       jeunesse: '🎯 Jeunesse',
-      evenement: '🎉 Événement'
+      evenement: '🎉 Événement',
+      urgence: '🚨 Urgence',
+      vie_association: '🤝 Vie de l’association'
     };
     return labels[cat] || cat;
   };
@@ -390,7 +424,7 @@ export const CommunicateurDashboard: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon') => {
+  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon' | 'en_attente_validation' | 'archive') => {
     const title = formTitle.trim();
     const description = formDescription.trim();
 
@@ -431,7 +465,7 @@ export const CommunicateurDashboard: React.FC = () => {
         }
         await addDoc(collection(db, 'news'), data);
       }
-      alert(effectiveStatus === 'publie' ? '✅ Actualité publiée avec succès !' : '💾 Brouillon sauvegardé !');
+      alert(effectiveStatus === 'publie' ? '✅ Actualité publiée avec succès !' : effectiveStatus === 'en_attente_validation' ? '📨 Actualité envoyée en attente de validation.' : '💾 Brouillon sauvegardé !');
       setActiveTab('news');
       window.scrollTo(0, 0);
     } catch (error: any) {
@@ -466,8 +500,18 @@ export const CommunicateurDashboard: React.FC = () => {
 
   // Media upload
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+    const files = Array.from(e.target.files || []) as File[];
     files.forEach(file => {
+      // Les médias sont actuellement stockés en data URL dans Firestore (limite de 1 Mio/document).
+      // Refuser les fichiers trop volumineux évite les écritures impossibles et la surcharge du document.
+      if (file.size > 700 * 1024) {
+        alert(`Le fichier « ${file.name} » dépasse la limite sûre de 700 Ko. Le stockage Firebase Storage sera nécessaire pour les gros fichiers et les vidéos.`);
+        return;
+      }
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        alert(`Le format « ${file.type || 'inconnu'} » n’est pas encore pris en charge pour l’envoi.`);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = async (evt) => {
         const url = evt.target?.result as string;
@@ -475,7 +519,7 @@ export const CommunicateurDashboard: React.FC = () => {
           await addDoc(collection(db, 'media'), {
             url,
             name: (file as File).name,
-            type: (file as File).type.startsWith('image/') ? 'image' : 'document',
+            type: (file as File).type.startsWith('image/') ? 'image' : (file as File).type.startsWith('video/') ? 'video' : 'document',
             size: (file as File).size,
             uploadedAt: serverTimestamp(),
             uploadedBy: 'communicateur'
@@ -677,7 +721,7 @@ export const CommunicateurDashboard: React.FC = () => {
       {/* ============================================
            🧭 HEADER
            ============================================ */}
-      <header className="dashboard-header">
+      <header className="dashboard-header communicator-header">
         <div className="header-top">
           <div className="logo-container">
             <div className="logo">IK</div>
@@ -689,7 +733,7 @@ export const CommunicateurDashboard: React.FC = () => {
           <div className="header-actions">
             <div style={{ position: 'relative' }}>
               <button className="header-btn" onClick={toggleNotifications} aria-label="Notifications">
-                🔔
+                <Bell size={18} />
                 {stats.unreadMessages > 0 && (
                   <span className="notif-badge" id="notifCount">{stats.unreadMessages}</span>
                 )}
@@ -727,14 +771,14 @@ export const CommunicateurDashboard: React.FC = () => {
                 </div>
               )}
             </div>
-            <button className="header-btn" onClick={handleLogout} aria-label="Déconnexion" title="Se déconnecter">🚪</button>
+            <button className="header-btn" onClick={handleLogout} aria-label="Déconnexion" title="Se déconnecter"><LogOut size={18} /></button>
           </div>
         </div>
         <div className="member-info-bar">
-          <div className="member-avatar" id="userAvatar">📢</div>
+          <div className="member-avatar" id="userAvatar"><Megaphone size={22} /></div>
           <div className="member-details">
             <div className="member-name" id="userName">{userData?.displayName || 'Chargé de Communication'}</div>
-            <div className="member-role">📢 Communicateur</div>
+            <div className="member-role">Communicateur</div>
           </div>
           <div className="member-badge">Admin</div>
         </div>
@@ -743,72 +787,30 @@ export const CommunicateurDashboard: React.FC = () => {
       {/* ============================================
            📱 TAB NAVIGATION
            ============================================ */}
-      <nav className="tab-nav">
-        <button 
-          className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📊</span>
-          <span>Dashboard</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'news' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('news'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📰</span>
-          <span>Actualités</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'domains' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('domains'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🌍</span>
-          <span>Domaines</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('landing'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🏠</span>
-          <span>Landing</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('media'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🖼️</span>
-          <span>Médias</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'board_messages' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('messages'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🌍</span>
-          <span>Public</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'board_messages' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('board_messages'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">💬</span>
-          <span>Bureau</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'calendrier' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('calendrier'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📅</span>
-          <span>Calendrier</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('analytics'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📈</span>
-          <span>Analytics</span>
-        </button>
+      <nav className="tab-nav communicator-primary-nav" aria-label="Navigation principale">
+        <button className={activeTab === "dashboard" ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("dashboard"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><Home size={18} /><span>Accueil</span></button>
+        <button className={["news", "news-editor"].includes(activeTab) ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("news"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><Newspaper size={18} /><span>CMS</span></button>
+        <button className={activeTab === "media" ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("media"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><Images size={18} /><span>Médiathèque</span></button>
+        <button className="tab-btn" aria-expanded={isMenuOpen} aria-controls="communicator-drawer" onClick={() => setIsMenuOpen(open => !open)}><Menu size={18} /><span>Menu</span></button>
       </nav>
-
+      {isMenuOpen && (
+        <div className="communicator-drawer-backdrop" onClick={() => setIsMenuOpen(false)}>
+          <aside id="communicator-drawer" className="communicator-drawer" aria-label="Menu Communicateur" onClick={e => e.stopPropagation()}>
+            <div className="communicator-drawer-header"><strong>Menu Communicateur</strong><button type="button" aria-label="Fermer le menu" onClick={() => setIsMenuOpen(false)}><X size={18} /></button></div>
+            <div className="communicator-drawer-group"><span className="communicator-drawer-label">Communication</span>
+              <button onClick={() => { setActiveTab("messages"); setIsMenuOpen(false); }}><MessageCircle size={17} /> Messages des visiteurs</button>
+              <button onClick={() => { setActiveTab("board_messages"); setIsMenuOpen(false); }}><MessageCircle size={17} /> Messages du bureau</button>
+              <button onClick={() => { setActiveTab("calendrier"); setIsMenuOpen(false); }}><Clock3 size={17} /> Événements & calendrier éditorial</button>
+            </div>
+            <div className="communicator-drawer-group"><span className="communicator-drawer-label">Pilotage & site</span>
+              <button onClick={() => { setActiveTab("analytics"); setIsMenuOpen(false); }}><Eye size={17} /> Portée & engagement</button>
+              <button onClick={() => { setActiveTab("domains"); setIsMenuOpen(false); }}><Images size={17} /> Domaines d’intervention</button>
+              <button onClick={() => { setActiveTab("landing"); setIsMenuOpen(false); }}><Home size={17} /> Paramètres du site</button>
+            </div>
+            <div className="communicator-coming-soon"><span>Diffusion SMS <small>Bientôt disponible</small></span><span>E-mails groupés <small>Bientôt disponible</small></span><span>Notifications Push <small>Bientôt disponible</small></span></div>
+          </aside>
+        </div>
+      )}
       {/* ============================================
             TAB 1: DASHBOARD
            ============================================ */}
@@ -852,6 +854,12 @@ export const CommunicateurDashboard: React.FC = () => {
             <h3 className="card-title">⚡ Actions rapides</h3>
           </div>
           <div className="quick-actions">
+            <button type="button" className="quick-action" onClick={() => { openNewsEditor(); setFormCategory('urgence'); }}>
+              <div className="qa-icon"><Plus size={24} /></div><div className="qa-title">Créer une alerte</div><div className="qa-subtitle">Nouvelle actualité urgente</div>
+            </button>
+            <button type="button" className="quick-action" onClick={() => { setActiveTab('media'); setMediaTypeFilter('all'); mediaInputRef.current?.click(); }}>
+              <div className="qa-icon"><Upload size={24} /></div><div className="qa-title">Uploader un média</div><div className="qa-subtitle">Image, vidéo ou PDF</div>
+            </button>
             <div className="quick-action" onClick={() => openNewsEditor()}>
               <div className="qa-icon">✏️</div>
               <div className="qa-title">Nouvelle actualité</div>
@@ -883,6 +891,17 @@ export const CommunicateurDashboard: React.FC = () => {
               <div className="qa-subtitle">Vues & engagement</div>
             </div>
           </div>
+        </div>
+
+        <div className="card communicator-audience-card">
+          <div className="card-header"><h3 className="card-title">Audience & engagement</h3><span className="communicator-muted">Données disponibles</span></div>
+          <div className="communicator-chart"><ResponsiveContainer width="100%" height={230}><BarChart data={audienceData} margin={{ top: 8, right: 12, left: -18, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" vertical={false} /><XAxis dataKey="label" tick={{ fontSize: 11 }} /><YAxis allowDecimals={false} tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="value" fill="#2876b8" radius={[7, 7, 0, 0]} /></BarChart></ResponsiveContainer></div>
+          <p className="communicator-chart-caption">Les messages reçus sont présentés comme indicateur d’interaction, et non comme un taux d’engagement calculé.</p>
+        </div>
+
+        <div className="card">
+          <div className="card-header"><h3 className="card-title">Activité récente</h3><Clock3 size={17} /></div>
+          <div className="communicator-activity-list">{activityFeed.length ? activityFeed.map(activity => <div className="communicator-activity" key={activity.id}><span className="communicator-activity-icon">{activity.icon === 'news' ? <Newspaper size={17} /> : activity.icon === 'message' ? <MessageCircle size={17} /> : <Images size={17} />}</span><div><strong>{activity.title}</strong><small>{activity.detail} · {formatDate(activity.date)}</small></div></div>) : <p className="communicator-muted">Aucune activité récente disponible.</p>}</div>
         </div>
 
         {/* Alertes */}
@@ -970,6 +989,8 @@ export const CommunicateurDashboard: React.FC = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
             >
               <option value="">Toutes catégories</option>
+              <option value="urgence">🚨 Urgence</option>
+              <option value="vie_association">🤝 Vie de l’association</option>
               <option value="education">📚 Éducation</option>
               <option value="sante">🏥 Santé</option>
               <option value="agriculture">🌱 Agriculture</option>
@@ -985,14 +1006,19 @@ export const CommunicateurDashboard: React.FC = () => {
             >
               <option value="">Tous statuts</option>
               <option value="brouillon">Brouillon</option>
+              <option value="en_attente_validation">En attente de validation</option>
               <option value="publie">Publié</option>
               <option value="archive">Archivé</option>
             </select>
           </div>
         </div>
 
+        <div className="communicator-news-toolbar">
+          <div className="communicator-view-switch" role="group" aria-label="Mode d’affichage"><button type="button" className={newsViewMode === 'grid' ? 'active' : ''} onClick={() => setNewsViewMode('grid')} aria-label="Vue grille"><LayoutGrid size={17} /></button><button type="button" className={newsViewMode === 'list' ? 'active' : ''} onClick={() => setNewsViewMode('list')} aria-label="Vue liste"><List size={17} /></button></div>
+          <label className="communicator-sort"><ArrowUpDown size={15} /><select value={newsSort} onChange={e => setNewsSort(e.target.value as 'date' | 'views')}><option value="date">Trier par date</option><option value="views">Trier par vues</option></select></label>
+        </div>
         {/* Liste */}
-        <div id="newsList">
+        <div id="newsList" className={newsViewMode === 'grid' ? 'communicator-news-grid' : 'communicator-news-list'}>
           {loadingInitial ? (
             <>
               <div className="skeleton" style={{ height: '120px', marginBottom: '12px' }}></div>
@@ -1008,7 +1034,7 @@ export const CommunicateurDashboard: React.FC = () => {
             </div>
           ) : (
             filteredNews.map(item => (
-              <div className="news-item" key={item.id}>
+              <div className={`news-item ${newsViewMode === 'grid' ? 'news-item-grid' : ''}`} key={item.id}>
                 <div className="news-item-header">
                   {item.imageUrl ? (
                     <img src={item.imageUrl} className="news-item-image" alt={item.title} />
@@ -1019,7 +1045,7 @@ export const CommunicateurDashboard: React.FC = () => {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
                       <span className={`badge cat-${item.category}`}>{getCategoryLabel(item.category)}</span>
                       <span className={`badge badge-${item.status === 'publie' ? 'success' : item.status === 'brouillon' ? 'gray' : 'warning'}`}>
-                        {item.status === 'publie' ? '✓ Publié' : item.status === 'brouillon' ? '📝 Brouillon' : '📦 Archivé'}
+                        {item.status === 'publie' ? '✓ Publié' : item.status === 'brouillon' ? '📝 Brouillon' : item.status === 'en_attente_validation' ? '⏳ En attente de validation' : '📦 Archivé'}
                       </span>
                       {item.featured && <span className="badge badge-gold">⭐ À la une</span>}
                     </div>
@@ -1033,6 +1059,7 @@ export const CommunicateurDashboard: React.FC = () => {
                 </div>
                 <div className="news-item-actions">
                   <button className="btn btn-primary btn-small" onClick={() => openNewsEditor(item.id)}>✏️ Modifier</button>
+                  <button className="btn btn-outline btn-small" onClick={() => setPreviewNews(item)}><Eye size={14} /> Aperçu</button>
                   {item.status !== 'publie' && (
                     <button className="btn btn-success btn-small" onClick={() => publishNews(item.id)}>🚀 Publier</button>
                   )}
@@ -1042,6 +1069,7 @@ export const CommunicateurDashboard: React.FC = () => {
             ))
           )}
         </div>
+        {previewNews && <div className="communicator-preview-backdrop" role="presentation" onClick={() => setPreviewNews(null)}><section className="communicator-preview-modal" role="dialog" aria-modal="true" aria-label="Aperçu de l’actualité" onClick={e => e.stopPropagation()}><div className="communicator-preview-head"><strong>Aperçu Landing Page</strong><button type="button" onClick={() => setPreviewNews(null)} aria-label="Fermer"><X size={18} /></button></div>{previewNews.imageUrl && <img src={previewNews.imageUrl} alt="" /> }<span className="badge">{getCategoryLabel(previewNews.category)}</span><h2>{previewNews.title}</h2><p>{previewNews.description}</p><div className="communicator-muted">Aperçu local · aucune publication effectuée</div></section></div>}
       </div>
 
       {/* ============================================
@@ -1057,7 +1085,7 @@ export const CommunicateurDashboard: React.FC = () => {
           ← Retour à la liste
         </button>
 
-        <form onSubmit={(e) => { e.preventDefault(); saveNewsData('publie'); }}>
+        <form onSubmit={(e) => { e.preventDefault(); saveNewsData(formStatus); }}>
           <div className="card">
             <div className="form-group">
               <label>Titre <span className="required">*</span></label>
@@ -1125,6 +1153,8 @@ export const CommunicateurDashboard: React.FC = () => {
               <div className="form-group">
                 <label>Catégorie <span className="required">*</span></label>
                 <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} required>
+                  <option value="urgence">🚨 Urgence</option>
+                  <option value="vie_association">🤝 Vie de l’association</option>
                   <option value="education">📚 Éducation</option>
                   <option value="sante">🏥 Santé</option>
                   <option value="agriculture">🌱 Agriculture</option>
@@ -1138,6 +1168,7 @@ export const CommunicateurDashboard: React.FC = () => {
                 <label>Statut</label>
                 <select value={formStatus} onChange={(e) => setFormStatus(e.target.value as any)}>
                   <option value="brouillon">Brouillon</option>
+                  <option value="en_attente_validation">En attente de validation</option>
                   <option value="publie">Publié</option>
                   <option value="archive">Archivé</option>
                 </select>
@@ -1336,10 +1367,11 @@ export const CommunicateurDashboard: React.FC = () => {
           <p>Gérez vos images et documents</p>
         </div>
 
+        <div className="communicator-storage-card"><div><strong>Stockage utilisé</strong><span>{formatBytes(mediaStorageBytes)} répertoriés</span></div><div className="communicator-storage-track"><span style={{ width: `${storagePercent}%` }} /></div><small>Repère visuel indicatif de 100 Mo · ce n’est pas le quota Firebase du projet.</small></div>
         <div className="upload-zone" onClick={() => mediaInputRef.current?.click()} style={{ marginBottom: '16px' }}>
           <div className="upload-icon">📤</div>
           <p>Cliquez pour uploader des médias</p>
-          <small>JPG, PNG, PDF (max 10 MB)</small>
+          <small>JPG, PNG, PDF (max 700 Ko actuellement)</small>
         </div>
         <input 
           type="file" 
@@ -1358,6 +1390,7 @@ export const CommunicateurDashboard: React.FC = () => {
             value={mediaSearch}
             onChange={(e) => setMediaSearch(e.target.value)}
           />
+          <div className="communicator-media-filters"><button className={mediaTypeFilter === 'all' ? 'active' : ''} onClick={() => setMediaTypeFilter('all')}>Tous</button><button className={mediaTypeFilter === 'image' ? 'active' : ''} onClick={() => setMediaTypeFilter('image')}><ImageIcon size={14} /> Images</button><button className={mediaTypeFilter === 'video' ? 'active' : ''} onClick={() => setMediaTypeFilter('video')}><Video size={14} /> Vidéos</button><button className={mediaTypeFilter === 'document' ? 'active' : ''} onClick={() => setMediaTypeFilter('document')}><FileText size={14} /> PDF</button></div>
         </div>
 
         <div className="media-grid" id="mediaGrid">
@@ -1376,7 +1409,7 @@ export const CommunicateurDashboard: React.FC = () => {
                   if (item.url) window.open(item.url, '_blank');
                 }}
               >
-                {item.url ? (
+                {item.type === 'video' ? <video src={item.url} muted playsInline /> : item.type === 'image' ? (
                   <img src={item.url} alt={item.name} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px' }}>
@@ -1384,6 +1417,7 @@ export const CommunicateurDashboard: React.FC = () => {
                   </div>
                 )}
                 <div className="media-item-overlay">{item.name}</div>
+                <button type="button" className="media-copy-url" title="Copier l’URL" aria-label={`Copier l’URL de ${item.name}`} onClick={async e => { e.stopPropagation(); try { await navigator.clipboard.writeText(item.url); setCopiedMediaId(item.id); window.setTimeout(() => setCopiedMediaId(current => current === item.id ? null : current), 1800); } catch { alert('Impossible de copier cette URL sur cet appareil.'); } }}>{copiedMediaId === item.id ? <Check size={15} /> : <Copy size={15} />}</button>
               </div>
             ))
           )}
@@ -1573,33 +1607,12 @@ export const CommunicateurDashboard: React.FC = () => {
       {/* ============================================
            📱 BOTTOM NAV (mobile)
            ============================================ */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }} className={activeTab === 'dashboard' ? 'active' : ''}>
-          <span className="nav-icon">📊</span>
-          <span>Dashboard</span>
-        </button>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('news'); window.scrollTo(0, 0); }} className={activeTab === 'news' ? 'active' : ''}>
-          <span className="nav-icon">📰</span>
-          <span>Actus</span>
-        </button>
-        <button onClick={() => { setActiveTab('board_messages'); window.scrollTo(0, 0); }} className={activeTab === 'board_messages' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">💬</span>
-          <span>Bureau</span>
-        </button>
-        <button onClick={() => { setActiveTab('calendrier'); window.scrollTo(0, 0); }} className={activeTab === 'calendrier' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">📅</span>
-          <span>Calendrier</span>
-        </button>
-        <button onClick={() => { setActiveTab('messages'); window.scrollTo(0, 0); }} className={activeTab === 'messages' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">💬</span>
-          <span>Messages</span>
-        </button>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('analytics'); window.scrollTo(0, 0); }} className={activeTab === 'analytics' ? 'active' : ''}>
-          <span className="nav-icon">📈</span>
-          <span>Stats</span>
-        </button>
+      <nav className="bottom-nav communicator-bottom-nav" aria-label="Navigation rapide">
+        <button onClick={() => { setActiveTab("dashboard"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={activeTab === "dashboard" ? "active" : ""}><span className="nav-icon"><Home size={18} /></span><span>Accueil</span></button>
+        <button onClick={() => { setActiveTab("news"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={["news", "news-editor"].includes(activeTab) ? "active" : ""}><span className="nav-icon"><Newspaper size={18} /></span><span>CMS</span></button>
+        <button onClick={() => { setActiveTab("media"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={activeTab === "media" ? "active" : ""}><span className="nav-icon"><Images size={18} /></span><span>Médias</span></button>
+        <button onClick={() => setIsMenuOpen(open => !open)} aria-expanded={isMenuOpen}><span className="nav-icon"><Menu size={18} /></span><span>Menu</span></button>
       </nav>
-
       {/* ============================================
             WHATSAPP FAB
            ============================================ */}
