@@ -498,7 +498,7 @@ export const LandingPage = () => {
       )}
 
       {activeView === 'transparence' && (
-        <div className="landing-view landing-view--domaines" role="tabpanel">
+        <div className="landing-view landing-view--transparence" role="tabpanel">
       {/* TRANSPARENCE */}
       <section className="lp-section lp-section-alt" id="transparence">
           <div className="lp-container">
