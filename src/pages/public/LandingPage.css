@@ -1227,3 +1227,10 @@
  .landing-page-container .reveal { opacity:1; transform:none; transition:none; }
  .landing-page-container *, .landing-page-container *::before, .landing-page-container *::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; }
 }
+
+
+.external-media-embed-note { margin:0; padding:.55rem .8rem; color:#66778a; background:#f5f7fa; font-size:.7rem; line-height:1.45; text-align:center; }
+.external-media-dialog__content .external-media-embed-note { width:100%; color:#c5d1dc; background:#182a3c; }
+.news-article-dialog > header > div { min-width:0; }
+.news-article-dialog > header h2 { overflow-wrap:anywhere; }
+@media(max-width:640px) { .landing-page-container .news-grid { gap:1rem; } .landing-page-container .news-image { min-height:190px; } }
