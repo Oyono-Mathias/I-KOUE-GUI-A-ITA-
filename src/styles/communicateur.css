@@ -1356,3 +1356,10 @@
   .communicateur-page .communicator-sort select { max-width: 130px; }
   .communicateur-page .whatsapp-float { left: 12px; right: auto; bottom: calc(92px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .communicateur-page .communicator-storage-track span,
+  .communicateur-page .quick-action,
+  .communicateur-page .media-item img,
+  .communicateur-page .whatsapp-float { transition: none !important; }
+}
