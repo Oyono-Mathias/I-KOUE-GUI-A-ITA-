@@ -12,6 +12,7 @@ import {
   collection,
   doc,
   getDoc,
+  deleteDoc,
   getDocs,
   query,
   where,
@@ -401,9 +402,11 @@ test('Commentaire en attente : invisible aux autres visiteurs et validable uniqu
     moderatedBy: 'communicator-1',
   }));
   await assertSucceeds(getDoc(doc(visitorDb, 'news', 'story-2', 'comments', 'pending-2')));
+  const approvedComments = query(collection(visitorDb, 'news', 'story-2', 'comments'), where('status', '==', 'approved'));
+  await assertSucceeds(getDocs(approvedComments));
 });
 
-test('Un visiteur ne peut ni modifier ni supprimer le commentaire d’un autre auteur', async () => {
+test('Un visiteur ne peut pas modifier ou supprimer le commentaire d’un autre auteur', async () => {
   const db = dbFor('visitor-4');
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(namedDbForContext(context, 'owner'), 'news', 'story-3', 'comments', 'approved-3'), {
@@ -415,4 +418,5 @@ test('Un visiteur ne peut ni modifier ni supprimer le commentaire d’un autre a
     });
   });
   await assertFails(updateDoc(doc(db, 'news', 'story-3', 'comments', 'approved-3'), { text: 'Texte modifié' }));
+  await assertFails(deleteDoc(doc(db, 'news', 'story-3', 'comments', 'approved-3')));
 });
