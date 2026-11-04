@@ -77,23 +77,40 @@ export const ExternalMedia: React.FC<ExternalMediaProps> = ({ url, title = 'Méd
     if (media.kind === 'image') return <img src={media.url} alt={title} loading="lazy" referrerPolicy="no-referrer" onError={() => setLoadError(true)} style={style} />;
     if (media.kind === 'video') return <video src={media.url} controls preload="metadata" playsInline onError={() => setLoadError(true)} style={style}>Votre navigateur ne prend pas en charge la lecture vidéo.</video>;
     if (media.kind === 'audio') return <div className="external-media-audio"><audio src={media.url} controls preload="metadata" onError={() => setLoadError(true)} /></div>;
-    if (media.embedUrl && ['youtube', 'facebook', 'drive'].includes(media.kind)) return <><iframe src={media.embedUrl} title={title} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allow={media.kind === 'youtube' ? 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share' : 'autoplay; encrypted-media; picture-in-picture'} allowFullScreen style={style} onError={() => setLoadError(true)} /><p className="external-media-embed-note">Lecteur intégré · Si le contenu ne s’affiche pas, son auteur ou la plateforme peut limiter l’intégration. Vous restez sur le site de l’association.</p></>;
+    if (media.kind === 'youtube' && media.embedUrl) {
+      if (!inModal) {
+        const videoId = media.embedUrl.split('/').pop()?.split('?')[0] || '';
+        return <div className="external-media-youtube-preview" style={{ ...style, backgroundImage: `linear-gradient(0deg, rgba(4,18,32,.48), rgba(4,18,32,.12)), url(https://i.ytimg.com/vi/${videoId}/hqdefault.jpg)` }}>
+          <span className="external-media-youtube-play" aria-hidden="true">▶</span>
+          <span className="external-media-youtube-label">Lire la vidéo</span>
+        </div>;
+      }
+      return <>
+        <iframe src={media.embedUrl + '&autoplay=1&playsinline=1&modestbranding=1'} title={title} loading="eager" referrerPolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen style={style} />
+        <p className="external-media-embed-note">Lecteur YouTube intégré. Certaines vidéos peuvent rester soumises aux contrôles anti-robot, à l’âge ou aux restrictions d’intégration de YouTube.</p>
+      </>;
+    }
+    if (media.embedUrl && ['facebook', 'drive'].includes(media.kind)) return <><iframe src={media.embedUrl} title={title} loading="lazy" referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen style={style} onError={() => setLoadError(true)} /><p className="external-media-embed-note">Lecteur intégré · Si le contenu ne s’affiche pas, son auteur ou la plateforme peut limiter l’intégration. Vous restez sur le site de l’association.</p></>;
     if (media.kind === 'pdf') return <><iframe src={media.url + '#toolbar=0&navpanes=0'} title={title} loading="lazy" style={style} onError={() => setLoadError(true)} /><p className="external-media-embed-note">Visionneuse PDF intégrée · Si le serveur bloque l’affichage, le document peut être momentanément indisponible.</p></>;
     return unavailable(media.provider === 'external' ? undefined : media.provider);
   };
   const content = <div className={className} style={frameStyle}>{renderContent()}</div>;
-  if (!lightbox) return content;
+  const modal = modalOpen && <div className="external-media-modal" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setModalOpen(false); }}>
+    <section className="external-media-dialog" role="dialog" aria-modal="true" aria-label={title}>
+      <header className="external-media-dialog__header"><div><span>ESPACE MÉDIATHÈQUE</span><h2>{title}</h2></div><button type="button" onClick={() => setModalOpen(false)} aria-label="Fermer la visionneuse">×</button></header>
+      <div className="external-media-dialog__content">{renderContent(true)}</div>
+      <footer>Association I KOUE GUI A ITA · Ensemble · Volonté · Engagement</footer>
+    </section>
+  </div>;
+  if (!lightbox) {
+    if (media?.kind === 'youtube') return <><button type="button" className="external-media-trigger" onClick={() => setModalOpen(true)} aria-label={'Lire : ' + title}>{content}</button>{modal}</>;
+    return content;
+  }
   return <>
     <button type="button" className="external-media-trigger" onClick={() => setModalOpen(true)} aria-label={'Ouvrir : ' + title}>
       {content}<span className="external-media-open-hint">⌕ <span>Consulter</span></span>
     </button>
-    {modalOpen && <div className="external-media-modal" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setModalOpen(false); }}>
-      <section className="external-media-dialog" role="dialog" aria-modal="true" aria-label={title}>
-        <header className="external-media-dialog__header"><div><span>ESPACE MÉDIATHÈQUE</span><h2>{title}</h2></div><button type="button" onClick={() => setModalOpen(false)} aria-label="Fermer la visionneuse">×</button></header>
-        <div className="external-media-dialog__content">{renderContent(true)}</div>
-        <footer>Association I KOUE GUI A ITA · Ensemble · Volonté · Engagement</footer>
-      </section>
-    </div>}
+    {modal}
   </>;
 };
 
