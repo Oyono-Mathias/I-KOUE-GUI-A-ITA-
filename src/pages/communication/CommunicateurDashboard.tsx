@@ -15,7 +15,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Home, Newspaper, Images, Menu, X, Bell, LogOut, Plus, Upload, AlertTriangle, Eye, MessageCircle, FileText, Video, Image as ImageIcon, Copy, Check, List, LayoutGrid, ArrowUpDown, ExternalLink, CalendarDays, Clock3, Megaphone } from 'lucide-react';
+import { Home, Newspaper, Images, Menu, X, Bell, LogOut, Plus, Upload, Eye, MessageCircle, FileText, Video, Image as ImageIcon, Copy, Check, List, LayoutGrid, ArrowUpDown, Clock3, Megaphone } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import '../../styles/communicateur.css';
 
@@ -502,6 +502,16 @@ export const CommunicateurDashboard: React.FC = () => {
   const handleMediaUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     files.forEach(file => {
+      // Les médias sont actuellement stockés en data URL dans Firestore (limite de 1 Mio/document).
+      // Refuser les fichiers trop volumineux évite les écritures impossibles et la surcharge du document.
+      if (file.size > 700 * 1024) {
+        alert(`Le fichier « ${file.name} » dépasse la limite sûre de 700 Ko. Le stockage Firebase Storage sera nécessaire pour les gros fichiers et les vidéos.`);
+        return;
+      }
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        alert(`Le format « ${file.type || 'inconnu'} » n’est pas encore pris en charge pour l’envoi.`);
+        return;
+      }
       const reader = new FileReader();
       reader.onload = async (evt) => {
         const url = evt.target?.result as string;
@@ -788,14 +798,14 @@ export const CommunicateurDashboard: React.FC = () => {
           <aside id="communicator-drawer" className="communicator-drawer" aria-label="Menu Communicateur" onClick={e => e.stopPropagation()}>
             <div className="communicator-drawer-header"><strong>Menu Communicateur</strong><button type="button" aria-label="Fermer le menu" onClick={() => setIsMenuOpen(false)}><X size={18} /></button></div>
             <div className="communicator-drawer-group"><span className="communicator-drawer-label">Communication</span>
-              <button onClick={() => { setActiveTab("messages"); setIsMenuOpen(false); }}>✉️ Messages des visiteurs</button>
-              <button onClick={() => { setActiveTab("board_messages"); setIsMenuOpen(false); }}>💬 Messages du bureau</button>
-              <button onClick={() => { setActiveTab("calendrier"); setIsMenuOpen(false); }}>📅 Événements & calendrier éditorial</button>
+              <button onClick={() => { setActiveTab("messages"); setIsMenuOpen(false); }}><MessageCircle size={17} /> Messages des visiteurs</button>
+              <button onClick={() => { setActiveTab("board_messages"); setIsMenuOpen(false); }}><MessageCircle size={17} /> Messages du bureau</button>
+              <button onClick={() => { setActiveTab("calendrier"); setIsMenuOpen(false); }}><Clock3 size={17} /> Événements & calendrier éditorial</button>
             </div>
             <div className="communicator-drawer-group"><span className="communicator-drawer-label">Pilotage & site</span>
-              <button onClick={() => { setActiveTab("analytics"); setIsMenuOpen(false); }}>📈 Portée & engagement</button>
-              <button onClick={() => { setActiveTab("domains"); setIsMenuOpen(false); }}>🌍 Domaines d’intervention</button>
-              <button onClick={() => { setActiveTab("landing"); setIsMenuOpen(false); }}>⚙️ Paramètres du site</button>
+              <button onClick={() => { setActiveTab("analytics"); setIsMenuOpen(false); }}><Eye size={17} /> Portée & engagement</button>
+              <button onClick={() => { setActiveTab("domains"); setIsMenuOpen(false); }}><Images size={17} /> Domaines d’intervention</button>
+              <button onClick={() => { setActiveTab("landing"); setIsMenuOpen(false); }}><Home size={17} /> Paramètres du site</button>
             </div>
             <div className="communicator-coming-soon"><span>Diffusion SMS <small>Bientôt disponible</small></span><span>E-mails groupés <small>Bientôt disponible</small></span><span>Notifications Push <small>Bientôt disponible</small></span></div>
           </aside>
@@ -844,7 +854,7 @@ export const CommunicateurDashboard: React.FC = () => {
             <h3 className="card-title">⚡ Actions rapides</h3>
           </div>
           <div className="quick-actions">
-            <button type="button" className="quick-action" onClick={() => openNewsEditor()}>
+            <button type="button" className="quick-action" onClick={() => { openNewsEditor(); setFormCategory('urgence'); }}>
               <div className="qa-icon"><Plus size={24} /></div><div className="qa-title">Créer une alerte</div><div className="qa-subtitle">Nouvelle actualité urgente</div>
             </button>
             <button type="button" className="quick-action" onClick={() => { setActiveTab('media'); setMediaTypeFilter('all'); mediaInputRef.current?.click(); }}>
@@ -1361,12 +1371,12 @@ export const CommunicateurDashboard: React.FC = () => {
         <div className="upload-zone" onClick={() => mediaInputRef.current?.click()} style={{ marginBottom: '16px' }}>
           <div className="upload-icon">📤</div>
           <p>Cliquez pour uploader des médias</p>
-          <small>JPG, PNG, PDF (max 10 MB)</small>
+          <small>JPG, PNG, PDF (max 700 Ko actuellement)</small>
         </div>
         <input 
           type="file" 
           ref={mediaInputRef} 
-          accept="image/*,video/*,.pdf" 
+          accept="image/*,.pdf" 
           multiple 
           style={{ display: 'none' }} 
           onChange={handleMediaUpload}
