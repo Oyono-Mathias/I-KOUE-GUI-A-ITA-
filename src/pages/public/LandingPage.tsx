@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { ExternalMedia } from '../../components/media/ExternalMedia';
+import { NewsInteractions } from '../../components/news/NewsInteractions';
 import './LandingPage.css';
 
 const safePublicHref = (value: string | undefined, fallback: string) => {
@@ -64,10 +65,9 @@ export const LandingPage = () => {
     contactEmail: 'associationikoueguiaita@gmail.com',
     contactFacebook: 'Association I KOUE GUI A ITA'
   });
-  const [domains, setDomains] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
-  const [dataLoading, setDataLoading] = useState({ domains: true, news: true, reports: true });
+  const [dataLoading, setDataLoading] = useState({ news: true, reports: true });
   const [activeView, setActiveView] = useState('accueil');
   const [selectedNews, setSelectedNews] = useState<any | null>(null);
 
@@ -87,7 +87,8 @@ export const LandingPage = () => {
 
   const viewForSection = (id: string) => {
     if (['accueil', 'apropos'].includes(id)) return 'accueil';
-    if (['domaines', 'actualites', 'transparence'].includes(id)) return 'domaines';
+    if (id === 'actualites') return 'actualites';
+    if (id === 'transparence') return 'transparence';
     if (id === 'don') return 'don';
     return 'contact';
   };
@@ -119,20 +120,19 @@ export const LandingPage = () => {
     return () => {
       elements.forEach((el) => observer.unobserve(el));
     };
-  }, [domains, news, reports, activeView]);
+  }, [news, reports, activeView]);
 
   useEffect(() => {
     let active = true;
     const timers: number[] = [];
-    const markLoaded = (key: 'domains' | 'news' | 'reports') => {
+    const markLoaded = (key: 'news' | 'reports') => {
       if (active) setDataLoading((current) => ({ ...current, [key]: false }));
     };
-    const addFallback = (key: 'domains' | 'news' | 'reports') => {
+    const addFallback = (key: 'news' | 'reports') => {
       const timer = window.setTimeout(() => markLoaded(key), 8000);
       timers.push(timer);
       return () => window.clearTimeout(timer);
     };
-    const finishDomains = addFallback('domains');
     const finishNews = addFallback('news');
     const finishReports = addFallback('reports');
 
@@ -169,14 +169,6 @@ export const LandingPage = () => {
       (error) => console.warn('Erreur chargement CMS landing:', error)
     );
 
-    const unsubDomains = onSnapshot(query(collection(db, 'domains'), orderBy('order', 'asc')),
-      (snapshot) => {
-        if (!active) return;
-        finishDomains(); markLoaded('domains');
-        setDomains(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })));
-      },
-      (error) => { console.warn('Erreur chargement domaines:', error); finishDomains(); markLoaded('domains'); setDomains([]); }
-    );
     const unsubNews = onSnapshot(query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(6)),
       (snapshot) => {
         if (!active) return;
@@ -198,7 +190,7 @@ export const LandingPage = () => {
     return () => {
       active = false;
       timers.forEach((timer) => window.clearTimeout(timer));
-      unsubConfig(); unsubLandingContent(); unsubDomains(); unsubNews(); unsubReports();
+      unsubConfig(); unsubLandingContent(); unsubNews(); unsubReports();
     };
   }, []);
 
@@ -328,7 +320,7 @@ export const LandingPage = () => {
           <div className="mobile-menu-nav">
               <a href="#accueil" onClick={(e) => navigateToView(e, 'accueil')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🏠 Accueil</a>
               <a href="#apropos" onClick={(e) => navigateToView(e, 'apropos')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'apropos' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>ℹ️ À Propos</a>
-              <a href="#domaines" onClick={(e) => navigateToView(e, 'domaines')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🌍 Domaines</a>
+              <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
               <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
               <a href="#transparence" onClick={(e) => navigateToView(e, 'transparence')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'transparence' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📊 Transparence</a>
               <a href="#adhesion" onClick={(e) => navigateToView(e, 'adhesion')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'adhesion' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📝 Adhérer</a>
@@ -348,7 +340,7 @@ export const LandingPage = () => {
             <p className="subtitle" id="heroSubtitle">{siteConfig.heroSubtitle}</p>
             <div className="hero-buttons">
                 <a href="#don" onClick={(e) => navigateToView(e, "don")} className="btn-lp btn-lp-primary">💛 {siteConfig.primaryCtaLabel || "FAIRE UN DON"}</a>
-                <a href="#domaines" onClick={(e) => navigateToView(e, "domaines")} className="btn-lp btn-lp-secondary">🌍 {siteConfig.secondaryCtaLabel || "NOS DOMAINES"}</a>
+                <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} className="btn-lp btn-lp-secondary">🌍 {siteConfig.secondaryCtaLabel || "ACTUALITÉS"}</a>
             </div>
           </div>
       </section>
@@ -425,51 +417,8 @@ export const LandingPage = () => {
         </div>
       )}
 
-      {activeView === 'domaines' && (
+      {activeView === 'actualites' && (
         <div className="landing-view landing-view--domaines" role="tabpanel">
-      {/* DOMAINES D'INTERVENTION */}
-      <section className="lp-section lp-section-alt" id="domaines">
-          <div className="lp-container">
-              <div className="lp-section-header reveal">
-                  <span className="lp-section-eyebrow">Article 7 des Statuts</span>
-                  <h2 className="lp-section-title">Nos Domaines d'Intervention</h2>
-                  <p className="lp-section-subtitle">Une approche multidimensionnelle pour un impact concret</p>
-              </div>
-
-              <div className="domains-grid" id="domainsGrid">
-                  {domains.length === 0 ? (
-                    <div className="lp-data-state" role={dataLoading.domains ? 'status' : undefined}>
-                      {dataLoading.domains ? 'Chargement de nos domaines d’intervention…' : 'Les domaines seront bientôt disponibles.'}
-                    </div>
-                  ) : (
-                    domains.map((domain, index) => (
-                      <div key={domain.id || index} className={`domain-card ${domain.color || ''} reveal`}>
-                          <div className="domain-card-header">
-                              <div className="domain-icon">{domain.iconName || '🌍'}</div>
-                              <div>
-                                  <h3>{domain.title}</h3>
-                                  <div className="domain-ref">Article 7.{domain.order || (index+1)} des Statuts</div>
-                              </div>
-                          </div>
-                          <div className="domain-card-body">
-                              <p>{domain.description}</p>
-                              {domain.activities && domain.activities.length > 0 && (
-                                  <ul>
-                                      {domain.activities.slice(0, 4).map((a: string, i: number) => <li key={i}>{a}</li>)}
-                                  </ul>
-                              )}
-                          </div>
-                      </div>
-                    ))
-                  )}
-              </div>
-
-              <div style={{ textAlign: 'center', marginTop: '32px' }} className="reveal">
-                  <a href="#contact" className="btn-lp btn-lp-outline">✉️ Nous contacter pour en savoir plus</a>
-              </div>
-          </div>
-      </section>
-
       {/* ACTUALITÉS */}
       <section className="lp-section" id="actualites">
           <div className="lp-container">
@@ -499,6 +448,7 @@ export const LandingPage = () => {
                             <div className="news-date">📅 {formatDate(item.createdAt)}</div>
                             <h3 className="news-title">{item.title}</h3>
                             <p className="news-desc">{item.description}</p>
+                            <NewsInteractions newsId={item.id} title={item.title} />
                             <button type="button" className="news-link news-read-button" onClick={() => setSelectedNews(item)}>Lire l’actualité →</button>
                         </div>
                     </div>
@@ -548,7 +498,7 @@ export const LandingPage = () => {
         </div>
       )}
 
-      {activeView === 'domaines' && (
+      {activeView === 'transparence' && (
         <div className="landing-view landing-view--domaines" role="tabpanel">
       {/* TRANSPARENCE */}
       <section className="lp-section lp-section-alt" id="transparence">
@@ -756,7 +706,7 @@ export const LandingPage = () => {
                   <h4 style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--or-solaire)' }}>Liens Rapides</h4>
                   <a href="#accueil" onClick={(e) => navigateToView(e, 'accueil')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Accueil</a>
                   <a href="#apropos" onClick={(e) => navigateToView(e, 'apropos')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>À Propos</a>
-                  <a href="#domaines" onClick={(e) => navigateToView(e, 'domaines')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Nos Domaines</a>
+                  <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Nos Domaines</a>
                   <a href="#transparence" onClick={(e) => navigateToView(e, 'transparence')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Transparence</a>
                   <a href="#contact" onClick={(e) => navigateToView(e, 'contact')} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)' }}>Contact</a>
               </div>
@@ -786,6 +736,7 @@ export const LandingPage = () => {
             <header><div><span className="lp-section-eyebrow">JOURNAL DE L’ASSOCIATION</span><h2 id="newsArticleTitle">{selectedNews.title}</h2><p>{formatDate(selectedNews.createdAt)} · {categoryLabels[selectedNews.category] || selectedNews.category || 'Actualité'}</p></div><button type="button" onClick={() => setSelectedNews(null)} aria-label="Fermer l’actualité">×</button></header>
             {(selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url) && <div className="news-article-media"><ExternalMedia url={selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url} title={selectedNews.title} lightbox /></div>}
             <div className="news-article-copy">{selectedNews.content || selectedNews.fullText || selectedNews.description || 'Aucun détail supplémentaire n’est disponible pour cette actualité.'}</div>
+            <NewsInteractions newsId={selectedNews.id} title={selectedNews.title} />
             <footer>Association I KOUE GUI A ITA · Ensemble · Volonté · Engagement</footer>
           </article>
         </div>
@@ -799,9 +750,9 @@ export const LandingPage = () => {
               <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'accueil' ? 'var(--or-solaire)' : '' }}>🏠</span>
               <span>Accueil</span>
           </a>
-          <a href="#domaines" className={activeView === 'domaines' ? 'active' : ''} onClick={(e) => navigateToView(e, 'domaines')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'domaines' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
-              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'domaines' ? 'var(--or-solaire)' : '' }}>🌍</span>
-              <span>Domaines</span>
+          <a href="#actualites" className={activeView === 'actualites' ? 'active' : ''} onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
+              <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'actualites' ? 'var(--or-solaire)' : '' }}>📰</span>
+              <span>Actualités</span>
           </a>
           <a href="#don" className={activeView === 'don' ? 'active' : ''} onClick={(e) => navigateToView(e, 'don')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textDecoration: 'none', color: activeView === 'don' ? 'var(--bleu-rca)' : 'var(--texte-secondaire)', fontSize: '10px', padding: '4px 8px' }}>
               <span className="nav-icon" style={{ fontSize: '22px', marginBottom: '2px', color: activeView === 'don' ? 'var(--or-solaire)' : '' }}>💛</span>
