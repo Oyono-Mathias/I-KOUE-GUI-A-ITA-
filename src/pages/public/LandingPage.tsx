@@ -321,7 +321,6 @@ export const LandingPage = () => {
               <a href="#accueil" onClick={(e) => navigateToView(e, 'accueil')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'accueil' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>🏠 Accueil</a>
               <a href="#apropos" onClick={(e) => navigateToView(e, 'apropos')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'apropos' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>ℹ️ À Propos</a>
               <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
-              <a href="#actualites" onClick={(e) => navigateToView(e, 'actualites')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'actualites' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📰 Actualités</a>
               <a href="#transparence" onClick={(e) => navigateToView(e, 'transparence')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'transparence' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📊 Transparence</a>
               <a href="#adhesion" onClick={(e) => navigateToView(e, 'adhesion')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'adhesion' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📝 Adhérer</a>
               <a href="#contact" onClick={(e) => navigateToView(e, 'contact')} style={{ display: 'flex', padding: '16px 24px', color: activeView === 'contact' ? 'var(--bleu-rca)' : 'var(--texte-principal)', textDecoration: 'none', fontSize: '16px', borderBottom: '1px solid var(--fond-alterne)', minHeight: '48px', alignItems: 'center', gap: '10px', transition: 'var(--transition)' }}>📞 Contact</a>
@@ -418,7 +417,7 @@ export const LandingPage = () => {
       )}
 
       {activeView === 'actualites' && (
-        <div className="landing-view landing-view--domaines" role="tabpanel">
+        <div className="landing-view landing-view--actualites" role="tabpanel">
       {/* ACTUALITÉS */}
       <section className="lp-section" id="actualites">
           <div className="lp-container">
