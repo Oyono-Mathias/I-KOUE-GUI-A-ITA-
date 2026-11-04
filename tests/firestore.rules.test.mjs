@@ -12,6 +12,9 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
+  query,
+  where,
   setDoc,
   updateDoc,
   serverTimestamp,
@@ -356,4 +359,60 @@ test('Président Fondateur et autres rôles institutionnels: ne peuvent pas attr
 
   await assertFails(updateDoc(doc(dbFor('founder-role-manager'), 'users', 'role-target'), { role: 'president' }));
   await assertFails(updateDoc(doc(dbFor('treasurer-role-manager'), 'users', 'role-target'), { role: 'communicateur' }));
+});
+
+
+test('Visiteur anonyme : peut aimer une actualité et déposer un commentaire en attente', async () => {
+  const db = dbFor('anonymous-visitor');
+  await assertSucceeds(setDoc(doc(db, 'news', 'story-1', 'likes', 'anonymous-visitor'), {
+    uid: 'anonymous-visitor',
+    createdAt: serverTimestamp(),
+  }));
+  await assertSucceeds(setDoc(doc(db, 'news', 'story-1', 'comments', 'pending-1'), {
+    authorUid: 'anonymous-visitor',
+    authorName: 'Visiteur',
+    text: 'Bravo pour cette initiative.',
+    status: 'pending',
+    createdAt: serverTimestamp(),
+  }));
+  await assertFails(updateDoc(doc(db, 'news', 'story-1', 'comments', 'pending-1'), {
+    status: 'approved',
+  }));
+});
+
+test('Commentaire en attente : invisible aux autres visiteurs et validable uniquement par le Communicateur', async () => {
+  await seedUser('communicator-1', 'communicateur');
+  await seedDocument('news', 'story-2', { title: 'Actualité de test', status: 'publie' });
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(namedDbForContext(context, 'owner'), 'news', 'story-2', 'comments', 'pending-2'), {
+      authorUid: 'visitor-2',
+      authorName: 'Visiteur',
+      text: 'Commentaire à modérer.',
+      status: 'pending',
+      createdAt: new Date(),
+    });
+  });
+  const visitorDb = dbFor('visitor-3');
+  await assertFails(getDoc(doc(visitorDb, 'news', 'story-2', 'comments', 'pending-2')));
+  const communicatorDb = dbFor('communicator-1');
+  await assertSucceeds(updateDoc(doc(communicatorDb, 'news', 'story-2', 'comments', 'pending-2'), {
+    status: 'approved',
+    moderatedAt: serverTimestamp(),
+    moderatedBy: 'communicator-1',
+  }));
+  await assertSucceeds(getDoc(doc(visitorDb, 'news', 'story-2', 'comments', 'pending-2')));
+});
+
+test('Un visiteur ne peut ni modifier ni supprimer le commentaire d’un autre auteur', async () => {
+  const db = dbFor('visitor-4');
+  await testEnv.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(namedDbForContext(context, 'owner'), 'news', 'story-3', 'comments', 'approved-3'), {
+      authorUid: 'visitor-5',
+      authorName: 'Visiteur',
+      text: 'Commentaire public.',
+      status: 'approved',
+      createdAt: new Date(),
+    });
+  });
+  await assertFails(updateDoc(doc(db, 'news', 'story-3', 'comments', 'approved-3'), { text: 'Texte modifié' }));
 });
