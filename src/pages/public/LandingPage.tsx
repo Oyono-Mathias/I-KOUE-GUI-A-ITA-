@@ -14,6 +14,43 @@ const safePublicHref = (value: string | undefined, fallback: string) => {
   } catch { return fallback; }
 };
 
+const AnimatedStat: React.FC<{ value: string | number }> = ({ value }) => {
+  const raw = String(value ?? '');
+  const match = raw.match(/(-?\\d[\\d\\s,.]*)/);
+  const numeric = match ? Number(match[1].replace(/[\\s,]/g, '').replace(',', '.')) : NaN;
+  const suffix = match ? raw.slice((match.index || 0) + match[0].length) : '';
+  const prefix = match ? raw.slice(0, match.index) : '';
+  const [display, setDisplay] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!Number.isFinite(numeric)) return;
+    const node = ref.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setStarted(true); observer.disconnect(); }
+    }, { threshold: 0.35 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [numeric]);
+  useEffect(() => {
+    if (!started || !Number.isFinite(numeric)) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setDisplay(numeric); return; }
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / 1250, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(numeric * eased);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [started, numeric]);
+  const formatted = Number.isFinite(numeric) ? (Number.isInteger(numeric) ? Math.round(display).toLocaleString('fr-FR') : display.toLocaleString('fr-FR', { maximumFractionDigits: 1 })) : raw;
+  return <span className="stat-value" ref={ref}>{Number.isFinite(numeric) ? prefix + formatted + suffix : raw}</span>;
+};
+
 export const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [siteConfig, setSiteConfig] = useState<any>({
@@ -31,6 +68,7 @@ export const LandingPage = () => {
   const [news, setNews] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [activeView, setActiveView] = useState('accueil');
+  const [selectedNews, setSelectedNews] = useState<any | null>(null);
 
   // Refs for animation
   const revealRefs = useRef<Element[]>([]);
@@ -116,7 +154,7 @@ export const LandingPage = () => {
     // Fetch news
     // Note: If 'status' requires a composite index that doesn't exist, this might throw an error.
     // If it does, we can filter client side.
-    const qNews = query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(3));
+    const qNews = query(collection(db, 'news'), orderBy('createdAt', 'desc'), limit(6));
     const unsubNews = onSnapshot(qNews, (snap) => {
       let data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       data = data.filter((n: any) => n.status === 'publie');
@@ -290,8 +328,10 @@ export const LandingPage = () => {
           </div>
       </section>
 
-      {/* STATS */}
-      <section className="stats-section">
+      {/* CHIFFRES CLÉS & IMPACT */}
+      <section className="stats-section" aria-labelledby="impactTitle">
+          <div className="lp-container">
+            <div className="lp-section-header reveal"><span className="lp-section-eyebrow">Notre engagement en action</span><h2 className="lp-section-title" id="impactTitle">Des résultats, un impact durable</h2><p className="lp-section-subtitle">Quelques repères pour mesurer notre engagement auprès des communautés.</p></div>
           <div className="stats-grid">
               {(siteConfig.statistics?.length ? siteConfig.statistics : [
                 { value: '500+', label: 'Bénéficiaires' },
@@ -300,7 +340,7 @@ export const LandingPage = () => {
                 { value: '100%', label: 'Transparence' },
               ]).map((stat: any, index: number) => (
                 <div className="stat-card reveal" key={stat.label || index}>
-                  <span className="stat-value">{stat.value}</span>
+                  <AnimatedStat value={stat.value} />
                   <span className="stat-label">{stat.label}</span>
                 </div>
               ))}
@@ -426,8 +466,8 @@ export const LandingPage = () => {
                   news.map((item) => (
                     <div key={item.id} className="news-card reveal">
                         <div className="news-image">
-                            {(item.imageUrl || item.image_url) ? (
-                              <ExternalMedia url={item.imageUrl || item.image_url} title={item.title} compact fit="cover" />
+                            {(item.imageUrl || item.image_url || item.videoUrl || item.mediaUrl) ? (
+                              <ExternalMedia url={item.videoUrl || item.mediaUrl || item.imageUrl || item.image_url} title={item.title} compact fit="cover" lightbox />
                             ) : (
                               <span style={{ fontSize: '64px' }}>{categoryIcons[item.category] || '📰'}</span>
                             )}
@@ -437,7 +477,7 @@ export const LandingPage = () => {
                             <div className="news-date">📅 {formatDate(item.createdAt)}</div>
                             <h3 className="news-title">{item.title}</h3>
                             <p className="news-desc">{item.description}</p>
-                            <a href="#" className="news-link">Lire la suite →</a>
+                            <button type="button" className="news-link news-read-button" onClick={() => setSelectedNews(item)}>Lire l’actualité →</button>
                         </div>
                     </div>
                   ))
@@ -511,7 +551,7 @@ export const LandingPage = () => {
                             <h4>{report.title}</h4>
                             <span>{typeLabels[report.type] || report.type} • {report.size || '-'}</span>
                         </div>
-                        <a href={report.url || '#'} className="btn-download" download>⬇ Télécharger</a>
+                        <div className="report-preview">{report.url ? <ExternalMedia url={report.url} title={report.title} compact lightbox /> : <span>Document indisponible</span>}<span className="report-preview__label">Ouvrir le document</span></div>
                     </div>
                   ))
                 )}
@@ -719,6 +759,17 @@ export const LandingPage = () => {
               </div>
           </div>
       </footer>
+
+      {selectedNews && (
+        <div className="news-article-modal" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setSelectedNews(null); }}>
+          <article className="news-article-dialog" role="dialog" aria-modal="true" aria-labelledby="newsArticleTitle">
+            <header><div><span className="lp-section-eyebrow">JOURNAL DE L’ASSOCIATION</span><h2 id="newsArticleTitle">{selectedNews.title}</h2><p>{formatDate(selectedNews.createdAt)} · {categoryLabels[selectedNews.category] || selectedNews.category || 'Actualité'}</p></div><button type="button" onClick={() => setSelectedNews(null)} aria-label="Fermer l’actualité">×</button></header>
+            {(selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url) && <div className="news-article-media"><ExternalMedia url={selectedNews.videoUrl || selectedNews.mediaUrl || selectedNews.imageUrl || selectedNews.image_url} title={selectedNews.title} lightbox /></div>}
+            <div className="news-article-copy">{selectedNews.description || 'Aucun détail supplémentaire n’est disponible pour cette actualité.'}</div>
+            <footer>Association I KOUE GUI A ITA · Ensemble · Volonté · Engagement</footer>
+          </article>
+        </div>
+      )}
 
       {/* BOTTOM NAV (mobile) */}
       <nav className="bottom-nav" style={{
