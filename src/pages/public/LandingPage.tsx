@@ -16,8 +16,8 @@ const safePublicHref = (value: string | undefined, fallback: string) => {
 
 const AnimatedStat: React.FC<{ value: string | number }> = ({ value }) => {
   const raw = String(value ?? '');
-  const match = raw.match(/(-?\\d[\\d\\s,.]*)/);
-  const numeric = match ? Number(match[1].replace(/[\\s,]/g, '').replace(',', '.')) : NaN;
+  const match = raw.match(/(-?\d[\d\s,.]*)/);
+  const numeric = match ? Number(match[1].replace(/[\s,]/g, '').replace(',', '.')) : NaN;
   const suffix = match ? raw.slice((match.index || 0) + match[0].length) : '';
   const prefix = match ? raw.slice(0, match.index) : '';
   const [display, setDisplay] = useState(0);
@@ -344,6 +344,7 @@ export const LandingPage = () => {
                   <span className="stat-label">{stat.label}</span>
                 </div>
               ))}
+          </div>
           </div>
       </section>
 
