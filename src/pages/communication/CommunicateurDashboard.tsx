@@ -24,7 +24,7 @@ interface NewsItem {
   description: string;
   content?: string;
   category: string;
-  status: 'publie' | 'brouillon' | 'archive';
+  status: 'publie' | 'brouillon' | 'en_attente_validation' | 'archive';
   views?: number;
   featured?: boolean;
   imageUrl?: string;
@@ -102,6 +102,7 @@ export const CommunicateurDashboard: React.FC = () => {
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   // Real-time collections state
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -126,7 +127,7 @@ export const CommunicateurDashboard: React.FC = () => {
   const [formDescription, setFormDescription] = useState<string>('');
   const [formContent, setFormContent] = useState<string>('');
   const [formCategory, setFormCategory] = useState<string>('education');
-  const [formStatus, setFormStatus] = useState<'publie' | 'brouillon' | 'archive'>('brouillon');
+  const [formStatus, setFormStatus] = useState<'publie' | 'brouillon' | 'en_attente_validation' | 'archive'>('brouillon');
   const [formFeatured, setFormFeatured] = useState<boolean>(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [uploadText, setUploadText] = useState<string>('Cliquez pour uploader une image');
@@ -308,7 +309,9 @@ export const CommunicateurDashboard: React.FC = () => {
       juridique: '⚖️ Juridique',
       humanitaire: '🤝 Humanitaire',
       jeunesse: '🎯 Jeunesse',
-      evenement: '🎉 Événement'
+      evenement: '🎉 Événement',
+      urgence: '🚨 Urgence',
+      vie_association: '🤝 Vie de l’association'
     };
     return labels[cat] || cat;
   };
@@ -390,7 +393,7 @@ export const CommunicateurDashboard: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon') => {
+  const saveNewsData = async (statusOverride?: 'publie' | 'brouillon' | 'en_attente_validation') => {
     const title = formTitle.trim();
     const description = formDescription.trim();
 
@@ -431,7 +434,7 @@ export const CommunicateurDashboard: React.FC = () => {
         }
         await addDoc(collection(db, 'news'), data);
       }
-      alert(effectiveStatus === 'publie' ? '✅ Actualité publiée avec succès !' : '💾 Brouillon sauvegardé !');
+      alert(effectiveStatus === 'publie' ? '✅ Actualité publiée avec succès !' : effectiveStatus === 'en_attente_validation' ? '📨 Actualité envoyée en attente de validation.' : '💾 Brouillon sauvegardé !');
       setActiveTab('news');
       window.scrollTo(0, 0);
     } catch (error: any) {
@@ -743,72 +746,30 @@ export const CommunicateurDashboard: React.FC = () => {
       {/* ============================================
            📱 TAB NAVIGATION
            ============================================ */}
-      <nav className="tab-nav">
-        <button 
-          className={`tab-btn ${activeTab === 'dashboard' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📊</span>
-          <span>Dashboard</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'news' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('news'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📰</span>
-          <span>Actualités</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'domains' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('domains'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🌍</span>
-          <span>Domaines</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'landing' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('landing'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🏠</span>
-          <span>Landing</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'media' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('media'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🖼️</span>
-          <span>Médias</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'board_messages' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('messages'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">🌍</span>
-          <span>Public</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'board_messages' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('board_messages'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">💬</span>
-          <span>Bureau</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'calendrier' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('calendrier'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📅</span>
-          <span>Calendrier</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`} 
-          onClick={() => { setActiveTab('analytics'); window.scrollTo(0, 0); }}
-        >
-          <span className="tab-icon">📈</span>
-          <span>Analytics</span>
-        </button>
+      <nav className="tab-nav communicator-primary-nav" aria-label="Navigation principale">
+        <button className={activeTab === "dashboard" ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("dashboard"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><span className="tab-icon">🏠</span><span>Accueil</span></button>
+        <button className={["news", "news-editor"].includes(activeTab) ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("news"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><span className="tab-icon">📰</span><span>CMS</span></button>
+        <button className={activeTab === "media" ? "tab-btn active" : "tab-btn"} onClick={() => { setActiveTab("media"); setIsMenuOpen(false); window.scrollTo(0, 0); }}><span className="tab-icon">🖼️</span><span>Médiathèque</span></button>
+        <button className="tab-btn" aria-expanded={isMenuOpen} aria-controls="communicator-drawer" onClick={() => setIsMenuOpen(open => !open)}><span className="tab-icon">☰</span><span>Menu</span></button>
       </nav>
-
+      {isMenuOpen && (
+        <div className="communicator-drawer-backdrop" onClick={() => setIsMenuOpen(false)}>
+          <aside id="communicator-drawer" className="communicator-drawer" aria-label="Menu Communicateur" onClick={e => e.stopPropagation()}>
+            <div className="communicator-drawer-header"><strong>Menu Communicateur</strong><button type="button" aria-label="Fermer le menu" onClick={() => setIsMenuOpen(false)}>✕</button></div>
+            <div className="communicator-drawer-group"><span className="communicator-drawer-label">Communication</span>
+              <button onClick={() => { setActiveTab("messages"); setIsMenuOpen(false); }}>✉️ Messages des visiteurs</button>
+              <button onClick={() => { setActiveTab("board_messages"); setIsMenuOpen(false); }}>💬 Messages du bureau</button>
+              <button onClick={() => { setActiveTab("calendrier"); setIsMenuOpen(false); }}>📅 Événements & calendrier éditorial</button>
+            </div>
+            <div className="communicator-drawer-group"><span className="communicator-drawer-label">Pilotage & site</span>
+              <button onClick={() => { setActiveTab("analytics"); setIsMenuOpen(false); }}>📈 Portée & engagement</button>
+              <button onClick={() => { setActiveTab("domains"); setIsMenuOpen(false); }}>🌍 Domaines d’intervention</button>
+              <button onClick={() => { setActiveTab("landing"); setIsMenuOpen(false); }}>⚙️ Paramètres du site</button>
+            </div>
+            <p className="communicator-drawer-note">Les campagnes SMS, e-mails groupés, notifications push et les paramètres personnels du profil ne sont pas encore disponibles dans ce tableau de bord.</p>
+          </aside>
+        </div>
+      )}
       {/* ============================================
             TAB 1: DASHBOARD
            ============================================ */}
@@ -970,6 +931,8 @@ export const CommunicateurDashboard: React.FC = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
             >
               <option value="">Toutes catégories</option>
+              <option value="urgence">🚨 Urgence</option>
+              <option value="vie_association">🤝 Vie de l’association</option>
               <option value="education">📚 Éducation</option>
               <option value="sante">🏥 Santé</option>
               <option value="agriculture">🌱 Agriculture</option>
@@ -985,6 +948,7 @@ export const CommunicateurDashboard: React.FC = () => {
             >
               <option value="">Tous statuts</option>
               <option value="brouillon">Brouillon</option>
+              <option value="en_attente_validation">En attente de validation</option>
               <option value="publie">Publié</option>
               <option value="archive">Archivé</option>
             </select>
@@ -1019,7 +983,7 @@ export const CommunicateurDashboard: React.FC = () => {
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '6px' }}>
                       <span className={`badge cat-${item.category}`}>{getCategoryLabel(item.category)}</span>
                       <span className={`badge badge-${item.status === 'publie' ? 'success' : item.status === 'brouillon' ? 'gray' : 'warning'}`}>
-                        {item.status === 'publie' ? '✓ Publié' : item.status === 'brouillon' ? '📝 Brouillon' : '📦 Archivé'}
+                        {item.status === 'publie' ? '✓ Publié' : item.status === 'brouillon' ? '📝 Brouillon' : item.status === 'en_attente_validation' ? '⏳ En attente de validation' : '📦 Archivé'}
                       </span>
                       {item.featured && <span className="badge badge-gold">⭐ À la une</span>}
                     </div>
@@ -1057,7 +1021,7 @@ export const CommunicateurDashboard: React.FC = () => {
           ← Retour à la liste
         </button>
 
-        <form onSubmit={(e) => { e.preventDefault(); saveNewsData('publie'); }}>
+        <form onSubmit={(e) => { e.preventDefault(); saveNewsData(formStatus); }}>
           <div className="card">
             <div className="form-group">
               <label>Titre <span className="required">*</span></label>
@@ -1125,6 +1089,8 @@ export const CommunicateurDashboard: React.FC = () => {
               <div className="form-group">
                 <label>Catégorie <span className="required">*</span></label>
                 <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} required>
+                  <option value="urgence">🚨 Urgence</option>
+                  <option value="vie_association">🤝 Vie de l’association</option>
                   <option value="education">📚 Éducation</option>
                   <option value="sante">🏥 Santé</option>
                   <option value="agriculture">🌱 Agriculture</option>
@@ -1138,6 +1104,7 @@ export const CommunicateurDashboard: React.FC = () => {
                 <label>Statut</label>
                 <select value={formStatus} onChange={(e) => setFormStatus(e.target.value as any)}>
                   <option value="brouillon">Brouillon</option>
+                  <option value="en_attente_validation">En attente de validation</option>
                   <option value="publie">Publié</option>
                   <option value="archive">Archivé</option>
                 </select>
@@ -1573,33 +1540,12 @@ export const CommunicateurDashboard: React.FC = () => {
       {/* ============================================
            📱 BOTTOM NAV (mobile)
            ============================================ */}
-      <nav className="bottom-nav" style={{ overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('dashboard'); window.scrollTo(0, 0); }} className={activeTab === 'dashboard' ? 'active' : ''}>
-          <span className="nav-icon">📊</span>
-          <span>Dashboard</span>
-        </button>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('news'); window.scrollTo(0, 0); }} className={activeTab === 'news' ? 'active' : ''}>
-          <span className="nav-icon">📰</span>
-          <span>Actus</span>
-        </button>
-        <button onClick={() => { setActiveTab('board_messages'); window.scrollTo(0, 0); }} className={activeTab === 'board_messages' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">💬</span>
-          <span>Bureau</span>
-        </button>
-        <button onClick={() => { setActiveTab('calendrier'); window.scrollTo(0, 0); }} className={activeTab === 'calendrier' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">📅</span>
-          <span>Calendrier</span>
-        </button>
-        <button onClick={() => { setActiveTab('messages'); window.scrollTo(0, 0); }} className={activeTab === 'messages' ? 'active' : ''} style={{ minWidth: '80px', flex: '0 0 auto' }}>
-          <span className="nav-icon">💬</span>
-          <span>Messages</span>
-        </button>
-        <button style={{ minWidth: '80px', flex: '0 0 auto' }} onClick={() => { setActiveTab('analytics'); window.scrollTo(0, 0); }} className={activeTab === 'analytics' ? 'active' : ''}>
-          <span className="nav-icon">📈</span>
-          <span>Stats</span>
-        </button>
+      <nav className="bottom-nav communicator-bottom-nav" aria-label="Navigation rapide">
+        <button onClick={() => { setActiveTab("dashboard"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={activeTab === "dashboard" ? "active" : ""}><span className="nav-icon">🏠</span><span>Accueil</span></button>
+        <button onClick={() => { setActiveTab("news"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={["news", "news-editor"].includes(activeTab) ? "active" : ""}><span className="nav-icon">📰</span><span>CMS</span></button>
+        <button onClick={() => { setActiveTab("media"); setIsMenuOpen(false); window.scrollTo(0, 0); }} className={activeTab === "media" ? "active" : ""}><span className="nav-icon">🖼️</span><span>Médias</span></button>
+        <button onClick={() => setIsMenuOpen(open => !open)} aria-expanded={isMenuOpen}><span className="nav-icon">☰</span><span>Menu</span></button>
       </nav>
-
       {/* ============================================
             WHATSAPP FAB
            ============================================ */}
